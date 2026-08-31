@@ -16,8 +16,11 @@ repo and is never shipped with the plugin.
 
 - Windows with PowerShell 7 (`pwsh`).
 - [TinyTeX](https://yihui.org/tinytex/) with `pdflatex` on the path (or configured via
-  `jobapp.config.yml`).
-- [Ghostscript](https://www.ghostscript.com/) — required by `scripts/compress_pdf.ps1`.
+  `jobapp.config.yml`) — used by `scripts/compile_latex.ps1` to build the PDFs.
+- [Ghostscript](https://www.ghostscript.com/) (`gs` / `gswin64c` on the path) — used
+  by `scripts/compress_pdf.ps1` to shrink the built PDFs. This step needs Ghostscript,
+  not TinyTeX; a full TinyTeX install also satisfies it because it bundles a `ps2pdf`
+  wrapper around Ghostscript, which the script will use as a fallback.
 - Optional: `pdftotext` (Poppler) and/or `pandoc` for ingesting `.pdf` and `.docx`
   source CVs. Plain `.tex` / `.md` CVs need neither.
 

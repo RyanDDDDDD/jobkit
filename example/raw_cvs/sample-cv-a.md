@@ -34,6 +34,9 @@ Feb. 2022 – Dec. 2023 | Sydney, Australia
 
 C#/.NET, ASP.NET Core, Python, FastAPI, SQL (PostgreSQL, SQL Server), REST APIs, Docker, GitHub Actions, Azure
 
+**Tools:** Git/GitHub, Postman, pytest, xUnit
+**Practices:** Agile/Scrum, CI/CD, code review, on-call incident response
+
 ## Education
 
 Bachelor of Computer Science, Example University, Sydney, Australia — 2018 – 2021

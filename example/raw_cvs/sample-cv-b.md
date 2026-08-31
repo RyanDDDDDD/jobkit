@@ -36,6 +36,8 @@ Feb. 2022 – Dec. 2023
 
 JavaScript, TypeScript, React, Node.js, C#/.NET, Python, SQL Server, PostgreSQL, REST APIs, Docker, Azure DevOps, HTML/CSS
 
+**Tools & practices:** Git/GitHub, Postman, pytest, Agile/Scrum
+
 ## Education
 
 Example University — Bachelor of Computer Science — 2018 – 2021 — Sydney, Australia

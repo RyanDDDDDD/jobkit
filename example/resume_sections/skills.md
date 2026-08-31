@@ -21,7 +21,7 @@ This file aggregates and de-duplicates all technical skills listed across Sample
 - GitHub Actions
 - Azure DevOps
 - Azure (App Service, Blob Storage)
-- Git / GitHub
+- Git/GitHub
 - Postman
 - pytest
 - xUnit
@@ -32,5 +32,5 @@ This file aggregates and de-duplicates all technical skills listed across Sample
 - Relational data modelling (PostgreSQL, SQL Server)
 - CI/CD pipelines
 - Incident response / on-call
-- Agile / Scrum
+- Agile/Scrum
 - Message-based integration (Apache Kafka — personal project only)

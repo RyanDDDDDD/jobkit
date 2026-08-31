@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Resume</title>
+<style>
+  /* render_pdf.ps1 rewrites the two url("fonts/...woff2") below to absolute file:/// paths
+     at the template's own location before rendering. Keep them EXACTLY as the literal
+     relative form url("fonts/<File>.woff2") so that rewrite's string match works. */
+  @font-face { font-family: "Newsreader"; src: url("fonts/Newsreader.woff2") format("woff2");
+    font-weight: 400 600; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Source Serif 4"; src: url("fonts/SourceSerif4.woff2") format("woff2");
+    font-weight: 400 600; font-style: normal; font-display: swap; }
+
+  @page { size: Letter; margin: 14mm 16mm 13mm; }
+
+  :root {
+    --ink: #1c1b1a;
+    --soft: #5b5651;
+    --hair: #c9c4bd;
+    --body: "Source Serif 4", Georgia, "Times New Roman", "Noto Serif CJK SC", "Songti SC", serif;
+    --display: "Newsreader", Georgia, "Noto Serif CJK SC", "Songti SC", serif;
+  }
+  :lang(zh) {
+    --body: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", "PingFang SC", "Microsoft YaHei", "Source Serif 4", serif;
+    --display: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "PingFang SC", "Microsoft YaHei", "Newsreader", serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--body);
+    font-size: 10pt;
+    line-height: 1.42;
+    color: var(--ink);
+    font-feature-settings: "onum" 1, "kern" 1;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  /* density: set data.density = "compact" to tighten everything ~12% */
+  body.compact { font-size: 9.4pt; line-height: 1.34; }
+  body.compact section { margin-bottom: 8pt; }
+  body.compact .entry { margin-bottom: 6pt; }
+  body.compact ul.intro li { margin-bottom: 3pt; }
+
+  header { text-align: center; margin-bottom: 13pt; }
+  .name {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 25pt;
+    letter-spacing: 0.3px;
+    line-height: 1.1;
+    margin: 0 0 5pt;
+  }
+  .contact { font-size: 8.75pt; color: var(--soft); letter-spacing: 0.2px; }
+  .contact a { color: inherit; text-decoration: none; }
+  .contact .sep { margin: 0 7px; color: var(--hair); }
+
+  section { margin-bottom: 11pt; }
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 12pt;
+    font-variant-caps: small-caps;
+    letter-spacing: 0.03em;
+    color: var(--ink);
+    border-bottom: 0.75pt solid var(--hair);
+    padding-bottom: 3pt;
+    margin: 0 0 6pt;
+    break-after: avoid;
+  }
+
+  ul { margin: 4pt 0 0; padding-left: 14pt; }
+  li { margin-bottom: 2.5pt; }
+  li::marker { color: var(--soft); }
+  ul.intro { list-style: none; padding: 0; margin: 0; }
+  ul.intro li { margin-bottom: 4pt; }
+  ul.intro strong { font-weight: 600; }
+
+  .entry { margin-bottom: 8pt; break-inside: avoid; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; }
+  .primary { font-weight: 600; font-size: 10.5pt; }
+  .meta-right { font-size: 9pt; color: var(--soft); font-feature-settings: "tnum" 1; white-space: nowrap; }
+  .secondary { color: var(--soft); font-size: 9.5pt; }
+  .stack { margin: 3pt 0 1pt; font-size: 9pt; color: var(--soft); }
+  .stack .lbl {
+    font-family: var(--display);
+    font-variant-caps: all-small-caps; letter-spacing: 0.02em;
+    font-size: 9pt; color: var(--soft); margin-right: 5px;
+  }
+
+  .edu-item { break-inside: avoid; margin-bottom: 4pt; }
+  .edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; margin-bottom: 2pt; }
+  .edu-row .primary { font-weight: 600; font-size: 10pt; }
+
+  .skills p { margin: 3pt 0; }
+  .skills .lbl {
+    font-family: var(--display);
+    font-variant-caps: all-small-caps; letter-spacing: 0.02em;
+    font-size: 9.5pt; color: var(--soft); margin-right: 6px;
+  }
+
+  .plainlist { margin: 4pt 0 0; padding-left: 14pt; }
+  .plainlist li { break-inside: avoid; }
+  p, li { orphans: 2; widows: 2; }
+</style>
+</head>
+<body>
+<main id="resume"></main>
+
+<script type="application/json" id="resume-data">
+{{RESUME_JSON}}
+</script>
+
+<script>
+(function () {
+  "use strict";
+  var data;
+  try { data = JSON.parse(document.getElementById("resume-data").textContent); }
+  catch (e) { document.getElementById("resume").textContent = "Invalid resume JSON: " + e.message; return; }
+
+  var root = document.getElementById("resume");
+  if (data.density === "compact") document.body.classList.add("compact");
+  if (data.lang) document.documentElement.setAttribute("lang", data.lang);
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function frag(items, fn) { var f = document.createDocumentFragment(); (items || []).forEach(function (x) { f.appendChild(fn(x)); }); return f; }
+
+  /* ---------- header ---------- */
+  var header = el("header");
+  header.appendChild(el("div", "name", data.name || ""));
+  var contact = el("div", "contact");
+  (data.contact || []).forEach(function (c, i) {
+    if (i) { var s = el("span", "sep"); s.textContent = "·"; contact.appendChild(s); }
+    if (c && c.href) { var a = el("a"); a.href = c.href; a.textContent = c.text || c.href; contact.appendChild(a); }
+    else { contact.appendChild(document.createTextNode(typeof c === "string" ? c : (c.text || ""))); }
+  });
+  header.appendChild(contact);
+  root.appendChild(header);
+
+  /* ---------- introduction (optional) ---------- */
+  if (data.intro && data.intro.length) {
+    var s = el("section");
+    s.appendChild(el("h2", null, data.introTitle || "Introduction"));
+    var ul = el("ul", "intro");
+    ul.appendChild(frag(data.intro, function (b) {
+      var li = el("li");
+      if (b.lead) { var strong = el("strong", null, b.lead.replace(/[.:．：]\s*$/, "") + "."); li.appendChild(strong); li.appendChild(document.createTextNode(" " + (b.text || ""))); }
+      else { li.textContent = typeof b === "string" ? b : (b.text || ""); }
+      return li;
+    }));
+    s.appendChild(ul);
+    root.appendChild(s);
+  }
+
+  /* ---------- sections ---------- */
+  var renderers = {
+    entries: function (sec) {
+      return frag(sec.items, function (it) {
+        var e = el("div", "entry");
+        var r1 = el("div", "row");
+        r1.appendChild(el("span", "primary", it.primary || it.role || it.name || ""));
+        if (it.dates || it.metaRight) r1.appendChild(el("span", "meta-right", it.dates || it.metaRight));
+        e.appendChild(r1);
+        if (it.secondary || it.org || it.location) {
+          var r2 = el("div", "row");
+          r2.appendChild(el("span", "secondary", it.secondary || it.org || ""));
+          if (it.location) r2.appendChild(el("span", "meta-right", it.location));
+          e.appendChild(r2);
+        }
+        if (it.stack) {
+          var p = el("p", "stack");
+          p.appendChild(el("span", "lbl", it.stackLabel || "Stack"));
+          p.appendChild(document.createTextNode(it.stack));
+          e.appendChild(p);
+        }
+        if (it.bullets && it.bullets.length) {
+          var ul = el("ul");
+          ul.appendChild(frag(it.bullets, function (b) { return el("li", null, b); }));
+          e.appendChild(ul);
+        }
+        return e;
+      });
+    },
+    education: function (sec) {
+      return frag(sec.items, function (it) {
+        var f = el("div", "edu-item");
+        var r1 = el("div", "edu-row");
+        r1.appendChild(el("span", "primary", it.institution || ""));
+        if (it.dates) r1.appendChild(el("span", "meta-right", it.dates));
+        f.appendChild(r1);
+        if (it.credential || it.location) {
+          var r2 = el("div", "edu-row");
+          r2.appendChild(el("span", "secondary", it.credential || ""));
+          if (it.location) r2.appendChild(el("span", "meta-right", it.location));
+          f.appendChild(r2);
+        }
+        return f;
+      });
+    },
+    skills: function (sec) {
+      return frag(sec.groups, function (g) {
+        var p = el("p");
+        p.appendChild(el("span", "lbl", g.label));
+        p.appendChild(document.createTextNode(g.value));
+        return p;
+      });
+    },
+    list: function (sec) {
+      var ul = el("ul", "plainlist");
+      ul.appendChild(frag(sec.items, function (x) { return el("li", null, x); }));
+      return ul;
+    }
+  };
+
+  (data.sections || []).forEach(function (sec) {
+    var s = el("section");
+    if (sec.type === "skills") s.classList.add("skills");
+    s.appendChild(el("h2", null, sec.title));
+    var fn = renderers[sec.type] || renderers.entries;
+    s.appendChild(fn(sec));
+    root.appendChild(s);
+  });
+})();
+</script>
+</body>
+</html>

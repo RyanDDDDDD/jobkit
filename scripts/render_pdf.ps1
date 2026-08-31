@@ -24,6 +24,11 @@ function Invoke-RenderPdf {
   if (-not (Test-Path $outDir)) { New-Item -ItemType Directory $outDir -Force | Out-Null }
   $OutPath = [IO.Path]::GetFullPath((Join-Path $outDir (Split-Path $OutPath -Leaf)))
 
+  # Resolve the browser BEFORE writing anything, so a missing-Chromium throw leaves no
+  # stray <name>.rendered.html in the output dir.
+  $cfg     = Get-JobAppConfig
+  $browser = Resolve-Browser -Hint $cfg.BrowserPath
+
   $tpl  = Get-Content -Raw -LiteralPath $TemplatePath
   $json = Get-Content -Raw -LiteralPath $DataPath
   $html = $tpl.Replace($Placeholder, $json)
@@ -32,59 +37,76 @@ function Invoke-RenderPdf {
   # which lives next to -OutPath, NOT next to the template. Rewrite the bundled-font
   # url("fonts/...") strings to absolute file:/// paths at the template's own fonts/ dir
   # so the woff2 faces load instead of silently falling back to Georgia. Both templates
-  # carry a CSS comment guaranteeing these literal strings are present verbatim.
+  # carry a CSS comment guaranteeing these literal strings are present verbatim. (The
+  # identical strings inside that comment get rewritten too — harmless, it is a comment,
+  # and it keeps "zero remaining url(\"fonts/\"" true per the task's Ruling 4.)
   $fontDirUrl = 'file:///' + (((Split-Path $TemplatePath -Parent) + '\fonts\') -replace '\\','/')
   $html = $html.Replace('url("fonts/', 'url("' + $fontDirUrl)
 
   $renderedHtml = [IO.Path]::ChangeExtension($OutPath, '.rendered.html')
-  Set-Content -LiteralPath $renderedHtml -Value $html -Encoding utf8
+  $tmpProfile   = Join-Path ([IO.Path]::GetTempPath()) "render_pdf-profile-$(Get-Random)"
 
-  $cfg     = Get-JobAppConfig
-  $browser = Resolve-Browser -Hint $cfg.BrowserPath
-  $fileUrl = 'file:///' + ($renderedHtml -replace '\\','/')
-
-  # msedge.exe / chrome.exe are GUI-subsystem binaries: the call operator (`&`) does not
-  # block on them and leaves $LASTEXITCODE unset, so drive them through Start-Process -Wait
-  # with redirected streams. A throwaway --user-data-dir keeps this run from colliding with
-  # a browser the user already has open (which would make the new process hand off and exit
-  # before printing).
-  $tmpProfile = Join-Path ([IO.Path]::GetTempPath()) "render_pdf-profile-$(Get-Random)"
-  $outLog = Join-Path $tmpProfile 'stdout.txt'
-  $errLog = Join-Path $tmpProfile 'stderr.txt'
-  New-Item -ItemType Directory $tmpProfile -Force | Out-Null
-  $bArgs = @(
-    '--headless=new', '--disable-gpu', '--no-pdf-header-footer',
-    '--no-first-run', '--no-default-browser-check',
-    "--user-data-dir=$tmpProfile",
-    '--run-all-compositor-stages-before-draw', '--virtual-time-budget=5000',
-    "--print-to-pdf=$OutPath", $fileUrl
-  )
-  $exit = 1
   try {
-    $proc = Start-Process -FilePath $browser -ArgumentList $bArgs -NoNewWindow -Wait -PassThru `
-                          -RedirectStandardOutput $outLog -RedirectStandardError $errLog
-    $exit = $proc.ExitCode
-  } catch { $exit = 1 }
-  $out = @()
-  foreach ($f in @($errLog, $outLog)) {
-    if (Test-Path $f) { $out += (Get-Content -LiteralPath $f) }
-  }
-  Remove-Item $tmpProfile -Recurse -Force -ErrorAction SilentlyContinue
+    Set-Content -LiteralPath $renderedHtml -Value $html -Encoding utf8
+    $fileUrl = 'file:///' + ($renderedHtml -replace '\\','/')
 
-  $ok = ($exit -eq 0) -and (Test-Path $OutPath) -and ((Get-Item $OutPath).Length -gt 0)
-  $pages = 0
-  if ($ok) {
-    $bytes = [IO.File]::ReadAllText($OutPath, [Text.Encoding]::Latin1)
-    $pages = ([regex]::Matches($bytes, '/Type\s*/Page\b')).Count
-  }
-  if (-not $KeepHtml) { Remove-Item $renderedHtml -ErrorAction SilentlyContinue }
+    # msedge.exe / chrome.exe are GUI-subsystem binaries: the call operator (`&`) does not
+    # block on them and leaves $LASTEXITCODE unset. Start-Process -ArgumentList does NOT
+    # quote array elements, so any path with a space (e.g. applications/Jane Street/…, or
+    # %TEMP% under C:\Users\John Doe\…) would be split at the space and reach the child
+    # mangled. .NET ProcessStartInfo.ArgumentList quotes each element correctly on Windows.
+    # A throwaway --user-data-dir keeps this run from handing off to a browser the user
+    # already has open (which would exit before printing).
+    New-Item -ItemType Directory $tmpProfile -Force | Out-Null
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName               = $browser
+    $psi.UseShellExecute        = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError  = $true
+    foreach ($a in @(
+      '--headless=new', '--disable-gpu', '--no-pdf-header-footer',
+      '--no-first-run', '--no-default-browser-check',
+      '--run-all-compositor-stages-before-draw', '--virtual-time-budget=5000',
+      "--user-data-dir=$tmpProfile",
+      "--print-to-pdf=$OutPath",
+      $fileUrl
+    )) { $psi.ArgumentList.Add($a) }
 
-  [pscustomobject]@{
-    Pdf   = $OutPath
-    Pages = $pages
-    Ok    = $ok
-    Log   = if ($ok) { '' } else { (($out | Select-Object -Last 25) -join "`n") }
-    Html  = if ($KeepHtml) { $renderedHtml } else { $null }
+    $exit = 1
+    $stdout = ''; $stderr = ''
+    try {
+      $proc   = [System.Diagnostics.Process]::Start($psi)
+      $stdout = $proc.StandardOutput.ReadToEnd()
+      $stderr = $proc.StandardError.ReadToEnd()
+      $proc.WaitForExit()
+      $exit = $proc.ExitCode
+    } catch {
+      $stderr = $_.Exception.Message
+      $exit = 1
+    }
+    if ($null -eq $exit) { $exit = 1 }
+    $out = ("$stdout`n$stderr").Trim() -split "`r?`n"
+
+    $ok = ($exit -eq 0) -and (Test-Path $OutPath) -and ((Get-Item $OutPath).Length -gt 0)
+    $pages = 0
+    if ($ok) {
+      $bytes = [IO.File]::ReadAllText($OutPath, [Text.Encoding]::Latin1)
+      $pages = ([regex]::Matches($bytes, '/Type\s*/Page\b')).Count
+    }
+
+    [pscustomobject]@{
+      Pdf   = $OutPath
+      Pages = $pages
+      Ok    = $ok
+      Log   = if ($ok) { '' } else { (($out | Select-Object -Last 25) -join "`n") }
+      Html  = if ($KeepHtml) { $renderedHtml } else { $null }
+    }
+  }
+  finally {
+    Remove-Item $tmpProfile -Recurse -Force -ErrorAction SilentlyContinue
+    if (-not $KeepHtml -and (Test-Path $renderedHtml)) {
+      Remove-Item $renderedHtml -ErrorAction SilentlyContinue
+    }
   }
 }
 
@@ -92,7 +114,11 @@ if (-not $AsModule) {
   if (-not $TemplatePath -or -not $DataPath -or -not $OutPath) {
     Write-Error "render_pdf.ps1: -TemplatePath, -DataPath and -OutPath are required"; exit 2
   }
-  $r = Invoke-RenderPdf -TemplatePath $TemplatePath -DataPath $DataPath -OutPath $OutPath -Placeholder $Placeholder -KeepHtml:$KeepHtml
+  try {
+    $r = Invoke-RenderPdf -TemplatePath $TemplatePath -DataPath $DataPath -OutPath $OutPath -Placeholder $Placeholder -KeepHtml:$KeepHtml
+  } catch {
+    Write-Error $_.Exception.Message; exit 1
+  }
   if ($r.Ok) { Write-Host "OK: $($r.Pdf) ($($r.Pages) page$(if($r.Pages -ne 1){'s'}))" }
   else { Write-Error "Render failed:`n$($r.Log)"; exit 1 }
 }

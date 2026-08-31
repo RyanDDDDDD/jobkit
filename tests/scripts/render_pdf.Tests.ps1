@@ -69,6 +69,15 @@ try {
         Write-Host "SKIP  bad json: page shows the error (pdftotext not found)" -ForegroundColor Yellow
     }
 
+    # ---- output path containing a space (applications/Jane Street/…, %TEMP% under
+    #      C:\Users\John Doe\…) — browser args must be quoted per-element ----
+    $spaceDir = Join-Path $work "Jane Street"
+    New-Item -ItemType Directory $spaceDir | Out-Null
+    $rs = Invoke-RenderPdf -TemplatePath $tpl -DataPath $small -OutPath (Join-Path $spaceDir "resume.pdf")
+    Assert "space path: Ok"         $rs.Ok
+    Assert "space path: 1 page"     ($rs.Pages -eq 1)
+    Assert "space path: pdf exists" (Test-Path $rs.Pdf)
+
     # ---- font-URL rewrite: -KeepHtml leaves a rendered file with absolute file:/// font URLs ----
     $kh = Invoke-RenderPdf -TemplatePath $tpl -DataPath $small -OutPath (Join-Path $work "k.pdf") -KeepHtml
     $rendered = Get-Content -Raw -LiteralPath $kh.Html

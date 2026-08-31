@@ -19,7 +19,7 @@
     Dot-source without running; exposes the ConvertTo-CoverLetterText function.
 
 .EXAMPLE
-    & "C:\Users\user\Desktop\Resume\scripts\cover_letter_to_txt.ps1" -DataPath cover_letter.data.json
+    pwsh "$env:CLAUDE_PLUGIN_ROOT/scripts/cover_letter_to_txt.ps1" -DataPath cover_letter.data.json
 #>
 param([string]$DataPath, [string]$OutPath, [switch]$AsModule)
 $ErrorActionPreference = 'Stop'

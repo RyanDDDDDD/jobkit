@@ -1,0 +1,15 @@
+name: "Sample Dev"
+phone: "(+00) 000-000-000"
+email: "sample.dev@example.com"
+links: { github: "sample-dev" }
+location: "Sydney, NSW, Australia"
+working_rights: "full working rights in Australia"
+conventions:
+  roles:
+    - { company: "Acme Corp", title: "Software Engineer", start: "Jan. 2024", end: "Present", location: "Sydney, Australia" }
+    - { company: "Globex Pty Ltd", title: "Junior Developer", start: "Feb. 2022", end: "Dec. 2023", location: "Sydney, Australia" }
+  education:
+    - { institution: "Example University", credential: "Bachelor of Computer Science", start: "2018", end: "2021", location: "Sydney, Australia" }
+  default_resume_length: 1
+  default_include_projects: false
+  output_dir: "applications/{Company}"

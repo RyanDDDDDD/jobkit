@@ -46,15 +46,20 @@ claude plugin install job-application
 
 ## 初始设置
 
-1. 可选：如果你想使用非默认路径，把 `jobapp.config.example.yml` 复制为
-   `jobapp.config.yml`（已被 git 忽略）—— `browser_path`、`ghostscript_path`、
-   `source_of_truth_dir`、`output_dir`。跳过这一步则使用默认值
-   （`resume_sections/`、`applications/{Company}/`）。
-2. 运行 `/ingest <你的简历路径>`（指向存放过往简历的文件夹）来构建
+插件本身不存放任何候选人数据。它只从安装位置（`${CLAUDE_PLUGIN_ROOT}`，只读）读取自身资源，
+**其余的一切 —— 你的事实来源和所有生成文档 —— 都在你运行 Claude Code 的那个目录里读写**，
+由 `Get-JobAppConfig` 向上查找 `jobapp.config.yml` 来确定。
+
+1. 新建一个私有工作文件夹（例如 `~/job-hunt/`），在里面开 Claude Code。它要和本仓库分开，
+   你生成的任何东西都不属于插件。
+2. 可选：如果你想使用非默认路径，把 `jobapp.config.example.yml` 复制进去改名为
+   `jobapp.config.yml` —— `browser_path`、`ghostscript_path`、`source_of_truth_dir`、
+   `output_dir`。跳过则使用默认值（`resume_sections/`、`applications/{Company}/`）。
+3. 运行 `/ingest <你的简历路径>`（指向存放过往简历的文件夹）在该文件夹里构建
    `resume_sections/`。
-3. 检查 `resume_sections/profile.yml` —— 确认你的联系方式、规范的公司名称、职位名称和
+4. 检查 `resume_sections/profile.yml` —— 确认你的联系方式、规范的公司名称、职位名称和
    任职日期。
-4. 检查 `resume_sections/factual-bounds.md` —— 约束每一份生成文档的“绝不声称”规则。
+5. 检查 `resume_sections/factual-bounds.md` —— 约束每一份生成文档的“绝不声称”规则。
 
 ### 用内置样例试跑
 

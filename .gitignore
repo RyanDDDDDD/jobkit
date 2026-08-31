@@ -1,14 +1,16 @@
-# --- Private candidate data (never committed) ---
-/docs/
+# --- Local working data / test output (never committed) ---
+# The plugin writes candidate data and generated documents to its *working
+# directory*. Running the skills from inside this repo during development drops
+# them here; real use happens in a separate private folder.
 /resume_sections/
 /applications/
-/CLAUDE.md
 /all cv/
-/CVT/
-/interview_playbook.md
-/.agents/
-/.superpowers/
 /jobapp.config.yml
+/interview_playbook.md
+
+# --- Working notes ---
+/docs/
+/.superpowers/
 
 # --- Build artefacts ---
 *.aux

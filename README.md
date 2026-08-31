@@ -48,15 +48,22 @@ claude plugin install job-application
 
 ## Setup
 
-1. Optional: copy `jobapp.config.example.yml` to `jobapp.config.yml` (git-ignored) if
-   you want non-default paths — `browser_path`, `ghostscript_path`,
-   `source_of_truth_dir`, `output_dir`. Skip this to use the defaults
-   (`resume_sections/`, `applications/{Company}/`).
-2. Run `/ingest <path to your CVs>` (pointing at a folder of your past CVs) to build
-   `resume_sections/`.
-3. Review `resume_sections/profile.yml` — confirm your contact details, canonical
+The plugin holds no candidate data. It reads its assets from where it is installed
+(`${CLAUDE_PLUGIN_ROOT}`, read-only) and reads/writes **everything else — your source
+of truth and every generated document — in the directory you run Claude Code from**,
+resolved by `Get-JobAppConfig` walking up for `jobapp.config.yml`.
+
+1. Make a private working folder (e.g. `~/job-hunt/`) and run Claude Code there. Keep
+   it separate from this repo; nothing you generate belongs in the plugin.
+2. Optional: copy `jobapp.config.example.yml` into it as `jobapp.config.yml` if you
+   want non-default paths — `browser_path`, `ghostscript_path`, `source_of_truth_dir`,
+   `output_dir`. Skip it to use the defaults (`resume_sections/`,
+   `applications/{Company}/`).
+3. Run `/ingest <path to your CVs>` (pointing at a folder of your past CVs) to build
+   `resume_sections/` in that folder.
+4. Review `resume_sections/profile.yml` — confirm your contact details, canonical
    company names, job titles, and employment dates.
-4. Review `resume_sections/factual-bounds.md` — the "never claim" rules that constrain
+5. Review `resume_sections/factual-bounds.md` — the "never claim" rules that constrain
    every generated document.
 
 ### Try it against the bundled fixture

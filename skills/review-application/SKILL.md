@@ -26,11 +26,14 @@ three is missing, tell the user to run `/generate` for that company first and st
   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`,
   `${CLAUDE_PLUGIN_ROOT}/reference/ats-checklist.md`).
 - **Source-of-truth dir** and **output dir**: dot-source
-  `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`. Take
-  `.SourceOfTruthDir` (default `resume_sections/`) and `.OutputDir` (default
-  `applications/{Company}`). Resolve `{dir}` by substituting the literal token
-  `{Company}` in `.OutputDir` with the company name, exactly as `jd-intake` and
-  `generate` do (e.g. `applications/Testco`).
+  `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`. It returns
+  `Root` (the directory where `jobapp.config.yml` was found by walking up from the
+  current working directory, or `(Get-Location).Path` if none), `SourceOfTruthDir`
+  (default `resume_sections/`), and `OutputDir` (default `applications/{Company}`).
+  The source-of-truth dir is `<Root>/<SourceOfTruthDir>`. `profile.yml` has **no**
+  `output_dir` key — resolve `{dir}` by substituting the literal token `{Company}` in
+  `.OutputDir` with the company name and joining onto `.Root`
+  (e.g. `<Root>/applications/Testco`), exactly as `jd-intake` and `generate` do.
 
 ## Load context first
 

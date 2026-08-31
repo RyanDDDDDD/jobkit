@@ -299,6 +299,8 @@ hand-off medium between pipeline stages.
 
 ## 7. Scripts (`scripts/`, PowerShell)
 
+> **Superseded for the rendering layer by [`docs/superpowers/specs/2026-09-01-html-document-layer-design.md`](2026-09-01-html-document-layer-design.md).** `compile_latex.ps1` is replaced by `render_pdf.ps1` (headless-Chromium HTML→PDF); `pdflatex_path` becomes `browser_path`.
+
 | Script | Purpose |
 |--------|---------|
 | `compile_latex.ps1 <file.tex>` | Auto-detect `pdflatex` (TinyTeX `$APPDATA` path, then PATH). Run twice for refs. Return page count. Fail loud with log tail on error; leave `.tex` intact. |
@@ -312,6 +314,8 @@ Windows + TinyTeX assumption documented in `README.md`. `pdflatex_path` overrida
 ---
 
 ## 8. Templates (`templates/`)
+
+> **Superseded for the rendering layer by [`docs/superpowers/specs/2026-09-01-html-document-layer-design.md`](2026-09-01-html-document-layer-design.md).** The three `.tex` templates collapse into `templates/resume.html` + `templates/cover_letter.html` (single-placeholder JSON + inline renderer, bundled fonts).
 
 Current `{{PLACEHOLDER}}` `.tex` files become the shipped defaults:
 `resume_1page.tex`, `resume_2page.tex`, `cover_letter.tex`. A user's repo-level
@@ -334,6 +338,8 @@ Current `{{PLACEHOLDER}}` `.tex` files become the shipped defaults:
 ---
 
 ## 10. Testing
+
+> **Superseded for the rendering layer by [`docs/superpowers/specs/2026-09-01-html-document-layer-design.md`](2026-09-01-html-document-layer-design.md).** `run-pipeline.ps1` now renders `templates/*.html` with the `example/*.data.json` fixtures via `render_pdf.ps1`; `compile_latex.Tests.ps1` is replaced by `render_pdf.Tests.ps1`.
 
 - **Fixture:** `example/` — synthetic candidate "Sample Dev", 2 sample input CVs,
   1 sample JD, an `example/factual-bounds.md` with a deliberately testable rule.

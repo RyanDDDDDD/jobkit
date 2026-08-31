@@ -8,7 +8,13 @@ applicant-tracking systems (ATS) and readable by a human screener.
 ## Layout
 
 - [ ] **Single-column layout.** No sidebars. Multi-column resumes are frequently
-      reordered or scrambled by ATS text extraction.
+      reordered or scrambled by ATS text extraction. The bundled
+      `templates/resume.html` is single-column with standard headings by
+      construction — a repo-level `templates/` override must keep that.
+- [ ] **The generated PDF is text-extractable.** `render_pdf.ps1` produces PDFs
+      whose text `pdftotext -enc UTF-8` round-trips, CJK included. Never bake résumé
+      text into an image, and avoid multi-column layouts or content trapped in
+      floats — both defeat ATS extraction.
 - [ ] **No content locked inside tables, text boxes, headers/footers, or images.**
       All text — including contact details, dates, and skills — sits in the normal
       document body. A screen reader or copy-paste must recover every word in order.

@@ -105,5 +105,6 @@ Conduct a live mock interview in the chat.
 - `research` writes only `{dir}/company_research.md`; `prep` writes only
   `{dir}/self_intro.md` and `{dir}/hr_questions_prep.md`; `mock` writes only
   (appends to) `interview_playbook.md`. None of them touch `{sourceDir}`, `jd.md`,
-  `analysis.md`, `resume.tex`, or `cover_letter.tex`.
+  `analysis.md`, `resume.data.json` / `resume.pdf`, or `cover_letter.data.json` /
+  `cover_letter.pdf`.
 - English-only output regardless of the conversation language.

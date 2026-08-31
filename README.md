@@ -1,3 +1,5 @@
+[English](README.md) | [中文](README.zh-CN.md)
+
 # job-application
 
 ## What it is
@@ -5,7 +7,7 @@
 `job-application` is a Claude Code plugin that turns a folder of your past CVs into a
 tailored application for every job you apply to. It bundles five skills — `ingest`,
 `jd-intake`, `generate`, `review-application`, and `interview` — plus supporting
-scripts, LaTeX templates, and subagents. `ingest` consolidates your historical CVs into
+scripts, HTML templates, and subagents. `ingest` consolidates your historical CVs into
 a structured source-of-truth directory; `jd-intake` analyses a job description against
 it; `generate` produces a tailored resume and cover letter; `review-application` runs a
 QA gate over the result; and `interview` handles company research, question prep, and
@@ -15,11 +17,13 @@ repo and is never shipped with the plugin.
 ## Prerequisites
 
 - Windows with PowerShell 7 (`pwsh`).
-- [TinyTeX](https://yihui.org/tinytex/) with `pdflatex` on the path (or configured via
-  `jobapp.config.yml`) — used by `scripts/compile_latex.ps1` to build the PDFs.
+- **A Chromium browser** — Microsoft Edge (preinstalled on Windows), Google Chrome, or
+  Chromium — used by `scripts/render_pdf.ps1` to render the HTML templates to PDF.
+  Auto-detected from Program Files / PATH, or set `browser_path` in
+  `jobapp.config.yml`.
 - [Ghostscript](https://www.ghostscript.com/) (`gs` / `gswin64c` on the path) — used
-  by `scripts/compress_pdf.ps1` to shrink the built PDFs. This step needs Ghostscript,
-  not TinyTeX; a full TinyTeX install also satisfies it because it bundles a `ps2pdf`
+  by `scripts/compress_pdf.ps1` to shrink the rendered PDFs. This step needs
+  Ghostscript; a full TinyTeX install also satisfies it because it bundles a `ps2pdf`
   wrapper around Ghostscript, which the script will use as a fallback.
 - Optional: `pdftotext` (Poppler) and/or `pandoc` for ingesting `.pdf` and `.docx`
   source CVs. Plain `.tex` / `.md` CVs need neither.
@@ -43,8 +47,9 @@ claude plugin install job-application
 ## Setup
 
 1. Optional: copy `jobapp.config.example.yml` to `jobapp.config.yml` (git-ignored) if
-   you want non-default paths — `pdflatex_path`, `source_of_truth_dir`, `output_dir`.
-   Skip this to use the defaults (`resume_sections/`, `applications/{Company}/`).
+   you want non-default paths — `browser_path`, `ghostscript_path`,
+   `source_of_truth_dir`, `output_dir`. Skip this to use the defaults
+   (`resume_sections/`, `applications/{Company}/`).
 2. Run `/ingest <path to your CVs>` (pointing at a folder of your past CVs) to build
    `resume_sections/`.
 3. Review `resume_sections/profile.yml` — confirm your contact details, canonical
@@ -66,18 +71,21 @@ One pass per job, in order:
 ```
 /ingest <folder>                       # once (or after adding a new CV): build resume_sections/
 /jd-intake                             # paste the job description, name the company
-/generate [--length 1|2] [--with-projects]   # resume.tex/pdf + cover_letter.tex/pdf/txt
+/generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
 /review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
 /interview research|prep|mock          # company research | self-intro + HR prep | mock interview
 ```
 
-- `/generate` flags: `--length` sets the résumé page target (default from
-  `profile.yml`); `--with-projects` adds the Personal Projects section and implies
-  `--length 2`; `--order relevance|chronological` sets experience ordering;
-  `--answers "Q1; Q2"` also writes `answers.md`.
+- `/generate` flags: `--density compact|standard` sets the résumé spacing (default
+  from `profile.yml`); `--lang zh` produces a Chinese résumé and cover letter (body
+  text translated from your English source of truth); `--with-projects` adds a
+  Selected Projects section built from the JD-relevant `projects/*.md`;
+  `--max-pages N` is a soft page ceiling (a warning, never a truncation);
+  `--order relevance|chronological` sets experience ordering; `--answers "Q1; Q2"`
+  also writes `answers.md`.
 - `/review-application --fix` applies only unambiguous safe corrections (present-tense
   bullets in past roles, fields that disagree with `profile.yml`, a stale
-  `cover_letter.txt`), recompiles, and re-runs the checks once.
+  `cover_letter.txt`), re-renders, and re-runs the checks once.
 - `/interview` subcommands: `research` dispatches the `company-researcher` subagent to
   `{dir}/company_research.md`; `prep` writes `{dir}/self_intro.md` and
   `{dir}/hr_questions_prep.md`; `mock` runs a résumé-grounded mock interview with
@@ -85,9 +93,9 @@ One pass per job, in order:
   your repo root (seeded on first use from the plugin's `interview-frameworks.md`).
 
 Every application's files land in one directory — `applications/{Company}/` by
-default (`jd.md`, `analysis.md`, `resume.tex/pdf`, `cover_letter.tex/pdf/txt`,
-`review.md`, and the interview-prep files). Override the location with `output_dir`
-in `jobapp.config.yml`.
+default (`jd.md`, `analysis.md`, `resume.data.json/pdf`,
+`cover_letter.data.json/pdf/txt`, `review.md`, and the interview-prep files).
+Override the location with `output_dir` in `jobapp.config.yml`.
 
 ## The `resume_sections/` contract
 
@@ -113,10 +121,11 @@ All mechanical tests run from one entry point — plain PowerShell, no Pester:
 pwsh tests/run-pipeline.ps1
 ```
 
-It smoke-fills and compiles the three shipped LaTeX templates (asserting the 1-page
-résumé is exactly one page), exercises `cover_letter_to_txt.ps1` and
+It renders the bundled HTML templates with the `example/*.data.json` fixtures
+(asserting the résumé is one page), exercises `cover_letter_to_txt.ps1` and
 `Get-JobAppConfig`, and then runs each `tests/scripts/*.Tests.ps1`, folding their
-exit codes into the pass/fail count. Exit 0 means every check passed.
+exit codes into the pass/fail count. Exit 0 means every check passed. The render
+checks skip cleanly on a machine with no Chromium browser.
 
 The synthetic candidate fixture the skills' expected-output checklists
 (`tests/skills/*.expected.md`) are written against lives under `example/`

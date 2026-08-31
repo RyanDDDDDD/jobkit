@@ -1,0 +1,89 @@
+{
+  "name": "Sample Dev",
+  "lang": "zh",
+  "density": "compact",
+  "introTitle": "简介",
+  "contact": [
+    "(+00) 000-000-000",
+    { "text": "sample.dev@example.com", "href": "mailto:sample.dev@example.com" },
+    { "text": "github.com/sample-dev", "href": "https://github.com/sample-dev" }
+  ],
+  "intro": [
+    {
+      "lead": "后端软件工程师",
+      "text": "拥有 4 年以上专业经验，使用 C#（.NET）和 Python 构建及调用 REST API 与集成服务。"
+    },
+    {
+      "lead": "系统集成方向",
+      "text": "通过 REST API 与基于消息的管道，连接第三方承运商、ERP 及内部系统。"
+    },
+    {
+      "lead": "数据层",
+      "text": "在 PostgreSQL 与 SQL Server 上进行关系型架构设计与复杂 SQL 开发，支撑客户报表与合规数据导出。"
+    }
+  ],
+  "sections": [
+    {
+      "title": "工作经验",
+      "type": "entries",
+      "items": [
+        {
+          "primary": "Software Engineer",
+          "dates": "Jan. 2024 – Present",
+          "secondary": "Acme Corp",
+          "location": "Sydney, Australia",
+          "stackLabel": "技术栈",
+          "stack": "C#/.NET、Python（FastAPI）、REST API、PostgreSQL、SQL、Docker、GitHub Actions、Azure、React",
+          "bullets": [
+            "使用 C#/.NET 和 Python/FastAPI 设计并构建 REST API，将外部承运商与 ERP 系统集成进货运跟踪平台。",
+            "设计 PostgreSQL 数据库架构，编写复杂的分析型 SQL 查询，为面向客户的报表看板提供支持。",
+            "搭建并维护 GitHub Actions 流水线，完成构建、测试与容器化部署到 Azure，消除手动发布步骤。"
+          ]
+        },
+        {
+          "primary": "Junior Developer",
+          "dates": "Feb. 2022 – Dec. 2023",
+          "secondary": "Globex Pty Ltd",
+          "location": "Sydney, Australia",
+          "stackLabel": "技术栈",
+          "stack": "C#/.NET、Python、REST API、SQL Server、JavaScript、Docker、Azure DevOps",
+          "bullets": [
+            "使用 C#/.NET 为理赔受理服务开发 REST API 接口，供内部 Web 与移动客户端调用。",
+            "编写 SQL Server 存储过程与查询，用于理赔数据提取与合规报送。",
+            "用 Python 脚本自动化数据迁移与对账工作，替代原有的手工电子表格流程。"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "教育背景",
+      "type": "education",
+      "items": [
+        {
+          "institution": "Example University",
+          "dates": "2018 – 2021",
+          "credential": "计算机科学学士",
+          "location": "Sydney, Australia"
+        }
+      ]
+    },
+    {
+      "title": "技能",
+      "type": "skills",
+      "groups": [
+        {
+          "label": "核心语言",
+          "value": "C#（.NET Framework / .NET Core）、Python、SQL、JavaScript、TypeScript、HTML/CSS"
+        },
+        {
+          "label": "框架与库",
+          "value": "ASP.NET Core、FastAPI、React、Node.js"
+        },
+        {
+          "label": "工具、DevOps 与云",
+          "value": "Docker、GitHub Actions、Azure DevOps、Azure（App Service、Blob Storage）、Git/GitHub、pytest、xUnit"
+        }
+      ]
+    }
+  ]
+}

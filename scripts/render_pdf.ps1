@@ -81,13 +81,23 @@ function Invoke-RenderPdf {
     $stdout = ''; $stderr = ''
     try {
       $proc = [System.Diagnostics.Process]::Start($psi)
-      # Drain stdout async so a full stderr pipe buffer cannot deadlock the child
-      # (and vice versa) before it exits.
+      # Drain both pipes async so neither a full stdout nor a full stderr buffer can
+      # deadlock the child before it exits.
       $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
-      $stderr = $proc.StandardError.ReadToEnd()
-      $proc.WaitForExit()
-      $stdout = $stdoutTask.GetAwaiter().GetResult()
-      $exit = $proc.ExitCode
+      $stderrTask = $proc.StandardError.ReadToEndAsync()
+      # Bound the wall-clock life of the process: --virtual-time-budget caps page time,
+      # not process life, so a wedged headless Edge would otherwise hang /generate forever.
+      if ($proc.WaitForExit(60000)) {
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        $exit = $proc.ExitCode
+      } else {
+        try { $proc.Kill() } catch {}
+        try { $stdout = $stdoutTask.GetAwaiter().GetResult() } catch { $stdout = '' }
+        try { $stderr = $stderrTask.GetAwaiter().GetResult() } catch { $stderr = '' }
+        $stderr = ("render_pdf: headless browser did not exit within 60s; killed.`n" + $stderr).Trim()
+        $exit = 1
+      }
     } catch {
       $stderr = $_.Exception.Message
       $exit = 1

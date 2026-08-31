@@ -190,7 +190,7 @@
         if (it.stack) {
           var p = el("p", "stack");
           p.appendChild(el("span", "lbl", it.stackLabel || "Stack"));
-          p.appendChild(document.createTextNode(it.stack));
+          p.appendChild(document.createTextNode(it.stack || ""));
           e.appendChild(p);
         }
         if (it.bullets && it.bullets.length) {
@@ -220,8 +220,8 @@
     skills: function (sec) {
       return frag(sec.groups, function (g) {
         var p = el("p");
-        p.appendChild(el("span", "lbl", g.label));
-        p.appendChild(document.createTextNode(g.value));
+        p.appendChild(el("span", "lbl", g.label || ""));
+        p.appendChild(document.createTextNode(g.value || ""));
         return p;
       });
     },

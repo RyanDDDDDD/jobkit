@@ -25,6 +25,8 @@
   文本，`ingest` 用它导入 `.pdf` 格式的源简历。
 - 可选：`pandoc`，用于导入 `.docx` 格式的源简历。纯 `.tex` / `.md` 简历既不需要它，也不
   需要 `pdftotext`。
+- 使用 `--lang zh` 时，需要系统安装一款 CJK 衬线字体（如 Noto Serif CJK / 思源宋体）——
+  裸 Linux / CI 机器需要手动安装；Windows 和 macOS 自带。
 
 ## 安装
 
@@ -58,8 +60,9 @@ claude plugin install job-application
 
 在把插件对准你自己的数据之前，先用 `example/` 里的合成候选人跑一遍：
 `/ingest example/raw_cvs` 构建事实来源，然后对 `example/sample-jd.md` 运行 `/jd-intake`
-（公司填 “Meridian Integration Partners”），再运行 `/generate` —— 你会得到虚构的
-“Sample Dev” 的完整简历和求职信，并能从头到尾看到整条流水线。
+并把公司命名为 `Testco`（样例 JD 是为虚构的 “Meridian Integration Partners” 写的，你把这份
+申请命名为 `Testco`），再运行 `/generate` —— 你会得到虚构的 “Sample Dev” 的完整简历和求职信，
+并能从头到尾看到整条流水线。
 
 ## 日常使用
 

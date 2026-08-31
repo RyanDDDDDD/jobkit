@@ -15,6 +15,7 @@
 *.log
 *.out
 *.synctex.gz
+*.rendered.html
 
 # --- Keep tracked ---
 !/docs/

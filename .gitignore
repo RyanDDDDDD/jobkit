@@ -17,6 +17,7 @@
 *.out
 *.synctex.gz
 *.rendered.html
+/templates/preview/
 
 # --- Keep tracked ---
 !/example/

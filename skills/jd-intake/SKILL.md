@@ -18,8 +18,8 @@ from memory of the conversation.
    - Dot-source `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1` and call
      `Get-JobAppConfig`. It returns a `Root` key — the directory where
      `jobapp.config.yml` was found by walking up from the current working directory,
-     or `(Get-Location).Path` if none is found — plus `PdflatexPath`,
-     `SourceOfTruthDir`, and `OutputDir`.
+     or `(Get-Location).Path` if none is found — plus `BrowserPath`,
+     `GhostscriptPath`, `SourceOfTruthDir`, and `OutputDir`.
    - Take `.OutputDir` (default `applications/{Company}`), substitute the literal
      token `{Company}` with the company name, then join onto `.Root`: `{dir}` is
      `<Root>/<OutputDir with {Company} substituted>` (e.g.

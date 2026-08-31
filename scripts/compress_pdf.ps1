@@ -11,7 +11,7 @@ if (-not (Test-Path $PdfPath)) {
 }
 
 $cfg = Get-JobAppConfig
-$gs = Resolve-Ghostscript -Hint $cfg.PdflatexPath   # throws a clear error if none resolve
+$gs = Resolve-Ghostscript -Hint $cfg.GhostscriptPath   # throws a clear error if none resolve
 
 $pdfAbsPath = (Resolve-Path $PdfPath).Path
 $tempPath = [System.IO.Path]::ChangeExtension($pdfAbsPath, "temp.pdf")

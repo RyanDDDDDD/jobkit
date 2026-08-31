@@ -1,7 +1,8 @@
 function Get-JobAppConfig {
     $defaults = @{
         Root             = (Get-Location).Path
-        PdflatexPath     = $null
+        BrowserPath      = $null
+        GhostscriptPath  = $null
         SourceOfTruthDir = "resume_sections"
         OutputDir        = "applications/{Company}"
     }
@@ -15,7 +16,8 @@ function Get-JobAppConfig {
                 $k, $v = $line -split ':', 2
                 $v = $v.Trim().Trim('"').Trim("'")
                 switch ($k.Trim()) {
-                    'pdflatex_path'       { $defaults.PdflatexPath = [Environment]::ExpandEnvironmentVariables($v) }
+                    'browser_path'        { $defaults.BrowserPath = [Environment]::ExpandEnvironmentVariables($v) }
+                    'ghostscript_path'    { $defaults.GhostscriptPath = [Environment]::ExpandEnvironmentVariables($v) }
                     'source_of_truth_dir' { $defaults.SourceOfTruthDir = $v }
                     'output_dir'          { $defaults.OutputDir = $v }
                 }
@@ -29,15 +31,23 @@ function Get-JobAppConfig {
     return $defaults
 }
 
-function Resolve-Pdflatex {
+function Resolve-Browser {
+    # Locate a headless-capable Chromium binary for render_pdf.ps1.
+    # Order: config hint; Edge (per-machine, both Program Files roots); Chrome
+    # (both roots); then PATH (msedge / chrome / chromium / chromium-browser).
     param([string]$Hint)
     $candidates = @()
     if ($Hint) { $candidates += $Hint }
-    $candidates += (Join-Path $env:APPDATA "TinyTeX/bin/windows/pdflatex.exe")
-    $cmd = Get-Command pdflatex -ErrorAction SilentlyContinue
-    if ($cmd) { $candidates += $cmd.Source }
+    $candidates += (Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe')
+    $candidates += (Join-Path $env:ProgramFiles       'Microsoft\Edge\Application\msedge.exe')
+    $candidates += (Join-Path $env:ProgramFiles       'Google\Chrome\Application\chrome.exe')
+    $candidates += (Join-Path ${env:ProgramFiles(x86)} 'Google\Chrome\Application\chrome.exe')
+    foreach ($name in 'msedge', 'chrome', 'chromium', 'chromium-browser') {
+        $cmd = Get-Command $name -ErrorAction SilentlyContinue
+        if ($cmd) { $candidates += $cmd.Source }
+    }
     foreach ($c in $candidates) { if ($c -and (Test-Path $c)) { return $c } }
-    throw "pdflatex not found. Set pdflatex_path in jobapp.config.yml."
+    throw "No Chromium browser found. Set browser_path in jobapp.config.yml."
 }
 
 function Resolve-Ghostscript {
@@ -60,5 +70,5 @@ function Resolve-Ghostscript {
         if ($cmd) { $candidates += @{ Path = $cmd.Source; Direct = ($name -ne 'ps2pdf') } }
     }
     foreach ($c in $candidates) { if ($c.Path -and (Test-Path $c.Path)) { return $c } }
-    throw "compress_pdf: no PDF compressor found. Install Ghostscript (gs / gswin64c on PATH) or TinyTeX (bundles ps2pdf), or set pdflatex_path in jobapp.config.yml."
+    throw "compress_pdf: no PDF compressor found. Install Ghostscript (gs / gswin64c on PATH) or TinyTeX (bundles ps2pdf), or set ghostscript_path in jobapp.config.yml."
 }

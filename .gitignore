@@ -1,0 +1,18 @@
+# --- Private candidate data (never committed) ---
+/resume_sections/
+/all cv/
+/CVT/
+/jobApplication - dont refer from this folder/
+/interview_playbook.md
+/.agents/
+/jobapp.config.yml
+
+# --- Build artefacts ---
+*.aux
+*.log
+*.out
+*.synctex.gz
+
+# --- Keep tracked ---
+!/docs/
+!/example/

@@ -1,0 +1,5 @@
+# Copy to jobapp.config.yml (git-ignored) to override machine/repo defaults.
+# All keys optional.
+pdflatex_path: "%APPDATA%/TinyTeX/bin/windows/pdflatex.exe"
+source_of_truth_dir: "resume_sections"
+output_dir: "applications/{Company}"

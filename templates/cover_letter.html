@@ -79,8 +79,13 @@
 (function () {
   "use strict";
   var data;
-  try { data = JSON.parse(document.getElementById("cover-letter-data").textContent); }
-  catch (e) { document.getElementById("letter").textContent = "Invalid cover letter JSON: " + e.message; return; }
+  try {
+    data = JSON.parse(document.getElementById("cover-letter-data").textContent);
+    if (!data || typeof data !== "object") throw new Error("expected a JSON object");
+  } catch (e) {
+    document.getElementById("letter").textContent = "Invalid cover letter JSON: " + e.message;
+    return;
+  }
 
   var root = document.getElementById("letter");
   if (data.lang) document.documentElement.setAttribute("lang", data.lang);
@@ -107,7 +112,7 @@
 
   /* ---------- date + recipient ---------- */
   var meta = el("div", "meta");
-  if (data.date) meta.appendChild(el("div", "date", (isZh ? "" : "Date: ") + data.date));
+  if (data.date) meta.appendChild(el("div", "date", (isZh ? "日期：" : "Date: ") + data.date));
   var recip = el("div", "recipient");
   (data.recipient || []).forEach(function (line) { recip.appendChild(el("div", null, line)); });
   meta.appendChild(recip);

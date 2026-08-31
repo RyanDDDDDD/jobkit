@@ -120,8 +120,13 @@
 (function () {
   "use strict";
   var data;
-  try { data = JSON.parse(document.getElementById("resume-data").textContent); }
-  catch (e) { document.getElementById("resume").textContent = "Invalid resume JSON: " + e.message; return; }
+  try {
+    data = JSON.parse(document.getElementById("resume-data").textContent);
+    if (!data || typeof data !== "object") throw new Error("expected a JSON object");
+  } catch (e) {
+    document.getElementById("resume").textContent = "Invalid resume JSON: " + e.message;
+    return;
+  }
 
   var root = document.getElementById("resume");
   if (data.density === "compact") document.body.classList.add("compact");

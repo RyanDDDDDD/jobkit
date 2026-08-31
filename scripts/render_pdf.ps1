@@ -75,10 +75,13 @@ function Invoke-RenderPdf {
     $exit = 1
     $stdout = ''; $stderr = ''
     try {
-      $proc   = [System.Diagnostics.Process]::Start($psi)
-      $stdout = $proc.StandardOutput.ReadToEnd()
+      $proc = [System.Diagnostics.Process]::Start($psi)
+      # Drain stdout async so a full stderr pipe buffer cannot deadlock the child
+      # (and vice versa) before it exits.
+      $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
       $stderr = $proc.StandardError.ReadToEnd()
       $proc.WaitForExit()
+      $stdout = $stdoutTask.GetAwaiter().GetResult()
       $exit = $proc.ExitCode
     } catch {
       $stderr = $_.Exception.Message

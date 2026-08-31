@@ -30,6 +30,13 @@ function ConvertTo-CoverLetterText {
         [string]$OutPath
     )
     $d = Get-Content -Raw -LiteralPath $DataPath | ConvertFrom-Json
+    # Reject valid-but-non-object JSON (null / "x" / 123 / [ ]) — mirrors the
+    # `if (!data || typeof data !== "object")` guard in templates/cover_letter.html.
+    # NB: the [pscustomobject] accelerator is [psobject], which -is matches for scalars
+    # too; the fully-qualified PSCustomObject type is the one that means "JSON object".
+    if ($d -isnot [System.Management.Automation.PSCustomObject]) {
+        throw "cover_letter.data.json is not a JSON object"
+    }
     if (-not $OutPath) {
         $OutPath = Join-Path (Split-Path -Parent (Resolve-Path -LiteralPath $DataPath).Path) 'cover_letter.txt'
     }
@@ -88,11 +95,14 @@ if (-not $AsModule) {
         exit 2
     }
     try {
+        if (-not $OutPath) {
+            $OutPath = Join-Path (Split-Path -Parent (Resolve-Path -LiteralPath $DataPath).Path) 'cover_letter.txt'
+        }
         ConvertTo-CoverLetterText -DataPath $DataPath -OutPath $OutPath | Out-Null
     }
     catch {
         [Console]::Error.WriteLine($_.Exception.Message)
         exit 1
     }
-    Write-Host "Wrote $(if ($OutPath) { $OutPath } else { 'cover_letter.txt' })"
+    Write-Host "Wrote $OutPath"
 }

@@ -47,8 +47,21 @@ try {
     Assert "minimal: does not throw"          (-not $threw)
     Assert "minimal: first line is Subject"   (($tm -split "`n")[0] -eq 'Subject: Y')
     Assert "minimal: no run of 3+ newlines"   ($tm -notmatch "`n`n`n")
+
+    # ---- 5. valid JSON that is not an object -> throws (mirrors cover_letter.html guard) ----
+    $jn = Join-Path $work "cl-null.json"
+    Set-Content -LiteralPath $jn -Encoding utf8 'null'
+    try { ConvertTo-CoverLetterText -DataPath $jn -OutPath (Join-Path $work "cl-null.txt") | Out-Null; $threwNull = $false }
+    catch { $threwNull = $true }
+    Assert "non-object (null): throws" $threwNull
+
+    $js = Join-Path $work "cl-str.json"
+    Set-Content -LiteralPath $js -Encoding utf8 '"hello"'
+    try { ConvertTo-CoverLetterText -DataPath $js -OutPath (Join-Path $work "cl-str.txt") | Out-Null; $threwStr = $false }
+    catch { $threwStr = $true }
+    Assert "non-object (bare string): throws" $threwStr
 }
 finally { Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue }
 
-if ($fail) { Write-Error "$fail assertion(s) failed"; exit 1 }
+if ($fail) { [Console]::Error.WriteLine("$fail assertion(s) failed"); exit 1 }
 Write-Host "all assertions passed" -ForegroundColor Green

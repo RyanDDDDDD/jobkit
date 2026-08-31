@@ -61,7 +61,7 @@ claude plugin install job-application
 
 Before pointing the plugin at your own data, run it against the synthetic candidate in
 `example/`: `/ingest example/raw_cvs` to build the source of truth, then `/jd-intake`
-on `example/sample-jd.md` (company "Testco"), then `/generate` — you get a full resume
+on `example/sample-jd.md` (company "Meridian Integration Partners"), then `/generate` — you get a full resume
 + cover letter for a fictional "Sample Dev" and can see the whole pipeline end to end.
 
 ## Daily use

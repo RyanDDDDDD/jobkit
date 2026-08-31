@@ -43,7 +43,7 @@ sub-service scopes) does **not** belong here — it belongs in that user's
 
 ## 4. English-only output
 
-All generated application content (resume PDF/LaTeX, cover letter, plain-text
+All generated application content (resume PDF, cover letter, plain-text
 versions, Word text) must be in English, regardless of the conversation language.
 
 ## 5. Save the job description

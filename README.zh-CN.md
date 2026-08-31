@@ -56,8 +56,8 @@ claude plugin install job-application
 
 在把插件对准你自己的数据之前，先用 `example/` 里的合成候选人跑一遍：
 `/ingest example/raw_cvs` 构建事实来源，然后对 `example/sample-jd.md` 运行 `/jd-intake`
-（公司填 “Testco”），再运行 `/generate` —— 你会得到虚构的 “Sample Dev” 的完整简历和
-求职信，并能从头到尾看到整条流水线。
+（公司填 “Meridian Integration Partners”），再运行 `/generate` —— 你会得到虚构的
+“Sample Dev” 的完整简历和求职信，并能从头到尾看到整条流水线。
 
 ## 日常使用
 

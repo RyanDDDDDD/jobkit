@@ -18,6 +18,8 @@ section presence, and table shape, not exact prose.
    these level-2 headings:
    `## Essential`, `## Desirable`, `## Responsibilities`, `## Keywords`,
    `## Language / Stack emphasis`, `## Criteria → Evidence`, `## Fit`, `## Framing`.
+   The `## Essential` section is a numbered list (`1.`, `2.`, …), giving each
+   essential criterion a stable ordinal the table rows and later sections refer to.
 
 3. **`## Criteria → Evidence` table is honest about the gaps.** The table under
    `## Criteria → Evidence` has a `Criterion | Evidence (file:line) | Status` header
@@ -43,10 +45,13 @@ section presence, and table shape, not exact prose.
      (`example/resume_sections/factual-bounds.md` forbids claiming Rust, and the JD
      does not ask for it).
 
-4. **`## Fit` is `stretch`.** The `## Fit` section's classification token is exactly
-   `stretch` (lowercase) — not `strong`, not `hard-mismatch`. Three of five
-   essentials are met and only one criterion is a true gap, but the iPaaS shortfall
-   and the healthcare-interop gap keep it below `strong`; the candidate's four-plus
-   years of hands-on systems-integration work (REST APIs, message pipelines,
-   third-party carrier/ERP integration) is a credible transferable story, so it is
-   not a `hard-mismatch`.
+4. **`## Fit` is `stretch`.** Take the first non-blank line of the `## Fit` section
+   body, split it on whitespace; the first token, lowercased and stripped of
+   trailing punctuation, is exactly `stretch` — not `strong`, not `hard-mismatch`.
+   The line follows the form `<token> — <one-sentence reason>` with nothing before
+   the token (no bullet, no bold, no `Fit:` prefix). Three of five essentials are
+   met and only one criterion is a true gap, but the iPaaS shortfall and the
+   healthcare-interop gap keep it below `strong`; the candidate's four-plus years of
+   hands-on systems-integration work (REST APIs, message pipelines, third-party
+   carrier/ERP integration) is a credible transferable story, so it is not a
+   `hard-mismatch`.

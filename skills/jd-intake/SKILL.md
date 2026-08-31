@@ -31,9 +31,10 @@ from memory of the conversation.
 
 3. **Extract the JD structure into `{dir}/analysis.md`.** Write these sections, in
    this order:
-   - `## Essential` — the must-have criteria, bulleted, verbatim where possible.
-     Number them if the JD numbers them, so later sections can refer to "essential
-     #4".
+   - `## Essential` — the must-have criteria. **Always emit this as a numbered list
+     (`1.` `2.` …), regardless of the JD's own formatting**, so later sections and
+     downstream steps have a stable anchor like "essential criterion 4". Verbatim
+     wording where possible.
    - `## Desirable` — the nice-to-have criteria.
    - `## Responsibilities` — what the person will actually do day to day.
    - `## Keywords` — the concrete skills, tools, and domain terms an ATS would scan
@@ -49,6 +50,12 @@ from memory of the conversation.
      It returns the most relevant bullets per section, each annotated with its
      `file:line`, plus a `## Gaps` list of things the JD asks for that are absent
      from the source of truth.
+   - The retriever returns bullets grouped by source file plus a `## Gaps` block; it
+     does **not** emit a status. You must re-pivot that output onto one row per
+     essential criterion, and YOU assign each row's Status (`met` / `partial` /
+     `gap`) by judging whether the cited bullets actually satisfy that criterion. A
+     criterion with no supporting bullet and a matching entry in the retriever's
+     `## Gaps` block is `gap`.
    - Append `## Criteria → Evidence` to `analysis.md`: a table with columns
      `Criterion | Evidence (file:line) | Status`. One row per **essential**
      criterion (add desirable criteria as extra rows only if they materially affect
@@ -63,15 +70,21 @@ from memory of the conversation.
    - Every `met` and `partial` row MUST cite a real `file:line` that exists in the
      source-of-truth directory. Never write a `file:line` you have not confirmed.
 
-5. **Write `## Fit`.** State one classification token — exactly one of:
+5. **Write `## Fit`.** Write the classification as the FIRST word of the section's
+   first line, followed by ` — ` and the one-sentence reason. Exactly:
+   `<token> — <reason>` where `<token>` is one of `strong` / `stretch` /
+   `hard-mismatch` (verbatim, lowercase). Nothing precedes the token on that line —
+   no bullet, no bold, no "Fit:" prefix. Later steps parse the first word of this
+   line, so a stray capitalised word (e.g. a criterion named "Strong relational
+   database skills") must never lead it.
    - `strong` — most essentials `met`, no hard gap.
    - `stretch` — real gaps, but a credible transferable story (adjacent tools or
      domain, clearly learnable from what is present).
    - `hard-mismatch` — an essential requires years of something entirely absent from
      the source of truth and there is no transferable bridge.
 
-   Follow the token with one sentence of reasoning that names the deciding
-   criteria. Use the token verbatim and lowercase — later steps parse this line.
+   Worked example:
+   `stretch — Meets the core API/SQL/Python essentials; the iPaaS and HL7/FHIR gaps are bridgeable with framing.`
 
 6. **Write `## Framing`.**
    - Which role(s) to lead with and why (relevance to this JD).

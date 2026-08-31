@@ -92,7 +92,6 @@ source-of-truth directory does not exist yet.
        - { institution: "<name>", credential: "<degree>", start: "<YYYY>", end: "<YYYY>", location: "<City, Country>" }
      default_resume_length: 1
      default_include_projects: false
-     output_dir: "applications/{Company}"
    ```
 
    - `links` is an inline map; today only `github` is used. Omit the key entirely
@@ -102,8 +101,10 @@ source-of-truth directory does not exist yet.
      `education.md`.
    - `default_resume_length` (pages, integer) and `default_include_projects`
      (boolean) are workflow defaults — use `1` and `false` unless the user says
-     otherwise. `output_dir` stays `"applications/{Company}"` unless the user
-     overrides it.
+     otherwise.
+   - `output_dir` is NOT part of `profile.yml` — it is machine/repo config in
+     `jobapp.config.yml` (resolved by `Get-JobAppConfig`, default
+     `applications/{Company}`). Do not write it here.
    - Dates: use the CV's own format normalised to `Mon. YYYY` (e.g. `Jan. 2024`),
      `Present` for a current role.
    - If a field is ambiguous or missing from the CVs, still write the key with your

@@ -148,7 +148,9 @@ Parse it with these exact rules:
      contain `Invalid resume JSON`, **and** it contains the candidate's `name` plus
      at least one company name from the experience section. If either check fails,
      treat it exactly like a render failure: surface it, keep the `.data.json`, do
-     not compress, do not claim success — fix the data and re-render.
+     not compress, do not claim success — fix the data and re-render. If `pdftotext`
+     is not available, state that explicitly in the report and mark the
+     text-extraction check as not-run — never assume it passed.
    - **Page count** is the integer in the `OK: … (N page…)` line. If it exceeds
      `--max-pages`: WARN the user and list candidate trims (drop the lowest-ranked
      bullet from each role, shorten the intro, drop a de-emphasized skill group). Do

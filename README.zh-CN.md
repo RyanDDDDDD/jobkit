@@ -21,8 +21,10 @@
 - [Ghostscript](https://www.ghostscript.com/)（`gs` / `gswin64c` 在 PATH 上）——
   由 `scripts/compress_pdf.ps1` 用来压缩渲染出的 PDF。这一步需要 Ghostscript；完整安装的
   TinyTeX 也能满足，因为它捆绑了一个包装 Ghostscript 的 `ps2pdf`，脚本会将其作为回退方案。
-- 可选：`pdftotext`（Poppler）和/或 `pandoc`，用于导入 `.pdf` 和 `.docx` 格式的源简历。
-  纯 `.tex` / `.md` 简历两者都不需要。
+- `pdftotext`（Poppler）—— `generate` 和 `review-application` 用它校验渲染出的 PDF 的
+  文本，`ingest` 用它导入 `.pdf` 格式的源简历。
+- 可选：`pandoc`，用于导入 `.docx` 格式的源简历。纯 `.tex` / `.md` 简历既不需要它，也不
+  需要 `pdftotext`。
 
 ## 安装
 

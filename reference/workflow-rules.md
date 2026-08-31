@@ -41,10 +41,14 @@ sub-service scopes) does **not** belong here — it belongs in that user's
 - When merging new material into the source of truth, collapse bullets that state
   the same accomplishment in different words into one canonical bullet.
 
-## 4. English-only output
+## 4. Output language
 
-All generated application content (resume PDF, cover letter, plain-text
-versions, Word text) must be in English, regardless of the conversation language.
+All generated application content (resume PDF, cover letter, plain-text versions,
+Word text) is in English by default, regardless of the conversation language.
+`generate --lang zh` is the one sanctioned exception: it produces a Chinese résumé
+and cover letter by faithfully translating the English source-of-truth content —
+never inventing detail to smooth a sentence. No other skill emits non-English
+content; a skill's own report / prep text stays English even under `--lang zh`.
 
 ## 5. Save the job description
 

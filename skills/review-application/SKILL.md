@@ -119,7 +119,9 @@ there is no markup to parse.
   cleanly. (Some ligature clusters — `ft`, `fi` — and a leading `+` do not survive
   `pdftotext` on the bundled fonts; do not assert on strings that contain them.
   Also assert the PDF text does **not** contain `Invalid resume JSON` — that string
-  is the renderer's fallback when the JSON is the wrong shape.)
+  is the renderer's fallback when the JSON is the wrong shape.) If `pdftotext` is not
+  available, state that explicitly in the report and mark the text-extraction check
+  as not-run — never assume it passed.
 - The bundled template is single-column with standard headings (`Introduction` /
   the experience title / `Skills` / `Education` / `Projects`) **by construction** —
   confirm the section `title`s in the JSON are conventional, not creative renames.
@@ -216,5 +218,8 @@ wording of an argument is a **Flag**, never a **Fix**.
   (or `## Fix` only when the safe correction is a verbatim `profile.yml` match).
 - A genuine, honestly-stated gap is the expected outcome for some criteria — do not
   flag an application for *not* claiming something it has no basis to claim.
-- English-only output. Full workflow rules:
-  `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`.
+- This skill's own `review.md` report text is English-only, regardless of the
+  conversation language. The résumé / cover-letter language is `generate`'s call
+  (`--lang zh` is a sanctioned Chinese output); when reviewing a `lang: "zh"`
+  application, check the translated strings, do not flag them for being Chinese.
+  Full workflow rules: `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`.

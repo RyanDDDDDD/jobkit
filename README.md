@@ -25,8 +25,10 @@ repo and is never shipped with the plugin.
   by `scripts/compress_pdf.ps1` to shrink the rendered PDFs. This step needs
   Ghostscript; a full TinyTeX install also satisfies it because it bundles a `ps2pdf`
   wrapper around Ghostscript, which the script will use as a fallback.
-- Optional: `pdftotext` (Poppler) and/or `pandoc` for ingesting `.pdf` and `.docx`
-  source CVs. Plain `.tex` / `.md` CVs need neither.
+- `pdftotext` (Poppler) — used by `generate` and `review-application` to verify the
+  rendered PDF's text, and by `ingest` for `.pdf` source CVs.
+- Optional: `pandoc` for ingesting `.docx` source CVs. Plain `.tex` / `.md` CVs need
+  neither it nor `pdftotext`.
 
 ## Install
 

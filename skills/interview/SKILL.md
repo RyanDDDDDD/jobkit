@@ -115,4 +115,7 @@ Conduct a live mock interview in the chat.
   (appends to) `interview_playbook.md`. None of them touch `{sourceDir}`, `jd.md`,
   `analysis.md`, `resume.data.json` / `resume.pdf`, or `cover_letter.data.json` /
   `cover_letter.pdf`.
-- English-only output regardless of the conversation language.
+- This skill's own output (`self_intro.md`, `hr_questions_prep.md`, the mock chat and
+  debrief, `interview_playbook.md` entries) is English-only regardless of the
+  conversation language. This is about the prep text itself — the résumé's language
+  is `generate`'s call.

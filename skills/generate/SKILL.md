@@ -1,6 +1,6 @@
 ---
 name: generate
-description: Produce a tailored resume, cover letter, and optional application-form answers for a job already analyzed by jd-intake. Compiles and compresses the PDFs.
+description: Produce a tailored resume, cover letter, and optional application-form answers for a job already analyzed by jd-intake. Renders and compresses the PDFs.
 ---
 
 ## When to use
@@ -11,39 +11,55 @@ if it is absent, tell the user to run `/jd-intake` first and stop.
 
 ## Flags
 
-- `--length 1|2` — résumé page target. Default: `profile.yml`
-  `conventions.default_resume_length` (fixture: `1`).
-- `--with-projects` — include the Personal Projects section (2-page template only).
-  Default: `profile.yml` `conventions.default_include_projects` (fixture: `false`).
-  Passing `--with-projects` with `--length 1` forces `--length 2` (the 1-page
-  template has no projects block) — warn the user when you do this.
-- `--order relevance|chronological` — experience-block ordering. Default
-  `chronological` (reverse-chronological, most recent role first). `relevance` orders
-  by the ordering decision recorded in `analysis.md` `## Framing`.
+- `--density compact|standard` — résumé spacing. Default: `profile.yml`
+  `conventions.default_density` if that key is present; else `compact` when
+  `conventions.default_resume_length == 1`, `standard` when `== 2`, and `standard`
+  if neither key is set. Sets `density` in `resume.data.json` — the template's
+  `compact` class tightens spacing ~12%.
+- `--max-pages N` — **soft** page ceiling. Default `2`. If the rendered résumé
+  exceeds it, WARN the user and list candidate trims (drop the lowest-ranked bullet
+  per role, shorten the intro, drop a de-emphasized skill group). NEVER silently
+  trim content to fit.
+- `--lang en|zh` — output language. Default `en`. `zh` ⇒ `lang: "zh"` in both JSON
+  files, Chinese résumé section titles and cover-letter subject / salutation /
+  closing, and body strings translated from the English source of truth (see
+  "`--lang zh`" under "Building the data files").
+- `--with-projects` — add a `Selected Projects` section built from the JD-relevant
+  `projects/<slug>.md` entries. Default: `profile.yml`
+  `conventions.default_include_projects` (fixture: `false`). There is one template
+  now — this no longer changes any page target.
+- `--order relevance|chronological` — experience-entry ordering. Default
+  `chronological` (reverse-chronological, most recent role first). `relevance` uses
+  the ordering decision recorded in `analysis.md` `## Framing`.
 - `--answers "Q1; Q2; ..."` — also write `{dir}/answers.md`, one grounded answer per
   `;`-separated question.
+- `--keep-html` — pass `-KeepHtml` to `render_pdf.ps1` so the `{dir}/*.rendered.html`
+  files are kept instead of being cleaned up.
 
 ## Inputs and paths
 
 - All plugin-internal paths use `${CLAUDE_PLUGIN_ROOT}`: scripts
-  (`${CLAUDE_PLUGIN_ROOT}/scripts/*.ps1`), templates
-  (`${CLAUDE_PLUGIN_ROOT}/templates/*.tex`), the retriever agent
+  (`${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1`,
+  `${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1`,
+  `${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.ps1`), templates
+  (`${CLAUDE_PLUGIN_ROOT}/templates/*.html`), the retriever agent
   (`${CLAUDE_PLUGIN_ROOT}/agents/sot-retriever.md`), and `reference/`
   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`,
   `${CLAUDE_PLUGIN_ROOT}/reference/ats-checklist.md`).
 - **Template override:** before using a bundled template, check for a repo-level
-  override. If `./templates/<name>.tex` exists in the user's working repo, use it
-  instead of `${CLAUDE_PLUGIN_ROOT}/templates/<name>.tex`. `<name>` is
-  `resume_1page`, `resume_2page`, or `cover_letter`.
+  override. If `./templates/<name>.html` exists in the user's working repo, use it
+  instead of `${CLAUDE_PLUGIN_ROOT}/templates/<name>.html`. `<name>` is `resume` or
+  `cover_letter`.
 - **Source-of-truth dir** and **output dir**: dot-source
   `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`. It returns
   `Root` (the directory where `jobapp.config.yml` was found by walking up from the
-  current working directory, or `(Get-Location).Path` if none), `SourceOfTruthDir`
-  (default `resume_sections/`), and `OutputDir` (default `applications/{Company}`).
-  The source-of-truth dir is `<Root>/<SourceOfTruthDir>`. `profile.yml` has **no**
-  `output_dir` key — resolve `{dir}` by substituting the literal token `{Company}` in
-  `.OutputDir` with the company name and joining onto `.Root`
-  (e.g. `<Root>/applications/Testco`), exactly as `jd-intake` does.
+  current working directory, or `(Get-Location).Path` if none), `BrowserPath`,
+  `GhostscriptPath`, `SourceOfTruthDir` (default `resume_sections/`), and `OutputDir`
+  (default `applications/{Company}`). The source-of-truth dir is
+  `<Root>/<SourceOfTruthDir>`. `profile.yml` has **no** `output_dir` key — resolve
+  `{dir}` by substituting the literal token `{Company}` in `.OutputDir` with the
+  company name and joining onto `.Root` (e.g. `<Root>/applications/Testco`), exactly
+  as `jd-intake` does.
 - `{dir}/analysis.md` must already exist. If not: "run `/jd-intake` for {Company}
   first" and stop.
 
@@ -56,8 +72,8 @@ Parse it with these exact rules:
   stripped. It is one of `strong` / `stretch` / `hard-mismatch`. The line has the
   form `<token> — <reason>`.
   **If the token is `hard-mismatch`, STOP.** Tell the user the role is a hard
-  mismatch, that `jd-intake` already flagged it, and generate nothing (no `.tex`, no
-  PDF, no `answers.md`).
+  mismatch, that `jd-intake` already flagged it, and generate nothing (no
+  `.data.json`, no PDF, no `answers.md`).
 - `## Essential` — a numbered list (`1.`, `2.`, …). Each item is an essential
   criterion with a stable ordinal used by the next section.
 - `## Criteria → Evidence` — the heading contains a literal U+2192 arrow `→` (match
@@ -84,23 +100,23 @@ Parse it with these exact rules:
    one of these `file:line` citations (or another confirmed line you read yourself in
    step 1). Do not draft from memory of the conversation.
 
-3. **Select the résumé template.** `--length 1` → `resume_1page`; `--length 2` (or
-   `--with-projects`) → `resume_2page`. Resolve the override: repo `./templates/<name>.tex`
-   if it exists, else `${CLAUDE_PLUGIN_ROOT}/templates/<name>.tex`.
+3. **Resolve templates and options.**
+   - Résumé template: repo `./templates/resume.html` if it exists, else
+     `${CLAUDE_PLUGIN_ROOT}/templates/resume.html`. Cover-letter template: repo
+     `./templates/cover_letter.html` if it exists, else the bundled one. There is
+     one résumé template — no `--length` variant selection.
+   - Resolve `--density` (per the default rule in Flags), `--order`, `--lang`,
+     `--with-projects`, and `--max-pages`.
+   - Read the `###` category headings in `<Root>/<SourceOfTruthDir>/skills.md`
+     directly — you need them for the Skills section and `sot-retriever` `retrieve`
+     mode returns flat bullets, not `###` categories.
 
-4. **Fill the résumé template.** See "Résumé placeholders" below for every field.
-   - Header (`{{NAME}} {{PHONE}} {{EMAIL}} {{GITHUB_USERNAME}}`): from `profile.yml`,
-     verbatim.
-   - Industrial Experience: repeat the `\resumeSubheading … \resumeItemListEnd`
-     block once per role in `profile.yml` `conventions.roles`, in the order set by
-     `--order`. company / title / dates / location come from `profile.yml`
-     **verbatim, never re-derived**; tech stack + bullets come from the retriever.
-   - Introduction and Skills: from retrieved introduction / skills content.
-   - Education: one `\resumeSubheading` line per entry in
-     `profile.yml` `conventions.education`.
-   - Personal Projects: only with `--with-projects` (2-page template).
-   - LaTeX-escape every substituted value (see "LaTeX escaping" below) — in
-     particular `C#` → `C\#`, `&` → `\&`.
+4. **Build the résumé data object.** Assemble `{dir}/resume.data.json` per
+   "Building the data files" below — `name` / `lang` / `density` / `contact` /
+   `intro` / `sections` (Experience, optional Selected Projects, Education, Skills,
+   any extra source-of-truth section). Company / title / employment-date / location
+   strings come from `profile.yml` **verbatim, never re-derived**; tech stack and
+   bullets come from the retriever.
 
 5. **Bounds check (before writing anything).** Re-read every line you are about to
    place against `factual-bounds.md` and the `analysis.md` `gap` rows:
@@ -114,115 +130,164 @@ Parse it with these exact rules:
      (`companies/<slug>.md`, `skills.md`, `profile.yml`, etc.) and have them re-run
      after updating — do not write it into the résumé from the chat alone.
 
-6. **Write and compile the résumé.** Write `{dir}/resume.tex`. Run:
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compile_latex.ps1 -TexPath {dir}/resume.tex`.
-   This is the CLI form: on success it prints `OK: <pdf> (N page…)` to stdout and
-   exits 0; on failure it writes the LaTeX log tail to stderr and exits non-zero. It
-   returns **no object** — read the exit code and the `OK:` line, exactly as
-   `skills/review-application/SKILL.md` does.
-   - **Non-zero exit ⇒ failure:** surface the stderr log tail, keep the `.tex`, do
-     **not** compress, do **not** claim success. Fix the LaTeX (usually an unescaped
-     special character) and recompile.
-   - **Page count** is the integer in the `OK: … (N page…)` line. If it exceeds the
-     `--length` target: warn the user and list candidate trims (drop the
-     lowest-ranked bullet from each role, shorten the intro, drop a de-emphasized
-     skill group). Do not ship an over-length résumé silently.
+6. **Write and render the résumé.** Emit the data object with `ConvertTo-Json`
+   (see "Building the data files" — this guarantees valid JSON). Then:
+   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1 -TemplatePath <resume.html override-resolved> -DataPath {dir}/resume.data.json -OutPath {dir}/resume.pdf`
+   (add `-KeepHtml` when `--keep-html` was passed). CLI contract: on success it
+   prints `OK: <pdf> (N page…)` to stdout and exits 0; on failure it prints
+   `Render failed:` plus the log tail to stderr and exits 1; it exits 2 if a required
+   parameter is missing.
+   - **Non-zero exit ⇒ failure:** surface the `Render failed:` text, keep the
+     `.data.json`, do **not** compress, do **not** claim success. Fix the data
+     (usually an invalid JSON string or a wrong shape) and re-render.
+   - **Page count** is the integer in the `OK: … (N page…)` line. If it exceeds
+     `--max-pages`: WARN the user and list candidate trims (drop the lowest-ranked
+     bullet from each role, shorten the intro, drop a de-emphasized skill group). Do
+     not ship an over-length résumé silently and never edit content to force-fit
+     without telling the user.
 
 7. **Compress.** On success:
    `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1 -PdfPath {dir}/resume.pdf`.
 
-8. **Cover letter.** Fill `cover_letter` (override-resolved) — see "Cover-letter
-   placeholders" below. Content must follow the cover-letter rules in
+8. **Cover letter.** Build `{dir}/cover_letter.data.json` per "Building the data
+   files". Content must follow the cover-letter rules in
    `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §7:
    1. state the total professional software-engineering experience duration;
    2. name the specific companies worked at;
    3. name the specific business domains / sectors;
    4. name the specific tech stacks, each tied to the company where it was used.
    Obey every `factual-bounds.md` cover-letter rule (e.g. no university mention).
-   Write `{dir}/cover_letter.tex`, then
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compile_latex.ps1 -TexPath {dir}/cover_letter.tex`
-   (same CLI contract — non-zero exit ⇒ failure; the `OK: … (N page…)` line must
-   report 1 page), then
+   Emit with `ConvertTo-Json`, then render:
+   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1 -TemplatePath <cover_letter.html override-resolved> -DataPath {dir}/cover_letter.data.json -OutPath {dir}/cover_letter.pdf -Placeholder '{{COVER_LETTER_JSON}}'`
+   (add `-KeepHtml` with `--keep-html`). Same CLI contract — non-zero exit ⇒
+   failure; the `OK: … (N page…)` line should report 1 page. Then
    `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1 -PdfPath {dir}/cover_letter.pdf`.
 
 9. **Plain-text cover letter.**
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.ps1 -TexPath {dir}/cover_letter.tex`
-   → `{dir}/cover_letter.txt` (the script hoists the `Subject:` line to the top).
-   Regenerate it any time `cover_letter.tex` changes.
+   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.ps1 -DataPath {dir}/cover_letter.data.json`
+   → `{dir}/cover_letter.txt` (the script hoists the `Subject:` / `主题：` line to
+   the first line and formats the structured data directly). Regenerate it any time
+   `cover_letter.data.json` changes.
 
 10. **Answers (only if `--answers`).** Write `{dir}/answers.md`: one `##` heading per
     question, each answer grounded in the same retrieved bullets (cite the
     `file:line` inline), followed by a compact one-to-two-sentence variant for
     short-field forms. No new facts beyond the source of truth.
 
-11. **Clean up.** Remove `.aux`, `.log`, **and** `.out` from `{dir}`.
-    `compile_latex.ps1` deliberately leaves `.log` (it parses the page count from
-    it); `generate` deletes it afterwards. Leave `resume.tex`, `cover_letter.tex`,
-    `jd.md`, `analysis.md`, and the PDFs/txt in place.
+11. **Clean up.** There are no `.aux` / `.log` / `.out` files any more.
+    `render_pdf.ps1` removes its own `.rendered.html` unless `-KeepHtml` was passed.
+    So there is nothing to clean unless `--keep-html` was passed — in which case
+    `{dir}/resume.rendered.html` and `{dir}/cover_letter.rendered.html` are
+    intentionally kept. Files left in `{dir}`: `jd.md`, `analysis.md`,
+    `resume.data.json`, `resume.pdf`, `cover_letter.data.json`, `cover_letter.pdf`,
+    `cover_letter.txt`, optional `answers.md`, optional `*.rendered.html`.
 
 12. **Report.** Output:
-    - every file written, with the résumé's real page count from `compile_latex.ps1`;
+    - every file written, with the résumé's real page count from the
+      `render_pdf.ps1` `OK:` line and the cover letter's page count;
     - a table of every metric and every named skill used in the résumé or cover
       letter, each with its source-of-truth `file:line` (Ruling: no claim without a
       citation);
     - any deviation from `profile.yml` conventions (and why);
     - any `analysis.md` `gap` the documents do not paper over (expected — state it);
-    - the ordering decision used and whether `--with-projects` forced `--length 2`.
+    - the ordering decision used, the `--density` / `--lang` applied, and whether
+      `--with-projects` added the Selected Projects section.
 
-## Résumé placeholders
+## Building the data files
 
-`templates/resume_1page.tex` and `templates/resume_2page.tex`:
+Build each file as a PowerShell hashtable / array and emit it with `ConvertTo-Json`:
 
-| Placeholder | Fill |
+```powershell
+$data | ConvertTo-Json -Depth 12 | Set-Content -Encoding utf8 {dir}/resume.data.json
+```
+
+`ConvertTo-Json` guarantees valid JSON and correct string escaping (quotes,
+backslashes, newlines) — hand-writing nested JSON is error-prone. If you do hand-write
+a file, you **must** validate it afterwards with
+`Get-Content -Raw <path> | ConvertFrom-Json` and fix any parse error before
+rendering. There is no LaTeX escaping any more: every string is text-escaped by the
+renderer, so the only escaping concern is producing valid JSON strings — which
+`ConvertTo-Json` handles.
+
+### `{dir}/resume.data.json` (design amendment §3.1)
+
+| Key | Fill |
 |---|---|
-| `{{NAME}}` `{{PHONE}}` `{{EMAIL}}` `{{GITHUB_USERNAME}}` | `profile.yml` `name` / `phone` / `email` / `links.github` — verbatim. `links.github` is the handle only (the template wraps it as `github.com/<handle>`). If `profile.yml` has no `links.github`, replace the whole `$|$ \href{...github...}` fragment in the header with nothing. |
-| `{{INTRODUCTION_BULLETS}}` | Inline LaTeX for the Introduction item body: 3–5 short clauses from retrieved `introduction.md` content, each optionally led by `\textbf{Topic:}`. Join clauses with the LaTeX line-break sequence `\\ \vspace{3pt}` (a double backslash then the spacing command), matching the template's Skills block. It sits inside one `\item{ … }` — do not add `\item`. |
-| Industrial Experience block — `\resumeSubheading{ {{JOB_TITLE}} }{ {{EMPLOYMENT_DATES}} }{ {{COMPANY_NAME}} }{ {{LOCATION}} }` then `\resumeItemListStart … \resumeItemListEnd` | **A pattern, repeated once per role** in `profile.yml` `conventions.roles` (fixture "Sample Dev" has 2 roles → 2 blocks), ordered per `--order`. `JOB_TITLE` = role `title`; `EMPLOYMENT_DATES` = `"<start> -- <end>"` (en-dash `--`); `COMPANY_NAME` = role `company`; `LOCATION` = role `location` — **all four verbatim from `profile.yml`**. |
-| `{{TECH_STACK}}` | The retrieved "Integrated Tech Stack" line for **that** company (`companies/<slug>.md`), JD-relevant subset allowed, never blended with another company. Rendered as the first `\resumeItem{\textbf{Tech Stack:} …}`. |
-| `{{BULLET_POINT_1..3}}` | Retrieved bullets for that role, best-first. **The count is not fixed at 3** — emit as many `\resumeItem{…}` lines as the role warrants (3–6). Add or delete `\resumeItem{…}` lines within the block; drop the `{{BULLET_POINT_N}}` tokens you do not use. Each bullet verb-first, past tense (present only for an ongoing duty in a current role). |
-| `{{EDUCATION_ENTRIES}}` | One line per entry in `profile.yml` `conventions.education`: `\resumeSubheading{<institution>}{<start> -- <end>}{<credential>}{<location>}`. No GPA / grades / distinctions (experienced-hire default). |
-| `{{LANGUAGES_LIST}}` | Comma-separated languages from the `### Core Languages` group in `<Root>/<SourceOfTruthDir>/skills.md`, JD-relevant subset. Read that file directly for the category grouping — `sot-retriever` `retrieve` mode returns flat ranked bullets, not `###` categories. Label in template: "Programming Languages" (1-page) / "Core Languages" (2-page). |
-| `{{FRAMEWORKS_AND_TOOLS_LIST}}` | Comma-separated frameworks / tools / platforms / concepts from the other `###` groups in `<Root>/<SourceOfTruthDir>/skills.md` (same direct read), JD-relevant subset. |
+| `name` | `profile.yml` `name`, verbatim. |
+| `lang` | `"en"` or `"zh"` per `--lang` (default `"en"`). |
+| `density` | `"compact"` or `"standard"` per `--density` (see Flags for the default). |
+| `contact` | Array from `profile.yml`: `phone` as a plain string; `email` as `{ "text": "<email>", "href": "mailto:<email>" }`; and, only if `links.github` is set, `{ "text": "github.com/<handle>", "href": "https://github.com/<handle>" }`. Omit the GitHub entry entirely when `links.github` is absent. |
+| `introTitle` | Optional. Omit for the default `"Introduction"`; set it to `"简介"` for `--lang zh`. |
+| `intro` | Array of `{ "lead", "text" }` — 3–5 items distilled from retrieved `introduction.md` content. `lead` is the short topic phrase (the renderer bolds it and appends the period); `text` is the rest of the clause. |
+| `sections` | Array, in this order: Experience, [Selected Projects], Education, Skills, [extra source-of-truth sections]. |
 
-`resume_2page.tex` only — Personal Projects (filled **only** with `--with-projects`;
-also a repeat-per-project pattern, one block per relevant `projects/<slug>.md`):
-`{{PROJECT_NAME}}` (project name), `{{PROJECT_GITHUB_URL}}` (repo URL, or replace the
-`\href{…}{\underline{…}}` wrapper with the bare name if none), `{{PROJECT_TECH_STACK}}`,
-`{{PROJECT_ROLE}}` (e.g. "Personal project"), `{{PROJECT_BULLET_1..2}}` (retrieved
-project bullets; add/remove `\resumeItem{…}` lines as needed). If `--with-projects` is
-not set, use `resume_1page` / `resume_2page` with the Personal Projects section
-deleted entirely.
+**Experience section** — `{ "title": "Industrial Experience", "type": "entries", "items": [...] }`.
+One item per role in `profile.yml` `conventions.roles`, ordered per `--order`
+(chronological = most recent role first). Each item:
+- `primary` = role `title` — **verbatim from `profile.yml`**.
+- `dates` = `"<start> – <end>"` — an en-dash (U+2013) with a space on each side;
+  `start` and `end` **verbatim from `profile.yml`** (e.g. `"Jan. 2024 – Present"`).
+- `secondary` = role `company` — **verbatim from `profile.yml`**.
+- `location` = role `location` — **verbatim from `profile.yml`**.
+- `stack` = the retrieved "Integrated Tech Stack" line for **that** company
+  (`companies/<slug>.md`); a JD-relevant subset is allowed, never blended with
+  another company's stack. `stackLabel` is optional (default `"Stack"`).
+- `bullets` = the retrieved bullets for that role, best-first, verb-first, past
+  tense (present only for an ongoing duty in a current role). Emit as many as the
+  role warrants (3–6); every bullet traces to a retriever `file:line`.
 
-## Cover-letter placeholders
+**Selected Projects section** (only with `--with-projects`) —
+`{ "title": "Selected Projects", "type": "entries", "items": [...] }`. One item per
+JD-relevant `projects/<slug>.md`: `primary` = project name; `metaRight` = tech stack
+or `""` (use `metaRight`, **not** `dates`); `secondary` = the one-line project
+description; `bullets` = retrieved project bullets.
 
-`templates/cover_letter.tex`:
+**Education section** — `{ "title": "Education", "type": "education", "items": [...] }`.
+One item per `profile.yml` `conventions.education` entry: `institution`, `dates` =
+`"<start> – <end>"` (en-dash), `credential`, `location` — all verbatim. No GPA /
+grades / distinctions (experienced-hire default).
 
-| Placeholder | Fill |
+**Skills section** — `{ "title": "Skills", "type": "skills", "groups": [...] }`.
+Each group is `{ "label", "value" }` with `value` a comma-separated list. Read the
+`###` category headings in `<Root>/<SourceOfTruthDir>/skills.md` **directly** for the
+grouping (the retriever returns flat bullets, not `###` categories). Take a
+JD-relevant subset within each group and keep the source file's category structure.
+
+**Extra sections** — any additional section the source of truth supports
+(Publications, Certifications, Patents) → `{ "title", "type": "list", "items": [...] }`.
+
+### `{dir}/cover_letter.data.json` (design amendment §3.2)
+
+| Key | Fill |
 |---|---|
-| `{{NAME}}` `{{PHONE}}` `{{EMAIL}}` `{{GITHUB_USERNAME}}` | Same as the résumé header, from `profile.yml`. |
-| `{{DATE}}` | Today's date, long form, e.g. `September 1, 2026`. |
-| `{{RECIPIENT_NAME}}` | The named contact from the JD if it gives one; else `Hiring Manager`. |
-| `{{RECIPIENT_TITLE}}` | Used in the `Dear {{RECIPIENT_TITLE}},` salutation. The contact's title from the JD if given; else `Hiring Manager`. |
-| `{{COMPANY_NAME}}` | The hiring company's name as the JD states it (`{dir}/jd.md`). If the JD names no company, fall back to the `{Company}` argument. |
-| `{{COMPANY_ADDRESS}}` | The office location from the JD (`{City}, {Region}, {Country}`). If the JD gives only a city, use that; if it gives nothing, delete the `{{COMPANY_ADDRESS}} \\` line from the recipient block. |
-| `{{JOB_TITLE}}` | The role title from the JD. |
-| `{{REQ_ID}}` | The requisition / reference ID from the JD. **If the JD has none**, delete the entire ` (Ref / Req ID: {{REQ_ID}})` fragment from the subject line so it reads `Subject: Application for the Position of <JOB_TITLE>` — no dangling "Ref: ". |
-| `{{INTRO_PARAGRAPH}}` | Opening: the role applied for + company, and the total professional SDE experience duration (workflow-rules §7.1). |
-| `{{BODY_PARAGRAPH_1}}` `{{BODY_PARAGRAPH_2}}` | The evidence paragraphs. Between them they must name the companies (§7.2), the business domains / sectors (§7.3), and the company-tied tech stacks (§7.4) — every stack tied to the company it was used at, consistent with the source of truth. Draw only on retrieved material. |
-| `{{OUTRO_PARAGRAPH}}` | Close: fit summary + thanks. No overclaiming of `gap` criteria. |
+| `name` | `profile.yml` `name`. |
+| `lang` | Same as the résumé. |
+| `contact` | Same array shape as the résumé. |
+| `date` | Today's date, long form, e.g. `"September 1, 2026"`. |
+| `recipient` | Array of lines: `["Hiring Manager", "<Company> as the JD states it", "<City, Country>"]`. Use the named contact from the JD in place of `"Hiring Manager"` if it gives one. Drop the location line if the JD gives no location. Fall back to the `{Company}` argument if the JD names no company. |
+| `subject` | `"Application for the Position of <role title from the JD>"`. If the JD carries a requisition / reference ID, append it naturally (e.g. `" (Ref: <id>)"`); **if the JD has none, no `"Ref:"` dangle**. |
+| `salutation` | `"Dear Hiring Manager,"` (or `"Dear <contact name>,"`). |
+| `paragraphs` | Array of body paragraphs, any count (typically intro, body1, body2, outro). Between them they must: (1) state the total professional software-engineering experience duration; (2) name the specific companies; (3) name the specific business domains / sectors; (4) name the company-tied tech stacks, each tied to the company it was used at (workflow-rules §7). Draw only on retrieved material; no overclaiming of `gap` criteria. |
+| `closing` | `"Sincerely,"`. |
+| `signature` | `profile.yml` `name`. |
 
-`factual-bounds.md` still applies to the letter — e.g. "Do not mention the
-university in cover letters" means no `conventions.education` institution appears
-anywhere in `cover_letter.tex`.
+`factual-bounds.md` still applies to the letter — e.g. "Do not mention the university
+in cover letters" means no `conventions.education` institution string appears anywhere
+in `cover_letter.data.json`.
 
-## LaTeX escaping
+### `--lang zh`
 
-Every value substituted into a template must be LaTeX-safe. Replace, in each
-substituted value: `\` → `\textbackslash{}`, then `&` → `\&`, `%` → `\%`, `$` → `\$`,
-`#` → `\#`, `_` → `\_`, `{` → `\{`, `}` → `\}`, `~` → `\textasciitilde{}`, `^` →
-`\textasciicircum{}`. The common real cases here: `C#` → `C\#`, `Frameworks & Tools`
-label already escaped in the template, `R&D` → `R\&D`. Do not escape LaTeX you are
-deliberately emitting (`\resumeItem`, `\textbf`, `--`).
+When `--lang zh`:
+- `lang: "zh"` in both JSON files.
+- Résumé section `title`s are the Chinese equivalents — e.g. 简介 / 工作经验 /
+  精选项目 / 教育背景 / 技能 — as are `introTitle` and any `stackLabel`.
+- Cover-letter `subject` / `salutation` / `closing` are Chinese (the script prefixes
+  the `主题：` / `日期：` labels itself).
+- Every body string (`intro` `lead`/`text`, `bullets`, `stack`, cover-letter
+  `paragraphs`) is translated from the English source-of-truth content. **This is
+  the only place in the whole workflow where translation happens.**
+- `factual-bounds.md` and the no-invention rules apply to the translated text exactly
+  as they do to English — do not invent a detail to make a smoother Chinese sentence.
 
 ## Guardrails
 
@@ -231,8 +296,12 @@ deliberately emitting (`\resumeItem`, `\textbf`, `--`).
 - No skill, tool, employer, project, or metric appears that is not in the
   source-of-truth directory. A genuine gap stated honestly is the expected outcome
   for some criteria; papering over it is a bounds violation.
+- Every metric and every named skill in either document is paired with a
+  source-of-truth `file:line` citation in the report (Ruling: no claim without a
+  citation).
 - `factual-bounds.md` is a hard constraint. On any conflict: STOP and ask.
-- English-only output regardless of conversation language.
+- English by default; `--lang zh` produces Chinese, faithfully translated from the
+  English source of truth — never invented.
 - `jd.md` stays in `{dir}` (workflow-rules §5) — this skill never deletes it.
 - Full workflow rules: `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`.
   ATS checklist: `${CLAUDE_PLUGIN_ROOT}/reference/ats-checklist.md`.

@@ -77,7 +77,7 @@ Resume/
 │   ├── raw_cvs/                    2 sample input CVs
 │   └── sample-jd.md
 ├── tests/
-│   └── run-pipeline.ps1           ingest → jd-intake → generate → review against example/
+│   └── run-pipeline.ps1           template/script smoke test (see §10)
 │
 ├── .agents/AGENTS.md              [PRIVATE] maintainer's personal notes / pointer
 ├── resume_sections/              [PRIVATE] maintainer's real source-of-truth
@@ -98,7 +98,7 @@ Resume/
 ## 4. The candidate contract
 
 The only thing the plugin requires from a user is a **source-of-truth directory**
-(default `resume_sections/`; override via `JOBAPP_CONFIG` env var or `jobapp.config.yml`).
+(default `resume_sections/`; override via `jobapp.config.yml`).
 
 ```
 resume_sections/
@@ -114,40 +114,38 @@ resume_sections/
 ### 4.1 `profile.yml`
 
 ```yaml
-name: "Ruidong Wu (Ryan)"
-phone: "(+61) 493-316-138"
-email: "yainwrd@gmail.com"
+name: "Sample Dev"
+phone: "(+00) 000-000-000"
+email: "sample.dev@example.com"
 links:
-  github: "RyanDDDDDD"
+  github: "sample-dev"
 location: "Sydney, NSW, Australia"
 working_rights: "full working rights in Australia"
 conventions:
   roles:
-    - company: "Fletcher Building Ltd (NZX/ASX: FBU)"
+    - company: "Acme Corp"
       title: "Software Engineer"
-      start: "Apr. 2025"
-      end: "Apr. 2026"
+      start: "Jan. 2024"
+      end: "Present"
       location: "Sydney, Australia"
-    - company: "Realtime Business Solutions Pty Ltd"
-      title: "Software Developer"
-      start: "Feb. 2024"
-      end: "Apr. 2025"
+    - company: "Globex Pty Ltd"
+      title: "Junior Developer"
+      start: "Feb. 2022"
+      end: "Dec. 2023"
       location: "Sydney, Australia"
   education:
-    - institution: "University of New South Wales"
-      credential: "Master of Information Technology"
-      start: "Sep. 2021"
-      end: "Sep. 2023"
+    - institution: "Example University"
+      credential: "Bachelor of Computer Science"
+      start: "2018"
+      end: "2021"
       location: "Sydney, Australia"
-    - institution: "Guangdong University of Technology"
-      credential: "Bachelor of Applied Chemistry"
-      start: "Sep. 2016"
-      end: "June 2019"
-      location: "Guangdong, China"
   default_resume_length: 1        # 1 | 2
   default_include_projects: false
-  output_dir: "all cv/{Company}"  # maintainer's existing convention; plugin default is "applications/{Company}"
 ```
+
+`output_dir` is **not** a `profile.yml` key — it is machine/repo config in
+`jobapp.config.yml` (see §4.4), resolved by `Get-JobAppConfig` (plugin default
+`applications/{Company}`).
 
 Rationale for YAML (not markdown): résumé header substitution and cross-document
 consistency (identical company names, titles, dates on every generated résumé) need
@@ -156,16 +154,15 @@ exact strings. `ingest` drafts this from the input CVs; the user corrects it onc
 ### 4.2 `factual-bounds.md`
 
 Free-form markdown, loaded verbatim as **hard constraints** by `generate` and
-`review-application`. Contains rules like: never claim WPF/MVVM; React only at RBS /
-personal projects, never Fletcher; cloud-provider scope (GCP = Storage/OAuth; Azure =
-Blob/App Service/Functions; AWS = ECS/CloudFront/DynamoDB/ElastiCache/Lambda/Cognito/
-Secrets Manager); never invent metrics; no university in cover letters; experienced-hire
-(no GPA); language-focus rules.
+`review-application`. Contains rules like: never claim Rust; Kafka is
+personal-project only, never at Acme or Globex; never invent numeric metrics;
+no university mention in cover letters; experienced-hire (no GPA); language-focus
+rules.
 
 `ingest` seeds it with a stub + any bounds inferable from CV inconsistencies. It **grows
-over time** when the user corrects a generated draft ("Fletcher was C#, not C++" →
-appended as a bound, or refined — cf. the real session where C++ at Fletcher turned out
-to be legitimate and was *added* to source-of-truth instead).
+over time** when the user corrects a generated draft (a wrong stack attribution appended
+as a bound, or refined — e.g. a claim the bounds initially forbade that turned out to be
+legitimate and was *added* to source-of-truth instead).
 
 ### 4.3 Consolidated sections
 
@@ -218,7 +215,7 @@ hand-off medium between pipeline stages.
      **keywords**, **language/stack emphasis**.
   3. Dispatch **`sot-retriever` subagent** to map each criterion to a matching
      source-of-truth bullet, or mark it a gap.
-  4. Classify fit: **strong** / **stretch** / **hard-mismatch** (e.g. an ERP-specialist
+  4. Classify fit: **strong** / **stretch** / **hard-mismatch** (e.g. a
      role requiring years of a platform the candidate has never used).
 - **Output:** `all cv/{Company}/analysis.md` — criteria→evidence matrix, gap list, fit
   verdict, recommended framing. On hard-mismatch it recommends skipping before effort
@@ -340,13 +337,17 @@ Current `{{PLACEHOLDER}}` `.tex` files become the shipped defaults:
 
 - **Fixture:** `example/` — synthetic candidate "Sample Dev", 2 sample input CVs,
   1 sample JD, an `example/factual-bounds.md` with a deliberately testable rule.
-- **`tests/run-pipeline.ps1`:** runs `ingest → jd-intake → generate → review-application`
-  against the fixture and asserts:
-  1. `resume_sections/` populated with expected section files.
-  2. `resume.pdf` compiles and is 1 page.
-  3. `review.md` verdict is Pass.
-  4. No `example/factual-bounds.md` rule is violated in the generated text.
-  5. `cover_letter.txt` exists and contains the hoisted `Subject:` line.
+- **`tests/run-pipeline.ps1`:** a template/script **smoke test**, not a
+  skill-execution pipeline. It does not run `ingest → jd-intake → generate →
+  review-application` (those are LLM-driven skills). It:
+  1. smoke-fills every `{{token}}` in the three shipped `templates/*.tex` and compiles
+     each (asserting the 1-page résumé is exactly one page);
+  2. exercises `cover_letter_to_txt.ps1` (asserts the hoisted `Subject:` line) and
+     `Get-JobAppConfig`;
+  3. runs each `tests/scripts/*.Tests.ps1` and folds its exit code into the total.
+- The **skill-level** behavioural checks live in the `tests/skills/*.expected.md`
+  prose checklists (`ingest`, `jd-intake`, `generate`, `review-application`), walked
+  by an operator during manual verification — not executed by `run-pipeline.ps1`.
 - CI-ready (GitHub Actions) once the repo is public — deferred, not in v1 plan.
 
 ---

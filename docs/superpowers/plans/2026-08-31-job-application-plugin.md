@@ -390,13 +390,13 @@ git commit -m "feat: add config loader and compile_latex script"
 # tests/scripts/extract_cv.Tests.ps1
 Describe "extract_cv" {
   It "reads a .md file verbatim" {
-    $f = Join-Path $TestDrive "a.md"; Set-Content $f "# Ryan`nC++ engineer"
+    $f = Join-Path $TestDrive "a.md"; Set-Content $f "# Sample Dev`nC++ engineer"
     $text = & "$PSScriptRoot/../../scripts/extract_cv.ps1" -Path $f
     ($text -join "`n") | Should -Match "C\+\+ engineer"
   }
   It "reads a .tex file verbatim" {
-    $f = Join-Path $TestDrive "a.tex"; Set-Content $f "\section{Experience} RBS"
-    (& "$PSScriptRoot/../../scripts/extract_cv.ps1" -Path $f) -join "`n" | Should -Match "RBS"
+    $f = Join-Path $TestDrive "a.tex"; Set-Content $f "\section{Experience} Globex"
+    (& "$PSScriptRoot/../../scripts/extract_cv.ps1" -Path $f) -join "`n" | Should -Match "Globex"
   }
   It "errors clearly for an unsupported extension" {
     $f = Join-Path $TestDrive "a.rtf"; Set-Content $f "x"
@@ -471,8 +471,8 @@ git commit -m "feat: add extract_cv script for ingest"
   redundancy control; English-only output; no hallucinated skills/metrics; save the JD;
   experienced-hire (omit GPA) as a *configurable default*, not hard-coded; the cover
   letter core-content structure (duration, companies, domains, company-tied stacks).
-  Personal bounds (WPF, React-at-Fletcher, cloud scopes) are explicitly NOT here — they
-  belong in each user's `factual-bounds.md`.
+  Personal bounds (framework exclusions, per-employer stack scoping, cloud-provider
+  scopes) are explicitly NOT here — they belong in each user's `factual-bounds.md`.
 
 - [ ] **Step 2: Write `reference/ats-checklist.md`** — single-column layout, standard
   section headings, no text in tables/text-boxes, real dates, quantified verb-first
@@ -500,7 +500,6 @@ conventions:
     - { institution: "Example University", credential: "Bachelor of Computer Science", start: "2018", end: "2021", location: "Sydney, Australia" }
   default_resume_length: 1
   default_include_projects: false
-  output_dir: "applications/{Company}"
 ```
 
 - [ ] **Step 5: Write `example/resume_sections/factual-bounds.md`**

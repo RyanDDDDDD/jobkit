@@ -120,14 +120,12 @@
   \resumeSubHeadingListEnd
 
 %-----------EDUCATION-----------
+% {{EDUCATION_ENTRIES}} is filled by the generate skill: one line per record from
+% profile.yml conventions.education, each of the form
+%   \resumeSubheading{institution}{start -- end}{credential}{location}
 \section{Education}
   \resumeSubHeadingListStart
-    \resumeSubheading
-      {University of New South Wales}{Sep. 2021 -- Sep. 2023}
-      {Master of Information Technology}{Sydney, Australia}
-    \resumeSubheading
-      {Guangdong University of Technology}{Sep. 2016 -- June 2019}
-      {Bachelor of Applied Chemistry}{Guangdong, China}
+{{EDUCATION_ENTRIES}}
   \resumeSubHeadingListEnd
 
 %-----------SKILLS-----------

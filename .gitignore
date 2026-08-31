@@ -1,4 +1,5 @@
 # --- Private candidate data (never committed) ---
+/docs/
 /resume_sections/
 /applications/
 /CLAUDE.md
@@ -15,7 +16,7 @@
 *.log
 *.out
 *.synctex.gz
+*.rendered.html
 
 # --- Keep tracked ---
-!/docs/
 !/example/

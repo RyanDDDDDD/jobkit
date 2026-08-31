@@ -7,7 +7,7 @@ Invoke the `interview` skill (`${CLAUDE_PLUGIN_ROOT}/skills/interview/SKILL.md`)
 First argument (`$ARGUMENTS`) is the subcommand; also give the company name (the same
 one used with `/jd-intake` and `/generate`). The skill resolves the per-application
 directory from `Get-JobAppConfig` and needs `{dir}/jd.md`, `{dir}/analysis.md`, and
-`{dir}/resume.tex` to exist.
+`{dir}/resume.data.json` to exist.
 
 Subcommands:
 
@@ -17,10 +17,10 @@ Subcommands:
 - `/interview prep` — writes `{dir}/self_intro.md` (a spoken-length,
   anchor-point self-introduction) and `{dir}/hr_questions_prep.md` (likely
   behavioural / motivation / gap questions with résumé-grounded bullet answers),
-  using `analysis.md`, `resume.tex`, `company_research.md`, and your
+  using `analysis.md`, `resume.data.json`, `company_research.md`, and your
   `interview_playbook.md`.
 - `/interview mock` — conducts a mock interview with questions answerable only from
-  `resume.tex`, gives balanced feedback after each answer (one strength, one concrete
+  `resume.data.json`, gives balanced feedback after each answer (one strength, one concrete
   improvement — never purely positive), and appends any genuinely new recurring
   lesson to your `interview_playbook.md`.
 

@@ -26,8 +26,13 @@ per-application directory.
   `.OutputDir` (default `applications/{Company}`), substitute the literal `{Company}`
   token with the company name, then join onto `.Root`: `{dir}` is
   `<Root>/<OutputDir with {Company} substituted>`. `{dir}` must already contain
-  `jd.md`, `analysis.md`, and `resume.tex` — if not, tell the user to run
+  `jd.md`, `analysis.md`, and `resume.data.json` — if not, tell the user to run
   `/jd-intake` and `/generate` first and stop.
+- **`resume.data.json` shape** (design amendment §3.1): `name`, `contact`,
+  `intro` (`[{lead, text}]`), and `sections` (each `{title, type, items | groups}`,
+  `type` ∈ `entries` | `education` | `skills` | `list`). All strings are plain text —
+  the résumé's claims live in `intro[]`, the `sections[].items[].bullets[]`, and the
+  `skills` groups' `value` strings.
 - **`interview_playbook.md` lives at the USER's repo root** — `Get-JobAppConfig`'s
   `Root` key (the directory containing `jobapp.config.yml` found by walking up from
   the current working directory, or `(Get-Location).Path` if there is none). It is
@@ -40,7 +45,7 @@ per-application directory.
 ## Subcommand: research
 
 1. Resolve `{dir}`. Read `{dir}/jd.md` and (if present) `{dir}/analysis.md`,
-   `{dir}/resume.tex`.
+   `{dir}/resume.data.json`.
 2. Dispatch the `company-researcher` agent
    (`${CLAUDE_PLUGIN_ROOT}/agents/company-researcher.md`) with
    `{ company: <name>, role: <title from jd.md>, jd: <text of {dir}/jd.md>, dir: <{dir}> }`.
@@ -49,15 +54,16 @@ per-application directory.
 
 ## Subcommand: prep
 
-Read `{dir}/analysis.md`, `{dir}/resume.tex`, `{dir}/company_research.md` (if
+Read `{dir}/analysis.md`, `{dir}/resume.data.json`, `{dir}/company_research.md` (if
 present), and `<repo-root>/interview_playbook.md` (seed it first if absent). Then
 write two files:
 
 - **`{dir}/self_intro.md`** — a spoken-length self-introduction (about 45–60
   seconds read aloud) that hits anchor points, structured for delivery not
   memorisation: current role and focus → one or two relevant threads from the
-  résumé → why this company / role. Every fact traces to `resume.tex` /
-  `analysis.md` / `company_research.md`. Mark the 3–4 anchor points as a bullet list
+  résumé → why this company / role. Every fact traces to `resume.data.json`
+  (`intro[]`, the `sections[]` entries) / `analysis.md` / `company_research.md`. Mark
+  the 3–4 anchor points as a bullet list
   at the top so the user can rehearse the beats, not the words.
 - **`{dir}/hr_questions_prep.md`** — the likely behavioural / motivation / gap
   questions for this application, each with a bullet-point answer grounded in the
@@ -67,19 +73,21 @@ write two files:
   - Gap questions: for each `gap` / `partial` row in `analysis.md`
     `## Criteria → Evidence`, a one-clean-sentence framing plus the transferable
     bridge (never a claim the source of truth does not support).
-  - Behavioural: 3–5 "tell me about a time…" prompts answerable from `resume.tex`
-    bullets, each mapped to the specific bullet(s) it draws on.
+  - Behavioural: 3–5 "tell me about a time…" prompts answerable from
+    `resume.data.json` (`bullets[]`, `intro[]`, the `sections[]` entries), each
+    mapped to the specific bullet(s) it draws on.
   Apply the answer-structuring principles from `interview_playbook.md` §2.
 
 ## Subcommand: mock
 
 Conduct a live mock interview in the chat.
 
-1. Read `{dir}/resume.tex`, `{dir}/analysis.md`, `{dir}/company_research.md` (if
+1. Read `{dir}/resume.data.json`, `{dir}/analysis.md`, `{dir}/company_research.md` (if
    present), and `<repo-root>/interview_playbook.md`.
-2. Ask questions **one at a time**, strictly answerable from `resume.tex` (and the
-   JD's own responsibilities). Never assume experience, a technology, an employer, or
-   a metric absent from the résumé.
+2. Ask questions **one at a time**, strictly answerable from `resume.data.json`
+   (`bullets[]`, `intro[]`, the `sections[]` entries) and the JD's own
+   responsibilities. Never assume experience, a technology, an employer, or a metric
+   absent from the résumé.
 3. After each answer give **balanced** feedback: exactly one genuine strength and one
    concrete, specific improvement ("you said 'we' — the question asked for your
    personal action"; "the example proved you're fast, but the question was about
@@ -96,8 +104,8 @@ Conduct a live mock interview in the chat.
 
 ## Guardrails
 
-- Mock questions and prep answers never assume experience absent from `resume.tex` /
-  the source of truth.
+- Mock questions and prep answers never assume experience absent from
+  `resume.data.json` / the source of truth.
 - Feedback is specific and balanced — never generic praise, never purely positive
   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §8).
 - `interview_playbook.md` is the user's file: additive edits only, no deletions, no
@@ -105,5 +113,9 @@ Conduct a live mock interview in the chat.
 - `research` writes only `{dir}/company_research.md`; `prep` writes only
   `{dir}/self_intro.md` and `{dir}/hr_questions_prep.md`; `mock` writes only
   (appends to) `interview_playbook.md`. None of them touch `{sourceDir}`, `jd.md`,
-  `analysis.md`, `resume.tex`, or `cover_letter.tex`.
-- English-only output regardless of the conversation language.
+  `analysis.md`, `resume.data.json` / `resume.pdf`, or `cover_letter.data.json` /
+  `cover_letter.pdf`.
+- This skill's own output (`self_intro.md`, `hr_questions_prep.md`, the mock chat and
+  debrief, `interview_playbook.md` entries) is English-only regardless of the
+  conversation language. This is about the prep text itself — the résumé's language
+  is `generate`'s call.

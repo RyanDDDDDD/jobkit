@@ -1,0 +1,25 @@
+{
+  "name": "Sample Dev",
+  "lang": "en",
+  "contact": [
+    "(+00) 000-000-000",
+    { "text": "sample.dev@example.com", "href": "mailto:sample.dev@example.com" },
+    { "text": "github.com/sample-dev", "href": "https://github.com/sample-dev" }
+  ],
+  "date": "September 1, 2026",
+  "recipient": [
+    "Hiring Manager",
+    "Meridian Integration Partners",
+    "Sydney, NSW, Australia"
+  ],
+  "subject": "Application for the Position of Integration Developer",
+  "salutation": "Dear Hiring Manager,",
+  "paragraphs": [
+    "I am writing to apply for the Integration Developer position at Meridian Integration Partners. Over the past four years I have worked as a backend software engineer focused on systems integration, designing and consuming REST APIs and moving data reliably between applications — the core of the role you describe.",
+    "At Acme Corp, a B2B supply-chain and logistics SaaS company, I build REST APIs in C#/.NET and Python/FastAPI that integrate external carrier and ERP systems into a shipment-tracking platform, backed by PostgreSQL schemas and analytical SQL for customer reporting. Earlier, at Globex Pty Ltd, an insurance claims-processing platform, I developed C#/.NET REST endpoints for the claims-intake service and wrote SQL Server stored procedures and queries for regulatory reporting.",
+    "Across both roles I have owned CI/CD pipelines and containerized deployments — GitHub Actions and Azure at Acme Corp, Azure DevOps at Globex Pty Ltd — and taken part in production incident response. This matches your desirable criteria around Docker, CI/CD ownership, and Azure exposure, and I am keen to deepen my experience with a dedicated iPaaS platform and healthcare interoperability standards on your delivery team.",
+    "I have full working rights in Australia and would welcome the chance to discuss how my integration background fits this role. Thank you for your consideration."
+  ],
+  "closing": "Sincerely,",
+  "signature": "Sample Dev"
+}

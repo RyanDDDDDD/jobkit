@@ -1,0 +1,86 @@
+{
+  "name": "Sample Dev",
+  "lang": "en",
+  "density": "compact",
+  "contact": [
+    "(+00) 000-000-000",
+    { "text": "sample.dev@example.com", "href": "mailto:sample.dev@example.com" },
+    { "text": "github.com/sample-dev", "href": "https://github.com/sample-dev" }
+  ],
+  "intro": [
+    {
+      "lead": "Backend Software Engineer",
+      "text": "4+ years of professional experience building and consuming REST APIs and integration services in C# (.NET) and Python."
+    },
+    {
+      "lead": "Systems integration focus",
+      "text": "connects third-party carrier, ERP, and internal services through REST APIs and message-based pipelines."
+    },
+    {
+      "lead": "Data layer",
+      "text": "relational schema design and complex SQL across PostgreSQL and SQL Server, backing customer reporting and regulatory extracts."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Industrial Experience",
+      "type": "entries",
+      "items": [
+        {
+          "primary": "Software Engineer",
+          "dates": "Jan. 2024 – Present",
+          "secondary": "Acme Corp",
+          "location": "Sydney, Australia",
+          "stack": "C#/.NET, Python (FastAPI), REST APIs, PostgreSQL, SQL, Docker, GitHub Actions, Azure, React",
+          "bullets": [
+            "Designed and built REST APIs in C#/.NET and Python/FastAPI that integrated external carrier and ERP systems into the shipment-tracking platform.",
+            "Modelled PostgreSQL schemas and authored complex analytical SQL queries powering customer-facing reporting dashboards.",
+            "Built and maintained GitHub Actions pipelines for build, test, and containerized deployment to Azure, removing manual release steps."
+          ]
+        },
+        {
+          "primary": "Junior Developer",
+          "dates": "Feb. 2022 – Dec. 2023",
+          "secondary": "Globex Pty Ltd",
+          "location": "Sydney, Australia",
+          "stack": "C#/.NET, Python, REST APIs, SQL Server, JavaScript, Docker, Azure DevOps",
+          "bullets": [
+            "Developed REST API endpoints in C#/.NET for the claims-intake service, consumed by internal web and mobile clients.",
+            "Wrote SQL Server stored procedures and queries for claims data extraction and regulatory reporting.",
+            "Automated data-migration and reconciliation work with Python scripts, replacing a manual spreadsheet process."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Education",
+      "type": "education",
+      "items": [
+        {
+          "institution": "Example University",
+          "dates": "2018 – 2021",
+          "credential": "Bachelor of Computer Science",
+          "location": "Sydney, Australia"
+        }
+      ]
+    },
+    {
+      "title": "Skills",
+      "type": "skills",
+      "groups": [
+        {
+          "label": "Core Languages",
+          "value": "C# (.NET Framework / .NET Core), Python, SQL, JavaScript, TypeScript, HTML/CSS"
+        },
+        {
+          "label": "Frameworks & Libraries",
+          "value": "ASP.NET Core, FastAPI, React, Node.js"
+        },
+        {
+          "label": "Tools, DevOps & Cloud",
+          "value": "Docker, GitHub Actions, Azure DevOps, Azure (App Service, Blob Storage), Git/GitHub, pytest, xUnit"
+        }
+      ]
+    }
+  ]
+}

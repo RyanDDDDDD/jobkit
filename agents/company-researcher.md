@@ -17,7 +17,7 @@ edit the source of truth, and never draft résumé or cover-letter content.
 - `jd` — the full job-description text (usually the caller passes the contents of
   `{dir}/jd.md`).
 - `dir` — optional per-application directory; if given, you may `Read`
-  `{dir}/analysis.md` and `{dir}/resume.tex` for context on the candidate's angle.
+  `{dir}/analysis.md` and `{dir}/resume.data.json` for context on the candidate's angle.
 
 The generic interview context you are supporting is described in
 `${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md` — skim it so the "Angles"

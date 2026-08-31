@@ -8,7 +8,7 @@ This file aggregates and de-duplicates all technical skills listed across Sample
 - SQL
 - JavaScript
 - TypeScript
-- HTML / CSS
+- HTML/CSS
 
 ### Frameworks & Libraries
 - ASP.NET Core
@@ -28,9 +28,10 @@ This file aggregates and de-duplicates all technical skills listed across Sample
 
 ### Concepts, Protocols & Data
 - REST APIs
-- System / application integration
-- Relational data modelling (PostgreSQL, SQL Server)
+- Third-party system integration
+- PostgreSQL schemas
+- SQL Server stored procedures and queries
 - CI/CD pipelines
-- Incident response / on-call
+- On-call incident response
 - Agile/Scrum
-- Message-based integration (Apache Kafka — personal project only)
+- Message pipeline (Apache Kafka — personal project only)

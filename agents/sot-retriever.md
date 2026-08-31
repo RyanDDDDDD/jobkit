@@ -39,16 +39,33 @@ Structure the output as:
 - role/title(s): <...>
 - dates: <start> – <end>   [CONTRADICTION: cv-a says X, cv-b says Y]
 - location: <...>
+- business domain: <the employer's sector, quoted or paraphrased from how the CV
+  text describes the company — do NOT invent; if the CV gives nothing, write
+  "not stated in source">
 - tech stack (only what the text states for THIS entry): <...>
 ### Bullets
 - [NEW] <canonical bullet, merged from overlapping wording across CVs>
 - [DUP of companies/<slug>.md:12] <bullet already present>
 ```
 
+`<slug>` rule: strip legal-entity suffixes (Corp, Corporation, Pty Ltd, Ltd, Inc,
+LLC, GmbH, Co, and similar), then lower-case and replace runs of non-alphanumerics
+with a single hyphen, and trim leading/trailing hyphens. Examples: `Acme Corp` ->
+`acme`, `Globex Pty Ltd` -> `globex`.
+
+Bullet style: when the source bullet (or its existing source-of-truth counterpart)
+has a bold topic lead-in, emit `- **Bold lead-in:** sentence.`; use a plain sentence
+bullet only when the source has no natural topic phrase.
+
 Also emit:
 
-- `## Skills` — a flat list of skills/tools/practices, each with the CV span or
-  phrase it came from. Do not add a skill the text does not contain.
+- `## Skills` — skills/tools/practices grouped under the same `###` category
+  headers the existing `skills.md` uses (Core Languages; Frameworks & Libraries;
+  Tools, DevOps & Cloud; Concepts, Protocols & Data), each with the CV span or
+  phrase it came from. Do not flatten the categories. Do not add a skill the text
+  does not contain; each entry, with any trailing `(...)` parenthetical stripped,
+  must be a case-insensitive substring of the CV text or a produced company/project
+  file.
 - `## Introduction` — 3–6 summary points distilled from the CV summary/profile
   sections.
 - `## Contradictions` — every date/title/location/stack disagreement between CVs,

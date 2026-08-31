@@ -28,10 +28,10 @@ real temp path). Assertions are phrased relative to it, not to a fixed folder.
    source CVs describe the same roles in overlapping wording; the skill must
    collapse, not duplicate.
 
-6. No-hallucination check: every non-empty line item in `<OUTPUT_DIR>/skills.md`
-   (a `- ` bullet, or a value on a `**Label:** …` line, with any trailing
-   parenthetical note stripped) appears as a case-insensitive substring somewhere
-   under the ingest input folder (`example/raw_cvs/`) OR in one of the produced
-   `<OUTPUT_DIR>/companies/*.md` / `<OUTPUT_DIR>/projects/*.md` files. Nothing in
-   `skills.md` may be invented beyond what the CVs and produced company files
-   contain.
+6. No-hallucination check: for every non-blank list item in
+   `<OUTPUT_DIR>/skills.md` (a line starting with `- `, ignoring the `###` category
+   headers), strip any trailing parenthetical `(...)` and trim; the remaining text
+   must be a case-insensitive substring of the concatenation of the ingest input
+   CV files (`example/raw_cvs/*.md`) and the produced `<OUTPUT_DIR>/companies/*.md`
+   + `<OUTPUT_DIR>/projects/*.md` files. Nothing in `skills.md` may be invented
+   beyond what the CVs and produced company/project files contain.

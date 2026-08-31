@@ -1,6 +1,6 @@
 ---
 name: ingest
-description: Build or refresh the resume_sections/ source-of-truth from a folder of the user's past CVs (.docx/.pdf/.tex/.md). Use when setting up the plugin or after adding a new CV/role.
+description: Build or refresh the resume_sections/ source-of-truth from a folder of the user's past CVs (.docx/.pdf/.tex/.txt/.md). Use when setting up the plugin or after adding a new CV/role.
 ---
 
 ## When to use
@@ -12,8 +12,11 @@ source-of-truth directory does not exist yet.
 
 1. **Resolve directories.**
    - Source-of-truth dir: dot-source `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`
-     and call `Get-JobAppConfig`; use `.SourceOfTruthDir` (default `resume_sections/`),
-     resolved relative to the user's project root. Create it if absent.
+     and call `Get-JobAppConfig`; use `.SourceOfTruthDir` (default `resume_sections/`).
+     `Get-JobAppConfig` walks up from the current working directory to find
+     `jobapp.config.yml`; the default `resume_sections/` is taken relative to that
+     root (the directory containing `jobapp.config.yml`, or the cwd if none is
+     found). Create the directory if absent.
    - Input dir: the folder path the user supplied (the `/ingest` argument). It must
      be a directory containing past CVs. If the user gave a single file, use its
      parent and process only that file.
@@ -39,21 +42,37 @@ source-of-truth directory does not exist yet.
 
 4. **Create or MERGE section files (never overwrite).** For each cluster the
    subagent proposes, write to the source-of-truth dir:
-   - `companies/<slug>.md` — one file per employer. `<slug>` is the lower-cased
-     company name, alphanumerics and hyphens only (`Globex Pty Ltd` -> `globex`).
+   - `companies/<slug>.md` — one file per employer. Derive `<slug>`: strip
+     legal-entity suffixes (Corp, Corporation, Pty Ltd, Ltd, Inc, LLC, GmbH, Co,
+     and similar), then lower-case and replace runs of non-alphanumerics with a
+     single hyphen, and trim leading/trailing hyphens. Examples: `Acme Corp` ->
+     `acme`, `Globex Pty Ltd` -> `globex`.
    - `projects/<slug>.md` — one file per personal/side project (only if the CVs
-     contain projects).
+     contain projects); same slug rule.
    - `education.md` — all credentials.
    - `introduction.md` — the distilled summary points.
-   - `skills.md` — the flat de-duplicated skill list.
+   - `skills.md` — the de-duplicated skill list.
 
    Follow the existing file style (see `${CLAUDE_PLUGIN_ROOT}/example/resume_sections/`):
-   company files have a `### Company Overview` block (Company Name, Role Titles,
-   Business Domain, Integrated Tech Stack) then `### Unique Bullet Points` with `- `
-   bullets. **Merge is additive**: keep every existing bullet, append only
-   `[NEW]` bullets, never delete. A re-run with one extra CV must not remove
-   anything already present. Collapse near-duplicate bullets into one canonical
-   bullet rather than listing both.
+   - Company files have a `### Company Overview` block (Company Name, Role Titles,
+     Business Domain, Integrated Tech Stack) then `### Unique Bullet Points` with
+     `- ` bullets. Derive **Business Domain** only from how the CV text itself
+     describes the employer (its sector / what it does); do not invent one. If the
+     CV text says nothing about the employer's sector, write `not stated in source`
+     and list it in the step-7 confirmation items for the user to fill in.
+   - Preserve the `- **Bold lead-in:** sentence.` bullet style: when a source
+     bullet (or its existing source-of-truth counterpart) has a bold topic
+     lead-in, keep/emit one; use a plain sentence bullet only when the source has
+     no natural topic phrase.
+   - `skills.md` keeps its grouped `###` category headers (e.g. `### Core
+     Languages`, `### Frameworks & Libraries`, `### Tools, DevOps & Cloud`,
+     `### Concepts, Protocols & Data`). Add each skill under the right existing
+     category; do not flatten the file into one list.
+
+   **Merge is additive**: keep every existing bullet, append only `[NEW]` bullets,
+   never delete. A re-run with one extra CV must not remove anything already
+   present. Collapse near-duplicate bullets into one canonical bullet rather than
+   listing both.
 
 5. **Draft `profile.yml`.** Write it to the source-of-truth dir with EXACTLY this
    key structure (this is what Task 7's `generate` consumes — do not add or rename
@@ -113,6 +132,8 @@ source-of-truth directory does not exist yet.
      wrote to `profile.yml`, for the user to confirm;
    - every CV contradiction the subagent flagged — ask the user to resolve each one,
      do NOT choose silently;
+   - any company file whose Business Domain is `not stated in source`, so the user
+     can supply the sector;
    - the subagent's "Coverage notes" (existing material the new CVs did not mention),
      so the user knows nothing was dropped.
 
@@ -120,9 +141,12 @@ source-of-truth directory does not exist yet.
 
 - Only reorganise what the CVs contain. Never add skills, employers, projects,
   tools, metrics, or dates that are not in the extracted text.
-- Every line you write to `skills.md` must be a case-insensitive substring of the
-  ingest input text or of a company/project file you just produced. If it is not,
-  drop it.
+- Ground every `skills.md` entry. For each list item, strip any trailing
+  parenthetical `(...)`; the remaining text must be a case-insensitive substring of
+  the concatenation of the ingest input CV text and the `companies/*.md` /
+  `projects/*.md` files you just produced. If it is not, reword the entry to a
+  phrase that does appear (prefer the CV's own wording), or drop it. Never invent a
+  skill the CVs do not support.
 - Merges are additive; a re-run with one new CV must not delete existing bullets.
 - Do not touch anything outside the source-of-truth dir. Do not run LaTeX or
   generate resumes here — that is the `generate` skill.

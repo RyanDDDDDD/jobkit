@@ -4,9 +4,11 @@
 <meta charset="utf-8">
 <title>Resume</title>
 <style>
-  /* render_pdf.ps1 rewrites the two url("fonts/...woff2") below to absolute file:/// paths
-     at the template's own location before rendering. Keep them EXACTLY as the literal
-     relative form url("fonts/<File>.woff2") so that rewrite's string match works. */
+  /* render_pdf.ps1 rewrites the two @font-face url()s below to absolute file:/// paths at
+     the template's own location before rendering (headless Chromium resolves relative URLs
+     against the rendered file, which lives elsewhere). It does a literal string replace on
+     url("fonts/Newsreader.woff2") and url("fonts/SourceSerif4.woff2") — keep both EXACTLY
+     in that form (double quotes, "fonts/" prefix, no "./", no whitespace). */
   @font-face { font-family: "Newsreader"; src: url("fonts/Newsreader.woff2") format("woff2");
     font-weight: 400 600; font-style: normal; font-display: swap; }
   @font-face { font-family: "Source Serif 4"; src: url("fonts/SourceSerif4.woff2") format("woff2");
@@ -21,9 +23,12 @@
     --body: "Source Serif 4", Georgia, "Times New Roman", "Noto Serif CJK SC", "Songti SC", serif;
     --display: "Newsreader", Georgia, "Noto Serif CJK SC", "Songti SC", serif;
   }
+  /* Font fallback is per-glyph: the bundled Latin serif comes first so Latin/digits stay
+     in Source Serif 4 / Newsreader, and only CJK codepoints fall through to a system CJK
+     face (Noto Serif CJK / Source Han Serif / Songti / PingFang / YaHei). */
   :lang(zh) {
-    --body: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", "PingFang SC", "Microsoft YaHei", "Source Serif 4", serif;
-    --display: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "PingFang SC", "Microsoft YaHei", "Newsreader", serif;
+    --body: "Source Serif 4", "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "PingFang SC", "Microsoft YaHei", "SimSun", serif;
+    --display: "Newsreader", "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "PingFang SC", "Microsoft YaHei", "SimSun", serif;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -137,7 +142,7 @@
   (data.contact || []).forEach(function (c, i) {
     if (i) { var s = el("span", "sep"); s.textContent = "·"; contact.appendChild(s); }
     if (c && c.href) { var a = el("a"); a.href = c.href; a.textContent = c.text || c.href; contact.appendChild(a); }
-    else { contact.appendChild(document.createTextNode(typeof c === "string" ? c : (c.text || ""))); }
+    else { contact.appendChild(document.createTextNode(typeof c === "string" ? c : ((c && c.text) || ""))); }
   });
   header.appendChild(contact);
   root.appendChild(header);
@@ -149,7 +154,12 @@
     var ul = el("ul", "intro");
     ul.appendChild(frag(data.intro, function (b) {
       var li = el("li");
-      if (b.lead) { var strong = el("strong", null, b.lead.replace(/[.:．：]\s*$/, "") + "."); li.appendChild(strong); li.appendChild(document.createTextNode(" " + (b.text || ""))); }
+      if (b.lead) {
+        var isZh = data.lang === "zh";
+        var strong = el("strong", null, b.lead.replace(/[.:。．：]\s*$/, "") + (isZh ? "。" : "."));
+        li.appendChild(strong);
+        li.appendChild(document.createTextNode((isZh ? "" : " ") + (b.text || "")));
+      }
       else { li.textContent = typeof b === "string" ? b : (b.text || ""); }
       return li;
     }));

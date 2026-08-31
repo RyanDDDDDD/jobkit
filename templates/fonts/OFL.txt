@@ -6,6 +6,14 @@ The WOFF2 files in this directory (Newsreader.woff2, SourceSerif4.woff2) are the
 Latin-subset variable webfonts distributed by Google Fonts (fonts.gstatic.com),
 which are the same OFL-licensed fonts above.
 
+Upstream copyright statements (OFL 1.1 requires these to travel with the fonts):
+
+  Copyright 2019 The Newsreader Project Authors
+  (https://github.com/productiontype/Newsreader), with Reserved Font Name "Newsreader".
+
+  Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name "Source Serif".
+  Source is a trademark of Adobe in the United States and/or other countries.
+
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
 -----------------------------------------------------------

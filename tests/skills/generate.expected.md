@@ -35,8 +35,13 @@ checks, not exact prose.
      joined by a space-padded en-dash U+2013 (`Jan. 2024 – Present`,
      `Feb. 2022 – Dec. 2023`).
 
-4. **`resume.pdf` renders and is exactly 1 page.** `render_pdf.ps1` prints an
-   `OK: <path> (1 page)` line (exit 0) and the file exists and is non-empty.
+4. **`resume.pdf` renders within the page budget.** `render_pdf.ps1` prints an
+   `OK: <path> (N page…)` line (exit 0), the file exists and is non-empty, and the
+   page count `N` satisfies `1 <= N <= 2` (the default `--max-pages`). A compact
+   fixture résumé of this size *should* be 1 page — the skill's "Length discipline"
+   guidance aims well below the ceiling — and 2 is the tolerated soft ceiling, not a
+   pass by luck. The `pdftotext -enc UTF-8` output of `resume.pdf` must **not**
+   contain `Invalid resume JSON` (the renderer's wrong-shape fallback page).
 
 5. **`resume.pdf` text round-trips.** `pdftotext -enc UTF-8 resume.pdf -` output
    contains `Sample Dev` and both company names (`Acme Corp` and `Globex Pty Ltd`).

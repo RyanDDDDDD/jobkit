@@ -140,6 +140,15 @@ Parse it with these exact rules:
    - **Non-zero exit ⇒ failure:** surface the `Render failed:` text, keep the
      `.data.json`, do **not** compress, do **not** claim success. Fix the data
      (usually an invalid JSON string or a wrong shape) and re-render.
+   - **Silent-failure guard:** the renderer exits 0 even when the data is unusable —
+     it draws a visible "Invalid resume JSON: …" page for a JSON scalar / `null`, and
+     a near-empty page for a valid-JSON-but-wrong-shape object (no `sections`). After
+     a successful render, extract the PDF text
+     (`pdftotext -enc UTF-8 {dir}/resume.pdf -`) and confirm **both**: it does not
+     contain `Invalid resume JSON`, **and** it contains the candidate's `name` plus
+     at least one company name from the experience section. If either check fails,
+     treat it exactly like a render failure: surface it, keep the `.data.json`, do
+     not compress, do not claim success — fix the data and re-render.
    - **Page count** is the integer in the `OK: … (N page…)` line. If it exceeds
      `--max-pages`: WARN the user and list candidate trims (drop the lowest-ranked
      bullet from each role, shorten the intro, drop a de-emphasized skill group). Do
@@ -160,7 +169,12 @@ Parse it with these exact rules:
    Emit with `ConvertTo-Json`, then render:
    `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1 -TemplatePath <cover_letter.html override-resolved> -DataPath {dir}/cover_letter.data.json -OutPath {dir}/cover_letter.pdf -Placeholder '{{COVER_LETTER_JSON}}'`
    (add `-KeepHtml` with `--keep-html`). Same CLI contract — non-zero exit ⇒
-   failure; the `OK: … (N page…)` line should report 1 page. Then
+   failure; the `OK: … (N page…)` line should report 1 page. Apply the same
+   silent-failure guard as step 6: after a successful render, extract the PDF text
+   and confirm it does **not** contain `Invalid cover letter JSON` and **does**
+   contain the candidate's `name` and the `subject` text. If either check fails,
+   keep the `.data.json`, do not compress, do not claim success — fix the data and
+   re-render. Then
    `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1 -PdfPath {dir}/cover_letter.pdf`.
 
 9. **Plain-text cover letter.**
@@ -198,8 +212,12 @@ Parse it with these exact rules:
 Build each file as a PowerShell hashtable / array and emit it with `ConvertTo-Json`:
 
 ```powershell
-$data | ConvertTo-Json -Depth 12 | Set-Content -Encoding utf8 {dir}/resume.data.json
+$data | ConvertTo-Json -Depth 12 | Set-Content -Encoding utf8NoBOM {dir}/resume.data.json
 ```
+
+(Use `utf8NoBOM` on PowerShell 7. If you need Windows PowerShell 5.1 compatibility,
+write with `[System.IO.File]::WriteAllText($path, $json)` instead — plain
+`-Encoding utf8` there emits a BOM, which some JSON parsers choke on.)
 
 `ConvertTo-Json` guarantees valid JSON and correct string escaping (quotes,
 backslashes, newlines) — hand-writing nested JSON is error-prone. If you do hand-write
@@ -218,7 +236,7 @@ renderer, so the only escaping concern is producing valid JSON strings — which
 | `density` | `"compact"` or `"standard"` per `--density` (see Flags for the default). |
 | `contact` | Array from `profile.yml`: `phone` as a plain string; `email` as `{ "text": "<email>", "href": "mailto:<email>" }`; and, only if `links.github` is set, `{ "text": "github.com/<handle>", "href": "https://github.com/<handle>" }`. Omit the GitHub entry entirely when `links.github` is absent. |
 | `introTitle` | Optional. Omit for the default `"Introduction"`; set it to `"简介"` for `--lang zh`. |
-| `intro` | Array of `{ "lead", "text" }` — 3–5 items distilled from retrieved `introduction.md` content. `lead` is the short topic phrase (the renderer bolds it and appends the period); `text` is the rest of the clause. |
+| `intro` | Array of `{ "lead", "text" }` — 3–5 items distilled from retrieved `introduction.md` content. `lead` is the short topic phrase (the renderer bolds it and appends the trailing period — `.` for `lang: "en"`, `。` for `lang: "zh"`); `text` is the rest of the clause. |
 | `sections` | Array, in this order: Experience, [Selected Projects], Education, Skills, [extra source-of-truth sections]. |
 
 **Experience section** — `{ "title": "Industrial Experience", "type": "entries", "items": [...] }`.
@@ -234,7 +252,8 @@ One item per role in `profile.yml` `conventions.roles`, ordered per `--order`
   another company's stack. `stackLabel` is optional (default `"Stack"`).
 - `bullets` = the retrieved bullets for that role, best-first, verb-first, past
   tense (present only for an ongoing duty in a current role). Emit as many as the
-  role warrants (3–6); every bullet traces to a retriever `file:line`.
+  role warrants (3–6; see "Length discipline" below when targeting one compact
+  page); every bullet traces to a retriever `file:line`.
 
 **Selected Projects section** (only with `--with-projects`) —
 `{ "title": "Selected Projects", "type": "entries", "items": [...] }`. One item per
@@ -255,6 +274,13 @@ JD-relevant subset within each group and keep the source file's category structu
 
 **Extra sections** — any additional section the source of truth supports
 (Publications, Certifications, Patents) → `{ "title", "type": "list", "items": [...] }`.
+
+**Length discipline.** `--max-pages` is the upper bound, not the target. When the
+density is `compact` and the goal is a 1-page résumé, aim well below the ceiling:
+~3 bullets per role (the strongest, JD-relevant ones), a 3-item intro, and drop
+de-emphasized skill groups. Render, check the page count, and if it is over target
+trim the lowest-ranked bullet from each role and re-render — the soft-trim loop in
+step 6 applies here too.
 
 ### `{dir}/cover_letter.data.json` (design amendment §3.2)
 

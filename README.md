@@ -62,11 +62,16 @@ claude plugin install job-application
 ### Try it against the bundled fixture
 
 Before pointing the plugin at your own data, run it against the synthetic candidate in
-`example/`: `/ingest example/raw_cvs` to build the source of truth, then `/jd-intake` on
-`example/sample-jd.md` and name the company `Testco` (the sample JD is written for a
-fictional "Meridian Integration Partners"; you name the application `Testco`), then
-`/generate` — you get a full resume + cover letter for a fictional "Sample Dev" and can
-see the whole pipeline end to end.
+`tests/fixtures/`: `/ingest tests/fixtures/raw_cvs` to build the source of truth, then
+`/jd-intake` on `tests/fixtures/sample-jd.md` and name the company `Testco` (the sample
+JD is written for a fictional "Meridian Integration Partners"; you name the application
+`Testco`), then `/generate` — you get a full resume + cover letter for a fictional
+"Sample Dev" and can see the whole pipeline end to end.
+
+`example/` holds a rendered sample of that output — nothing but the four PDFs:
+résumé and cover letter, English and Chinese (`resume.pdf` / `resume.zh.pdf` /
+`cover_letter.pdf` / `cover_letter.zh.pdf`). The `*.data.json` they were rendered from
+live in `tests/fixtures/`.
 
 ## Daily use
 
@@ -125,12 +130,13 @@ All mechanical tests run from one entry point — plain PowerShell, no Pester:
 pwsh tests/run-pipeline.ps1
 ```
 
-It renders the bundled HTML templates with the `example/*.data.json` fixtures
+It renders the bundled HTML templates with the `tests/fixtures/*.data.json` fixtures
 (asserting the résumé is one page), exercises `cover_letter_to_txt.ps1` and
 `Get-JobAppConfig`, and then runs each `tests/scripts/*.Tests.ps1`, folding their
 exit codes into the pass/fail count. Exit 0 means every check passed. The render
 checks skip cleanly on a machine with no Chromium browser.
 
 The synthetic candidate fixture the skills' expected-output checklists
-(`tests/skills/*.expected.md`) are written against lives under `example/`
-(`example/raw_cvs/`, `example/resume_sections/`, `example/sample-jd.md`).
+(`tests/skills/*.expected.md`) are written against lives under `tests/fixtures/`
+(`tests/fixtures/raw_cvs/`, `tests/fixtures/resume_sections/`,
+`tests/fixtures/sample-jd.md`).

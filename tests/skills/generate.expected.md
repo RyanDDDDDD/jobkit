@@ -1,9 +1,9 @@
 # Integration-test assertions: `generate` skill
 
 After running the `generate` skill for company `Testco` with **default flags**,
-against the `example/resume_sections/` source of truth (candidate "Sample Dev") and
+against the `tests/fixtures/resume_sections/` source of truth (candidate "Sample Dev") and
 the `applications/Testco/analysis.md` produced by `jd-intake` from
-`example/sample-jd.md` (the synthetic "Integration Developer" JD), the produced
+`tests/fixtures/sample-jd.md` (the synthetic "Integration Developer" JD), the produced
 output must satisfy every assertion below.
 
 The fixture ships no `jobapp.config.yml`, so `Get-JobAppConfig` returns the plugin
@@ -22,7 +22,7 @@ checks, not exact prose.
 
 2. **`resume.data.json` parses and carries the right identity.**
    `Get-Content -Raw resume.data.json | ConvertFrom-Json` succeeds. `.name` equals
-   the `name` in `example/resume_sections/profile.yml` exactly (`Sample Dev`).
+   the `name` in `tests/fixtures/resume_sections/profile.yml` exactly (`Sample Dev`).
    `.lang` is `en` and `.density` is `compact`.
 
 3. **The experience section uses the `profile.yml` role strings verbatim.** The
@@ -48,7 +48,7 @@ checks, not exact prose.
 
 6. **No forbidden technology.** Neither `resume.data.json` (raw text) nor the
    `pdftotext -enc UTF-8` output of `resume.pdf` contains the word `Rust`
-   (case-insensitive). `example/resume_sections/factual-bounds.md` forbids claiming
+   (case-insensitive). `tests/fixtures/resume_sections/factual-bounds.md` forbids claiming
    Rust and the JD does not ask for it.
 
 7. **`cover_letter.pdf` exists** and `render_pdf.ps1` reports it as 1 page.
@@ -74,7 +74,7 @@ checks, not exact prose.
     skill's step-12 report contains a table (or list) in which every metric and every
     named skill used in `resume.data.json` / `cover_letter.data.json` is paired with
     a source-of-truth citation of the form `<relative/path>:<line>` that resolves to a
-    real line under `example/resume_sections/` (e.g. `introduction.md:5`,
+    real line under `tests/fixtures/resume_sections/` (e.g. `introduction.md:5`,
     `companies/acme.md:11`). No metric appears in the résumé that is not recorded in
     the source of truth (in particular, no numeric performance figure beyond the
     "4+ years" experience statement traceable to `introduction.md`).

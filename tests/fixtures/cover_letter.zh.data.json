@@ -1,0 +1,25 @@
+{
+  "name": "Sample Dev",
+  "lang": "zh",
+  "contact": [
+    "(+00) 000-000-000",
+    { "text": "sample.dev@example.com", "href": "mailto:sample.dev@example.com" },
+    { "text": "github.com/sample-dev", "href": "https://github.com/sample-dev" }
+  ],
+  "date": "2026年9月1日",
+  "recipient": [
+    "招聘经理",
+    "Meridian Integration Partners",
+    "Sydney, NSW, Australia"
+  ],
+  "subject": "应聘 Integration Developer 职位",
+  "salutation": "尊敬的招聘经理：",
+  "paragraphs": [
+    "我谨此申请 Meridian Integration Partners 的 Integration Developer 职位。过去四年，我一直担任专注于系统集成的后端软件工程师，负责设计和调用 REST API、在各应用系统之间可靠地传输数据——这正是贵司这一岗位的核心工作。",
+    "在从事 B2B 供应链与物流 SaaS 业务的 Acme Corp，我使用 C#/.NET 和 Python/FastAPI 构建 REST API，将外部承运商与 ERP 系统集成进货运跟踪平台，并以 PostgreSQL 数据库架构和分析型 SQL 支撑客户报表。此前在保险理赔处理平台 Globex Pty Ltd，我使用 C#/.NET 为理赔受理服务开发 REST 接口，并编写 SQL Server 存储过程与查询用于合规报送。",
+    "在这两段经历中，我都负责过 CI/CD 流水线与容器化部署——在 Acme Corp 使用 GitHub Actions 与 Azure，在 Globex Pty Ltd 使用 Azure DevOps——并参与生产环境的事故响应。这与贵司关于 Docker、CI/CD 负责制以及 Azure 经验的加分项相符。我也很希望能在贵司的交付团队中，进一步积累专用 iPaaS 平台与医疗数据互操作标准方面的经验。",
+    "我拥有在澳大利亚的完全工作权利，期待有机会进一步探讨我的集成背景如何契合这一岗位。感谢您的考虑。"
+  ],
+  "closing": "此致",
+  "signature": "Sample Dev"
+}

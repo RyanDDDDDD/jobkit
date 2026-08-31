@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Convert a LaTeX cover letter (built from templates/cover_letter_template.tex)
+    Convert a LaTeX cover letter (built from templates/cover_letter.tex)
     into a plain-text version suitable for pasting into an email body.
 
 .DESCRIPTION
@@ -16,7 +16,7 @@
     (e.g. cover_letter.tex -> cover_letter.txt in the same folder).
 
 .EXAMPLE
-    & "C:\Users\user\Desktop\Resume\templates\cover_letter_to_txt.ps1" -TexPath cover_letter.tex
+    & "C:\Users\user\Desktop\Resume\scripts\cover_letter_to_txt.ps1" -TexPath cover_letter.tex
 #>
 param(
     [Parameter(Mandatory = $true)]

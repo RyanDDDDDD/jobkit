@@ -16,15 +16,18 @@ from memory of the conversation.
    - Determine `{Company}` from what the user said. If it is unclear or missing, ask
      before continuing.
    - Dot-source `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1` and call
-     `Get-JobAppConfig`. `Get-JobAppConfig` walks up from the current working
-     directory to find `jobapp.config.yml`; the defaults it returns are taken
-     relative to that root (the directory containing `jobapp.config.yml`, or the cwd
-     if none is found).
-   - Take `.OutputDir` (default `applications/{Company}`). Substitute the literal
-     token `{Company}` in that template string with the company name (e.g.
-     `applications/Testco`). Create the directory if absent (`mkdir -p` semantics).
-   - Also take `.SourceOfTruthDir` (default `resume_sections/`) — the retrieve step
-     needs it. If it does not exist, tell the user to run `/ingest` first and stop.
+     `Get-JobAppConfig`. It returns a `Root` key — the directory where
+     `jobapp.config.yml` was found by walking up from the current working directory,
+     or `(Get-Location).Path` if none is found — plus `PdflatexPath`,
+     `SourceOfTruthDir`, and `OutputDir`.
+   - Take `.OutputDir` (default `applications/{Company}`), substitute the literal
+     token `{Company}` with the company name, then join onto `.Root`: `{dir}` is
+     `<Root>/<OutputDir with {Company} substituted>` (e.g.
+     `<Root>/applications/Testco`). Create the directory if absent (`mkdir -p`
+     semantics).
+   - Also resolve the source-of-truth dir as `<Root>/<SourceOfTruthDir>` (default
+     `resume_sections/`) — the retrieve step needs it. If it does not exist, tell the
+     user to run `/ingest` first and stop.
 
 2. **Save the raw JD.** Write the job description **verbatim** — exactly as the user
    provided it, no reformatting, no trimming — to `{dir}/jd.md`.

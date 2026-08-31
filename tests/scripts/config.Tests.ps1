@@ -26,11 +26,13 @@ try {
     $c1 = Get-JobAppConfig
     Assert "no config: SourceOfTruthDir default" ($c1.SourceOfTruthDir -eq 'resume_sections')
     Assert "no config: OutputDir default"        ($c1.OutputDir -eq 'applications/{Company}')
+    Assert "no config: Root is cwd"              ($c1.Root -eq (Get-Location).Path)
 
     Set-Location $override
     $c2 = Get-JobAppConfig
     Assert "override: OutputDir wins"            ($c2.OutputDir -eq 'custom/{Company}')
     Assert "override: SourceOfTruthDir default"  ($c2.SourceOfTruthDir -eq 'resume_sections')
+    Assert "override: Root is the config dir"    ($c2.Root -eq (Get-Location).Path)
 }
 finally {
     Set-Location $origLocation

@@ -24,13 +24,15 @@ per-application directory.
 - **`{dir}` (per-application directory):** dot-source
   `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`, take
   `.OutputDir` (default `applications/{Company}`), substitute the literal `{Company}`
-  token with the company name. `{dir}` must already contain `jd.md`, `analysis.md`,
-  and `resume.tex` — if not, tell the user to run `/jd-intake` and `/generate` first
-  and stop.
-- **`interview_playbook.md` lives at the USER's repo root**, resolved relative to the
-  current working directory (walk up from cwd to the directory containing
-  `jobapp.config.yml`, or use cwd if there is none). It is **not** a plugin file and
-  **never** lives under `${CLAUDE_PLUGIN_ROOT}`. If it does not exist yet, seed it by
+  token with the company name, then join onto `.Root`: `{dir}` is
+  `<Root>/<OutputDir with {Company} substituted>`. `{dir}` must already contain
+  `jd.md`, `analysis.md`, and `resume.tex` — if not, tell the user to run
+  `/jd-intake` and `/generate` first and stop.
+- **`interview_playbook.md` lives at the USER's repo root** — `Get-JobAppConfig`'s
+  `Root` key (the directory containing `jobapp.config.yml` found by walking up from
+  the current working directory, or `(Get-Location).Path` if there is none). It is
+  **not** a plugin file and **never** lives under `${CLAUDE_PLUGIN_ROOT}`. If it does
+  not exist yet, seed it by
   copying `${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md` to
   `<repo-root>/interview_playbook.md`, then tell the user it was created and that
   it is theirs to extend.

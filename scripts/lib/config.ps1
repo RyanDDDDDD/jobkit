@@ -1,5 +1,6 @@
 function Get-JobAppConfig {
     $defaults = @{
+        Root             = (Get-Location).Path
         PdflatexPath     = $null
         SourceOfTruthDir = "resume_sections"
         OutputDir        = "applications/{Company}"
@@ -8,6 +9,7 @@ function Get-JobAppConfig {
     while ($dir) {
         $cfg = Join-Path $dir "jobapp.config.yml"
         if (Test-Path $cfg) {
+            $defaults.Root = $dir
             foreach ($line in Get-Content $cfg) {
                 if ($line -match '^\s*#' -or $line -notmatch ':') { continue }
                 $k, $v = $line -split ':', 2

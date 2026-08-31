@@ -12,11 +12,11 @@ source-of-truth directory does not exist yet.
 
 1. **Resolve directories.**
    - Source-of-truth dir: dot-source `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`
-     and call `Get-JobAppConfig`; use `.SourceOfTruthDir` (default `resume_sections/`).
-     `Get-JobAppConfig` walks up from the current working directory to find
-     `jobapp.config.yml`; the default `resume_sections/` is taken relative to that
-     root (the directory containing `jobapp.config.yml`, or the cwd if none is
-     found). Create the directory if absent.
+     and call `Get-JobAppConfig`. Resolve the directory by joining its `Root` key
+     onto `.SourceOfTruthDir` (default `resume_sections/`) — i.e.
+     `<Root>/<SourceOfTruthDir>`. `Root` is the directory where `jobapp.config.yml`
+     was found by walking up from the current working directory, or
+     `(Get-Location).Path` if none is found. Create the directory if absent.
    - Input dir: the folder path the user supplied (the `/ingest` argument). It must
      be a directory containing past CVs. If the user gave a single file, use its
      parent and process only that file.

@@ -60,12 +60,14 @@ bullet only when the source has no natural topic phrase.
 Also emit:
 
 - `## Skills` — skills/tools/practices grouped under the same `###` category
-  headers the existing `skills.md` uses (Core Languages; Frameworks & Libraries;
-  Tools, DevOps & Cloud; Concepts, Protocols & Data), each with the CV span or
-  phrase it came from. Do not flatten the categories. Do not add a skill the text
-  does not contain; each entry, with any trailing `(...)` parenthetical stripped,
-  must be a case-insensitive substring of the CV text or a produced company/project
-  file.
+  headers the existing `skills.md` already uses: preserve whatever `###` headers
+  that file has and place each skill under the right one (the bundled example uses
+  `Core Languages` / `Frameworks & Libraries` / `Tools, DevOps & Cloud` /
+  `Concepts, Protocols & Data` — adapt to the actual file). Each entry carries the
+  CV span or phrase it came from. Do not flatten the categories. Do not add a skill
+  the text does not contain; each entry, with any trailing `(...)` parenthetical
+  stripped, must be a case-insensitive substring of the CV text or of an existing
+  file under `<sourceDir>`.
 - `## Introduction` — 3–6 summary points distilled from the CV summary/profile
   sections.
 - `## Contradictions` — every date/title/location/stack disagreement between CVs,

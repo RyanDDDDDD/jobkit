@@ -500,7 +500,6 @@ conventions:
     - { institution: "Example University", credential: "Bachelor of Computer Science", start: "2018", end: "2021", location: "Sydney, Australia" }
   default_resume_length: 1
   default_include_projects: false
-  output_dir: "applications/{Company}"
 ```
 
 - [ ] **Step 5: Write `example/resume_sections/factual-bounds.md`**

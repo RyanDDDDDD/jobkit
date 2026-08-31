@@ -36,11 +36,14 @@ if it is absent, tell the user to run `/jd-intake` first and stop.
   instead of `${CLAUDE_PLUGIN_ROOT}/templates/<name>.tex`. `<name>` is
   `resume_1page`, `resume_2page`, or `cover_letter`.
 - **Source-of-truth dir** and **output dir**: dot-source
-  `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`. Take
-  `.SourceOfTruthDir` (default `resume_sections/`) and `.OutputDir` (default
-  `applications/{Company}`). `profile.yml` has **no** `output_dir` key — resolve
-  `{dir}` by substituting the literal token `{Company}` in `.OutputDir` with the
-  company name (e.g. `applications/Testco`), exactly as `jd-intake` does.
+  `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`. It returns
+  `Root` (the directory where `jobapp.config.yml` was found by walking up from the
+  current working directory, or `(Get-Location).Path` if none), `SourceOfTruthDir`
+  (default `resume_sections/`), and `OutputDir` (default `applications/{Company}`).
+  The source-of-truth dir is `<Root>/<SourceOfTruthDir>`. `profile.yml` has **no**
+  `output_dir` key — resolve `{dir}` by substituting the literal token `{Company}` in
+  `.OutputDir` with the company name and joining onto `.Root`
+  (e.g. `<Root>/applications/Testco`), exactly as `jd-intake` does.
 - `{dir}/analysis.md` must already exist. If not: "run `/jd-intake` for {Company}
   first" and stop.
 
@@ -113,12 +116,17 @@ Parse it with these exact rules:
 
 6. **Write and compile the résumé.** Write `{dir}/resume.tex`. Run:
    `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compile_latex.ps1 -TexPath {dir}/resume.tex`.
-   - If the result object's `Ok` is false: surface `LogTail`, keep the `.tex`, do
+   This is the CLI form: on success it prints `OK: <pdf> (N page…)` to stdout and
+   exits 0; on failure it writes the LaTeX log tail to stderr and exits non-zero. It
+   returns **no object** — read the exit code and the `OK:` line, exactly as
+   `skills/review-application/SKILL.md` does.
+   - **Non-zero exit ⇒ failure:** surface the stderr log tail, keep the `.tex`, do
      **not** compress, do **not** claim success. Fix the LaTeX (usually an unescaped
      special character) and recompile.
-   - If `Pages` exceeds the `--length` target: warn the user and list candidate
-     trims (drop the lowest-ranked bullet from each role, shorten the intro, drop a
-     de-emphasized skill group). Do not ship an over-length résumé silently.
+   - **Page count** is the integer in the `OK: … (N page…)` line. If it exceeds the
+     `--length` target: warn the user and list candidate trims (drop the
+     lowest-ranked bullet from each role, shorten the intro, drop a de-emphasized
+     skill group). Do not ship an over-length résumé silently.
 
 7. **Compress.** On success:
    `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1 -PdfPath {dir}/resume.pdf`.
@@ -133,7 +141,8 @@ Parse it with these exact rules:
    Obey every `factual-bounds.md` cover-letter rule (e.g. no university mention).
    Write `{dir}/cover_letter.tex`, then
    `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compile_latex.ps1 -TexPath {dir}/cover_letter.tex`
-   (same `Ok` / `Pages` handling — the letter must stay 1 page), then
+   (same CLI contract — non-zero exit ⇒ failure; the `OK: … (N page…)` line must
+   report 1 page), then
    `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1 -PdfPath {dir}/cover_letter.pdf`.
 
 9. **Plain-text cover letter.**
@@ -167,13 +176,13 @@ Parse it with these exact rules:
 | Placeholder | Fill |
 |---|---|
 | `{{NAME}}` `{{PHONE}}` `{{EMAIL}}` `{{GITHUB_USERNAME}}` | `profile.yml` `name` / `phone` / `email` / `links.github` — verbatim. `links.github` is the handle only (the template wraps it as `github.com/<handle>`). If `profile.yml` has no `links.github`, replace the whole `$|$ \href{...github...}` fragment in the header with nothing. |
-| `{{INTRODUCTION_BULLETS}}` | Inline LaTeX for the Introduction item body: 3–5 short clauses from retrieved `introduction.md` content, each optionally led by `\textbf{Topic:}`, joined by ` \textbackslash\textbackslash \vspace{3pt} ` (literal `\\ \vspace{3pt}`). It sits inside one `\item{ … }` — do not add `\item`. |
+| `{{INTRODUCTION_BULLETS}}` | Inline LaTeX for the Introduction item body: 3–5 short clauses from retrieved `introduction.md` content, each optionally led by `\textbf{Topic:}`. Join clauses with the LaTeX line-break sequence `\\ \vspace{3pt}` (a double backslash then the spacing command), matching the template's Skills block. It sits inside one `\item{ … }` — do not add `\item`. |
 | Industrial Experience block — `\resumeSubheading{ {{JOB_TITLE}} }{ {{EMPLOYMENT_DATES}} }{ {{COMPANY_NAME}} }{ {{LOCATION}} }` then `\resumeItemListStart … \resumeItemListEnd` | **A pattern, repeated once per role** in `profile.yml` `conventions.roles` (fixture "Sample Dev" has 2 roles → 2 blocks), ordered per `--order`. `JOB_TITLE` = role `title`; `EMPLOYMENT_DATES` = `"<start> -- <end>"` (en-dash `--`); `COMPANY_NAME` = role `company`; `LOCATION` = role `location` — **all four verbatim from `profile.yml`**. |
 | `{{TECH_STACK}}` | The retrieved "Integrated Tech Stack" line for **that** company (`companies/<slug>.md`), JD-relevant subset allowed, never blended with another company. Rendered as the first `\resumeItem{\textbf{Tech Stack:} …}`. |
 | `{{BULLET_POINT_1..3}}` | Retrieved bullets for that role, best-first. **The count is not fixed at 3** — emit as many `\resumeItem{…}` lines as the role warrants (3–6). Add or delete `\resumeItem{…}` lines within the block; drop the `{{BULLET_POINT_N}}` tokens you do not use. Each bullet verb-first, past tense (present only for an ongoing duty in a current role). |
 | `{{EDUCATION_ENTRIES}}` | One line per entry in `profile.yml` `conventions.education`: `\resumeSubheading{<institution>}{<start> -- <end>}{<credential>}{<location>}`. No GPA / grades / distinctions (experienced-hire default). |
-| `{{LANGUAGES_LIST}}` | Comma-separated languages from retrieved `skills.md` "Core Languages", JD-relevant subset. Label in template: "Programming Languages" (1-page) / "Core Languages" (2-page). |
-| `{{FRAMEWORKS_AND_TOOLS_LIST}}` | Comma-separated frameworks / tools / platforms / concepts from the other retrieved `skills.md` groups, JD-relevant subset. |
+| `{{LANGUAGES_LIST}}` | Comma-separated languages from the `### Core Languages` group in `<Root>/<SourceOfTruthDir>/skills.md`, JD-relevant subset. Read that file directly for the category grouping — `sot-retriever` `retrieve` mode returns flat ranked bullets, not `###` categories. Label in template: "Programming Languages" (1-page) / "Core Languages" (2-page). |
+| `{{FRAMEWORKS_AND_TOOLS_LIST}}` | Comma-separated frameworks / tools / platforms / concepts from the other `###` groups in `<Root>/<SourceOfTruthDir>/skills.md` (same direct read), JD-relevant subset. |
 
 `resume_2page.tex` only — Personal Projects (filled **only** with `--with-projects`;
 also a repeat-per-project pattern, one block per relevant `projects/<slug>.md`):

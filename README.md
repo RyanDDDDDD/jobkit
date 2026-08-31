@@ -42,12 +42,22 @@ claude plugin install job-application
 
 ## Setup
 
-1. Run `/ingest ./raw_cvs` (pointing at a folder of your past CVs) to build
+1. Optional: copy `jobapp.config.example.yml` to `jobapp.config.yml` (git-ignored) if
+   you want non-default paths — `pdflatex_path`, `source_of_truth_dir`, `output_dir`.
+   Skip this to use the defaults (`resume_sections/`, `applications/{Company}/`).
+2. Run `/ingest <path to your CVs>` (pointing at a folder of your past CVs) to build
    `resume_sections/`.
-2. Review `resume_sections/profile.yml` — confirm your contact details, canonical
+3. Review `resume_sections/profile.yml` — confirm your contact details, canonical
    company names, job titles, and employment dates.
-3. Review `resume_sections/factual-bounds.md` — the "never claim" rules that constrain
+4. Review `resume_sections/factual-bounds.md` — the "never claim" rules that constrain
    every generated document.
+
+### Try it against the bundled fixture
+
+Before pointing the plugin at your own data, run it against the synthetic candidate in
+`example/`: `/ingest example/raw_cvs` to build the source of truth, then `/jd-intake`
+on `example/sample-jd.md` (company "Testco"), then `/generate` — you get a full resume
++ cover letter for a fictional "Sample Dev" and can see the whole pipeline end to end.
 
 ## Daily use
 

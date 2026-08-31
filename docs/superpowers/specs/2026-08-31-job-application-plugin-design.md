@@ -77,7 +77,7 @@ Resume/
 │   ├── raw_cvs/                    2 sample input CVs
 │   └── sample-jd.md
 ├── tests/
-│   └── run-pipeline.ps1           ingest → jd-intake → generate → review against example/
+│   └── run-pipeline.ps1           template/script smoke test (see §10)
 │
 ├── .agents/AGENTS.md              [PRIVATE] maintainer's personal notes / pointer
 ├── resume_sections/              [PRIVATE] maintainer's real source-of-truth
@@ -141,8 +141,11 @@ conventions:
       location: "Sydney, Australia"
   default_resume_length: 1        # 1 | 2
   default_include_projects: false
-  output_dir: "all cv/{Company}"  # maintainer's existing convention; plugin default is "applications/{Company}"
 ```
+
+`output_dir` is **not** a `profile.yml` key — it is machine/repo config in
+`jobapp.config.yml` (see §4.4), resolved by `Get-JobAppConfig` (plugin default
+`applications/{Company}`).
 
 Rationale for YAML (not markdown): résumé header substitution and cross-document
 consistency (identical company names, titles, dates on every generated résumé) need
@@ -334,13 +337,17 @@ Current `{{PLACEHOLDER}}` `.tex` files become the shipped defaults:
 
 - **Fixture:** `example/` — synthetic candidate "Sample Dev", 2 sample input CVs,
   1 sample JD, an `example/factual-bounds.md` with a deliberately testable rule.
-- **`tests/run-pipeline.ps1`:** runs `ingest → jd-intake → generate → review-application`
-  against the fixture and asserts:
-  1. `resume_sections/` populated with expected section files.
-  2. `resume.pdf` compiles and is 1 page.
-  3. `review.md` verdict is Pass.
-  4. No `example/factual-bounds.md` rule is violated in the generated text.
-  5. `cover_letter.txt` exists and contains the hoisted `Subject:` line.
+- **`tests/run-pipeline.ps1`:** a template/script **smoke test**, not a
+  skill-execution pipeline. It does not run `ingest → jd-intake → generate →
+  review-application` (those are LLM-driven skills). It:
+  1. smoke-fills every `{{token}}` in the three shipped `templates/*.tex` and compiles
+     each (asserting the 1-page résumé is exactly one page);
+  2. exercises `cover_letter_to_txt.ps1` (asserts the hoisted `Subject:` line) and
+     `Get-JobAppConfig`;
+  3. runs each `tests/scripts/*.Tests.ps1` and folds its exit code into the total.
+- The **skill-level** behavioural checks live in the `tests/skills/*.expected.md`
+  prose checklists (`ingest`, `jd-intake`, `generate`, `review-application`), walked
+  by an operator during manual verification — not executed by `run-pipeline.ps1`.
 - CI-ready (GitHub Actions) once the repo is public — deferred, not in v1 plan.
 
 ---

@@ -38,10 +38,13 @@ function Resolve-Browser {
     param([string]$Hint)
     $candidates = @()
     if ($Hint) { $candidates += $Hint }
-    $candidates += (Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe')
-    $candidates += (Join-Path $env:ProgramFiles       'Microsoft\Edge\Application\msedge.exe')
-    $candidates += (Join-Path $env:ProgramFiles       'Google\Chrome\Application\chrome.exe')
-    $candidates += (Join-Path ${env:ProgramFiles(x86)} 'Google\Chrome\Application\chrome.exe')
+    # Guard each Program-Files candidate: ${env:ProgramFiles(x86)} is unset on some systems,
+    # and Join-Path throws on an empty -Path — which would kill the function before it reaches
+    # the PATH loop below (the documented Linux/macOS fallback).
+    if (${env:ProgramFiles(x86)}) { $candidates += (Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe') }
+    if ($env:ProgramFiles)        { $candidates += (Join-Path $env:ProgramFiles        'Microsoft\Edge\Application\msedge.exe') }
+    if ($env:ProgramFiles)        { $candidates += (Join-Path $env:ProgramFiles        'Google\Chrome\Application\chrome.exe') }
+    if (${env:ProgramFiles(x86)}) { $candidates += (Join-Path ${env:ProgramFiles(x86)} 'Google\Chrome\Application\chrome.exe') }
     foreach ($name in 'msedge', 'chrome', 'chromium', 'chromium-browser') {
         $cmd = Get-Command $name -ErrorAction SilentlyContinue
         if ($cmd) { $candidates += $cmd.Source }
@@ -64,7 +67,9 @@ function Resolve-Ghostscript {
         $hintDir = if (Test-Path $Hint -PathType Container) { $Hint } else { Split-Path $Hint -Parent }
         if ($hintDir) { $candidates += @{ Path = (Join-Path $hintDir 'ps2pdf.exe'); Direct = $false } }
     }
-    $candidates += @{ Path = (Join-Path $env:APPDATA 'TinyTeX/bin/windows/ps2pdf.exe'); Direct = $false }
+    # Guard: $env:APPDATA can be unset (service accounts, bare CI), and Join-Path throws on an
+    # empty -Path — which would kill the function before the PATH loop below.
+    if ($env:APPDATA) { $candidates += @{ Path = (Join-Path $env:APPDATA 'TinyTeX/bin/windows/ps2pdf.exe'); Direct = $false } }
     foreach ($name in 'ps2pdf', 'gswin64c', 'gs') {
         $cmd = Get-Command $name -ErrorAction SilentlyContinue
         if ($cmd) { $candidates += @{ Path = $cmd.Source; Direct = ($name -ne 'ps2pdf') } }

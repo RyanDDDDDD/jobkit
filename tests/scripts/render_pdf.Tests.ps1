@@ -69,6 +69,25 @@ try {
         Write-Host "SKIP  bad json: page shows the error (pdftotext not found)" -ForegroundColor Yellow
     }
 
+    # ---- data string containing "</script>" must not break the JSON <script> block ----
+    #      ConvertTo-Json does not escape '<'; without the renderer's '</' -> '<\/' pass a
+    #      legit bullet like this one closes <script type="application/json"> early and
+    #      JSON.parse fails, leaking "Invalid resume JSON" onto the page.
+    $endtag = Join-Path $work "endtag.json"
+    Set-Content $endtag ('{"name":"Testy McTest","contact":["x@example.com"],"sections":[' +
+        '{"title":"Experience","type":"entries","items":[{"primary":"Engineer","secondary":"Co",' +
+        '"bullets":["Removed inline </script> tags from the checkout page"]}]}]}')
+    $re = Invoke-RenderPdf -TemplatePath $tpl -DataPath $endtag -OutPath (Join-Path $work "endtag.pdf")
+    Assert "endtag: Ok"        $re.Ok
+    Assert "endtag: >= 1 page"  ($re.Pages -ge 1)
+    if ($pdftotext) {
+        $etxt = & $pdftotext -enc UTF-8 $re.Pdf - 2>$null
+        Assert "endtag: bullet text survived"       ("$etxt" -match "checkout page")
+        Assert "endtag: no 'Invalid resume JSON'"    ("$etxt" -notmatch "Invalid resume JSON")
+    } else {
+        Write-Host "SKIP  endtag: text assertions (pdftotext not found)" -ForegroundColor Yellow
+    }
+
     # ---- output path containing a space (applications/Jane Street/…, %TEMP% under
     #      C:\Users\John Doe\…) — browser args must be quoted per-element ----
     $spaceDir = Join-Path $work "Jane Street"

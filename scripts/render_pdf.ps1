@@ -31,6 +31,11 @@ function Invoke-RenderPdf {
 
   $tpl  = Get-Content -Raw -LiteralPath $TemplatePath
   $json = Get-Content -Raw -LiteralPath $DataPath
+  # The JSON is spliced verbatim into <script type="application/json">. ConvertTo-Json does
+  # NOT escape '<', so a data string containing "</script>" (or any "</") would close that
+  # script element early and break JSON.parse. '<\/' is a legal JSON escape, invisible after
+  # JSON.parse, and can never terminate the element.
+  $json = $json -replace '</', '<\/'
   $html = $tpl.Replace($Placeholder, $json)
 
   # Headless Chromium resolves relative url() against the rendered .rendered.html file,

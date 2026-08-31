@@ -48,14 +48,33 @@ claude plugin install job-application
 
 ## Daily use
 
+One pass per job, in order:
+
 ```
-/jd-intake                 # paste the job description, name the company
-/generate                  # produce resume.tex/pdf + cover_letter.tex/pdf/txt
-/review-application         # QA gate: Pass / Flag / Fix
-/interview research         # web research on the company
-/interview prep             # HR question prep + self-intro
-/interview mock             # mock interview from your CV, with balanced feedback
+/ingest <folder>                       # once (or after adding a new CV): build resume_sections/
+/jd-intake                             # paste the job description, name the company
+/generate [--length 1|2] [--with-projects]   # resume.tex/pdf + cover_letter.tex/pdf/txt
+/review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
+/interview research|prep|mock          # company research | self-intro + HR prep | mock interview
 ```
+
+- `/generate` flags: `--length` sets the résumé page target (default from
+  `profile.yml`); `--with-projects` adds the Personal Projects section and implies
+  `--length 2`; `--order relevance|chronological` sets experience ordering;
+  `--answers "Q1; Q2"` also writes `answers.md`.
+- `/review-application --fix` applies only unambiguous safe corrections (present-tense
+  bullets in past roles, fields that disagree with `profile.yml`, a stale
+  `cover_letter.txt`), recompiles, and re-runs the checks once.
+- `/interview` subcommands: `research` dispatches the `company-researcher` subagent to
+  `{dir}/company_research.md`; `prep` writes `{dir}/self_intro.md` and
+  `{dir}/hr_questions_prep.md`; `mock` runs a résumé-grounded mock interview with
+  balanced feedback and appends new recurring lessons to `interview_playbook.md` at
+  your repo root (seeded on first use from the plugin's `interview-frameworks.md`).
+
+Every application's files land in one directory — `applications/{Company}/` by
+default (`jd.md`, `analysis.md`, `resume.tex/pdf`, `cover_letter.tex/pdf/txt`,
+`review.md`, and the interview-prep files). Override the location with `output_dir`
+in `jobapp.config.yml`.
 
 ## The `resume_sections/` contract
 
@@ -73,11 +92,19 @@ It contains:
 | `introduction.md` | Reusable personal summary / positioning statement. |
 | `skills.md` | Consolidated skills inventory. |
 
-## Quickstart against `example/`
+## Running the tests
 
-A synthetic candidate fixture lives under `example/`. Run the end-to-end pipeline against
-it with:
+All mechanical tests run from one entry point — plain PowerShell, no Pester:
 
 ```
 pwsh tests/run-pipeline.ps1
 ```
+
+It smoke-fills and compiles the three shipped LaTeX templates (asserting the 1-page
+résumé is exactly one page), exercises `cover_letter_to_txt.ps1` and
+`Get-JobAppConfig`, and then runs each `tests/scripts/*.Tests.ps1`, folding their
+exit codes into the pass/fail count. Exit 0 means every check passed.
+
+The synthetic candidate fixture the skills' expected-output checklists
+(`tests/skills/*.expected.md`) are written against lives under `example/`
+(`example/raw_cvs/`, `example/resume_sections/`, `example/sample-jd.md`).

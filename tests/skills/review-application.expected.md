@@ -3,7 +3,7 @@
 After running the `review-application` skill for a company whose per-application
 directory — referred to below as `<dir>` — already contains `resume.data.json`,
 `cover_letter.data.json`, `analysis.md`, and `cover_letter.txt` (produced by `generate`
-against the `example/resume_sections/` source of truth, candidate "Sample Dev"), the
+against the `tests/fixtures/resume_sections/` source of truth, candidate "Sample Dev"), the
 result must satisfy every assertion below.
 
 `<dir>` is whatever directory the operator points the skill at (e.g. a temp
@@ -17,7 +17,7 @@ not exact prose.
 
 2. **A factual-bounds violation is flagged with the rule quoted.** If
    `resume.data.json` contains a claim that violates a rule in
-   `example/resume_sections/factual-bounds.md` — the canonical test case is the word
+   `tests/fixtures/resume_sections/factual-bounds.md` — the canonical test case is the word
    `Rust` (case-insensitive) anywhere in `resume.data.json` (a `stack` entry or a
    `bullets[]` string), which the bound "Never claim Rust. Sample Dev has never used
    Rust." forbids and the JD does not ask for — then `review.md` reports it under
@@ -27,7 +27,7 @@ not exact prose.
 
 3. **A `profile.yml` disagreement is listed under `## Fix`.** If a company name, job
    title, or employment date in `resume.data.json` disagrees with
-   `example/resume_sections/profile.yml` `conventions.roles` (canonical test case: a
+   `tests/fixtures/resume_sections/profile.yml` `conventions.roles` (canonical test case: a
    role's end date changed, e.g. `items[].dates` ending `Nov. 2023` where
    `profile.yml` says `Dec. 2023`), then `review.md` lists it under `## Fix` with an
    explicit before/after that rewrites the JSON string to match `profile.yml`
@@ -45,7 +45,7 @@ Performed once, by hand, against a throwaway `applications/Testco/` temp dir (de
 afterward):
 
 1. Regenerated `resume.data.json` / `cover_letter.data.json` / `cover_letter.txt` for
-   company `Testco` from `example/resume_sections/` and an `analysis.md` whose
+   company `Testco` from `tests/fixtures/resume_sections/` and an `analysis.md` whose
    `## Fit` is `stretch` (essentials 1–3 `met`, 4 and 5 `gap` — dedicated iPaaS and
    HL7/FHIR). Both PDFs rendered to exactly 1 page via `scripts/render_pdf.ps1`.
 2. Seeded two defects into `resume.data.json`: (a) a `Rust` entry in the Globex

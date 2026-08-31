@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 
 # Single entry point for every mechanical test in this repo:
-#   - renders the bundled HTML templates with the example/*.data.json fixtures
+#   - renders the bundled HTML templates with the tests/fixtures/*.data.json
 #     (browser -> PDF), asserting the resume is one page,
 #   - exercises cover_letter_to_txt.ps1 and Get-JobAppConfig,
 #   - then runs each tests/scripts/*.Tests.ps1 and folds its exit code in.
@@ -28,9 +28,9 @@ function Skip($name, $why) {
 
 $resumeTpl = Join-Path $root 'templates/resume.html'
 $coverTpl  = Join-Path $root 'templates/cover_letter.html'
-$resumeEn  = Join-Path $root 'example/resume.data.json'
-$resumeZh  = Join-Path $root 'example/resume.zh.data.json'
-$coverJson = Join-Path $root 'example/cover_letter.data.json'
+$resumeEn  = Join-Path $root 'tests/fixtures/resume.data.json'
+$resumeZh  = Join-Path $root 'tests/fixtures/resume.zh.data.json'
+$coverJson = Join-Path $root 'tests/fixtures/cover_letter.data.json'
 
 # A Chromium browser is the only hard dependency. If none resolves, the render
 # checks skip (not fail) — mirrors tests/scripts/render_pdf.Tests.ps1.
@@ -55,7 +55,7 @@ try {
     New-Item -ItemType Directory -Path $work | Out-Null
 
     # -----------------------------------------------------------------------
-    # (a) resume.html + example/resume.data.json -> 1-page PDF, text round-trips
+    # (a) resume.html + tests/fixtures/resume.data.json -> 1-page PDF, text round-trips
     # -----------------------------------------------------------------------
     if ($hasBrowser) {
         $rEn = Invoke-RenderPdf -TemplatePath $resumeTpl -DataPath $resumeEn -OutPath (Join-Path $work 'r.pdf')
@@ -70,7 +70,7 @@ try {
         }
 
         # ---------------------------------------------------------------------
-        # (b) resume.html + example/resume.zh.data.json -> Chinese section title
+        # (b) resume.html + tests/fixtures/resume.zh.data.json -> Chinese section title
         # ---------------------------------------------------------------------
         $rZh = Invoke-RenderPdf -TemplatePath $resumeTpl -DataPath $resumeZh -OutPath (Join-Path $work 'rz.pdf')
         Check "resume.zh.data.json : renders (Ok)" $rZh.Ok
@@ -83,7 +83,7 @@ try {
         }
 
         # ---------------------------------------------------------------------
-        # (c) cover_letter.html + example/cover_letter.data.json -> 1-page PDF
+        # (c) cover_letter.html + tests/fixtures/cover_letter.data.json -> 1-page PDF
         # ---------------------------------------------------------------------
         $rCl = Invoke-RenderPdf -TemplatePath $coverTpl -DataPath $coverJson `
             -OutPath (Join-Path $work 'cl.pdf') -Placeholder '{{COVER_LETTER_JSON}}'

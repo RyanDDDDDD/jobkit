@@ -1,6 +1,6 @@
 # Integration-test assertions: `ingest` skill
 
-After running the `ingest` skill against `example/raw_cvs/` (two synthetic CVs for
+After running the `ingest` skill against `tests/fixtures/raw_cvs/` (two synthetic CVs for
 "Sample Dev": Acme Corp SWE Jan 2024–Present, Globex Pty Ltd Junior Developer
 Feb 2022–Dec 2023, Example University BCS), the produced source-of-truth directory
 — referred to below as `<OUTPUT_DIR>` — must satisfy every assertion.
@@ -32,6 +32,6 @@ real temp path). Assertions are phrased relative to it, not to a fixed folder.
    `<OUTPUT_DIR>/skills.md` (a line starting with `- `, ignoring the `###` category
    headers), strip any trailing parenthetical `(...)` and trim; the remaining text
    must be a case-insensitive substring of the concatenation of the ingest input
-   CV files (`example/raw_cvs/*.md`) and the produced `<OUTPUT_DIR>/companies/*.md`
+   CV files (`tests/fixtures/raw_cvs/*.md`) and the produced `<OUTPUT_DIR>/companies/*.md`
    + `<OUTPUT_DIR>/projects/*.md` files. Nothing in `skills.md` may be invented
    beyond what the CVs and produced company/project files contain.

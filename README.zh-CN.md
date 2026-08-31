@@ -58,11 +58,15 @@ claude plugin install job-application
 
 ### 用内置样例试跑
 
-在把插件对准你自己的数据之前，先用 `example/` 里的合成候选人跑一遍：
-`/ingest example/raw_cvs` 构建事实来源，然后对 `example/sample-jd.md` 运行 `/jd-intake`
-并把公司命名为 `Testco`（样例 JD 是为虚构的 “Meridian Integration Partners” 写的，你把这份
-申请命名为 `Testco`），再运行 `/generate` —— 你会得到虚构的 “Sample Dev” 的完整简历和求职信，
-并能从头到尾看到整条流水线。
+在把插件对准你自己的数据之前，先用 `tests/fixtures/` 里的合成候选人跑一遍：
+`/ingest tests/fixtures/raw_cvs` 构建事实来源，然后对 `tests/fixtures/sample-jd.md` 运行
+`/jd-intake` 并把公司命名为 `Testco`（样例 JD 是为虚构的 “Meridian Integration Partners”
+写的，你把这份申请命名为 `Testco`），再运行 `/generate` —— 你会得到虚构的 “Sample Dev” 的
+完整简历和求职信，并能从头到尾看到整条流水线。
+
+`example/` 里只放这套输出渲染好的样例，仅四个 PDF —— 简历和求职信的中英两版
+（`resume.pdf` / `resume.zh.pdf` / `cover_letter.pdf` / `cover_letter.zh.pdf`）。
+渲染它们所用的 `*.data.json` 位于 `tests/fixtures/`。
 
 ## 日常使用
 
@@ -117,10 +121,11 @@ claude plugin install job-application
 pwsh tests/run-pipeline.ps1
 ```
 
-它用 `example/*.data.json` 夹具渲染内置的 HTML 模板（断言简历为一页），运行
+它用 `tests/fixtures/*.data.json` 夹具渲染内置的 HTML 模板（断言简历为一页），运行
 `cover_letter_to_txt.ps1` 和 `Get-JobAppConfig`，然后运行每个
 `tests/scripts/*.Tests.ps1`，把它们的退出码折算进通过 / 失败计数。退出码 0 表示每一项检查
 都通过。在没有 Chromium 浏览器的机器上，渲染相关的检查会干净地跳过。
 
-skill 的预期输出清单（`tests/skills/*.expected.md`）所针对的合成候选人夹具位于 `example/`
-（`example/raw_cvs/`、`example/resume_sections/`、`example/sample-jd.md`）。
+skill 的预期输出清单（`tests/skills/*.expected.md`）所针对的合成候选人夹具位于
+`tests/fixtures/`（`tests/fixtures/raw_cvs/`、`tests/fixtures/resume_sections/`、
+`tests/fixtures/sample-jd.md`）。

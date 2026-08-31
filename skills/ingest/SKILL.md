@@ -53,7 +53,7 @@ source-of-truth directory does not exist yet.
    - `introduction.md` — the distilled summary points.
    - `skills.md` — the de-duplicated skill list.
 
-   Follow the existing file style (see `${CLAUDE_PLUGIN_ROOT}/example/resume_sections/`):
+   Follow the existing file style (see `${CLAUDE_PLUGIN_ROOT}/tests/fixtures/resume_sections/`):
    - Company files have a `### Company Overview` block (Company Name, Role Titles,
      Business Domain, Integrated Tech Stack) then `### Unique Bullet Points` with
      `- ` bullets. Derive **Business Domain** only from how the CV text itself

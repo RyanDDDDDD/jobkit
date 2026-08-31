@@ -60,7 +60,7 @@ claude plugin install job-application
 ## The `resume_sections/` contract
 
 The only thing the plugin requires from you is a source-of-truth directory (default
-`resume_sections/`, overridable via the `JOBAPP_CONFIG` env var or `jobapp.config.yml`).
+`resume_sections/`, overridable via `jobapp.config.yml`).
 It contains:
 
 | Path | Purpose |

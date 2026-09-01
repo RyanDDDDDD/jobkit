@@ -1,6 +1,6 @@
 ---
 name: interview
-description: Interview preparation and practice for a specific application — company research, HR question prep, self-introduction, and mock interviews with balanced feedback. Subcommands research / prep / mock.
+description: Interview preparation and practice for a specific application - company research, HR question prep, self-introduction, and mock interviews with balanced feedback. Subcommands research / prep / mock.
 ---
 
 ## When to use

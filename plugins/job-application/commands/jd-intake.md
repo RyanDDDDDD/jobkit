@@ -1,5 +1,5 @@
 ---
-description: Analyze a job description — save it, extract criteria, map to evidence, classify fit
+description: Analyze a job description - save it, extract criteria, map to evidence, classify fit
 ---
 
 Invoke the `jd-intake` skill (`${CLAUDE_PLUGIN_ROOT}/skills/jd-intake/SKILL.md`).

@@ -1,12 +1,13 @@
 # --- Local working data / test output (never committed) ---
 # The plugin writes candidate data and generated documents to its *working
 # directory*. Running the skills from inside this repo during development drops
-# them here; real use happens in a separate private folder.
-/resume_sections/
-/applications/
-/all cv/
-/jobapp.config.yml
-/interview_playbook.md
+# them here; real use happens in a separate private folder. Unanchored so they
+# match at the repo root and inside plugins/job-application/.
+resume_sections/
+applications/
+all cv/
+jobapp.config.yml
+interview_playbook.md
 
 # --- Working notes ---
 /docs/
@@ -18,7 +19,7 @@
 *.out
 *.synctex.gz
 *.rendered.html
-/templates/preview/
+templates/preview/
 
 # --- Keep tracked ---
-!/example/
+!/plugins/job-application/example/

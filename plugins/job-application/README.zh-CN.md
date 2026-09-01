@@ -55,7 +55,7 @@ claude plugin install job-application
 2. 可选：如果你想使用非默认路径，把 `jobapp.config.example.yml` 复制进去改名为
    `jobapp.config.yml` —— `browser_path`、`ghostscript_path`、`source_of_truth_dir`、
    `output_dir`。跳过则使用默认值（`resume_sections/`、`applications/{Company}/`）。
-3. 运行 `/ingest <你的简历路径>`（指向存放过往简历的文件夹）在该文件夹里构建
+3. 运行 `/job-application:ingest <你的简历路径>`（指向存放过往简历的文件夹）在该文件夹里构建
    `resume_sections/`。
 4. 检查 `resume_sections/profile.yml` —— 确认你的联系方式、规范的公司名称、职位名称和
    任职日期。
@@ -64,10 +64,11 @@ claude plugin install job-application
 ### 用内置样例试跑
 
 在把插件对准你自己的数据之前，先用 `tests/fixtures/` 里的合成候选人跑一遍：
-`/ingest tests/fixtures/raw_cvs` 构建事实来源，然后对 `tests/fixtures/sample-jd.md` 运行
-`/jd-intake` 并把公司命名为 `Testco`（样例 JD 是为虚构的 “Meridian Integration Partners”
-写的，你把这份申请命名为 `Testco`），再运行 `/generate` —— 你会得到虚构的 “Sample Dev” 的
-完整简历和求职信，并能从头到尾看到整条流水线。
+`/job-application:ingest tests/fixtures/raw_cvs` 构建事实来源，然后对
+`tests/fixtures/sample-jd.md` 运行 `/job-application:jd-intake` 并把公司命名为 `Testco`
+（样例 JD 是为虚构的 “Meridian Integration Partners” 写的，你把这份申请命名为
+`Testco`），再运行 `/job-application:generate` —— 你会得到虚构的 “Sample Dev” 的完整简历
+和求职信，并能从头到尾看到整条流水线。
 
 `example/` 里只放这套输出渲染好的样例，仅四个 PDF —— 简历和求职信的中英两版
 （`resume.pdf` / `resume.zh.pdf` / `cover_letter.pdf` / `cover_letter.zh.pdf`）。
@@ -78,22 +79,22 @@ claude plugin install job-application
 每个职位一轮，按顺序执行：
 
 ```
-/ingest <folder>                       # once (or after adding a new CV): build resume_sections/
-/jd-intake                             # paste the job description, name the company
-/generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
-/review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
-/interview research|prep|mock          # company research | self-intro + HR prep | mock interview
+/job-application:ingest <folder>                       # once (or after adding a new CV): build resume_sections/
+/job-application:jd-intake                             # paste the job description, name the company
+/job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
+/job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
+/job-application:interview research|prep|mock          # company research | self-intro + HR prep | mock interview
 ```
 
-- `/generate` 参数：`--density compact|standard` 设置简历的行距密度（默认取自
+- `/job-application:generate` 参数：`--density compact|standard` 设置简历的行距密度（默认取自
   `profile.yml`）；`--lang zh` 生成中文简历和求职信（正文由你的英文事实来源翻译而来）；
   `--with-projects` 加入一个由 JD 相关的 `projects/*.md` 构建的 Selected Projects 章节；
   `--max-pages N` 是一个软性页数上限（只发出警告，绝不截断内容）；
   `--order relevance|chronological` 设置工作经历的排序；`--answers "Q1; Q2"` 会额外写出
   `answers.md`。
-- `/review-application --fix` 只应用明确且安全的更正（过往岗位里用现在时的要点、与
+- `/job-application:review-application --fix` 只应用明确且安全的更正（过往岗位里用现在时的要点、与
   `profile.yml` 不一致的字段、过时的 `cover_letter.txt`），重新渲染，并把各项检查再跑一次。
-- `/interview` 子命令：`research` 调度 `company-researcher` 子代理写入
+- `/job-application:interview` 子命令：`research` 调度 `company-researcher` 子代理写入
   `{dir}/company_research.md`；`prep` 写出 `{dir}/self_intro.md` 和
   `{dir}/hr_questions_prep.md`；`mock` 运行一场以简历为依据的模拟面试，给出均衡的反馈，并把
   新出现的、反复出现的经验教训追加到你仓库根目录的 `interview_playbook.md`（首次使用时

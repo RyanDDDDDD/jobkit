@@ -60,8 +60,8 @@ resolved by `Get-JobAppConfig` walking up for `jobapp.config.yml`.
    want non-default paths — `browser_path`, `ghostscript_path`, `source_of_truth_dir`,
    `output_dir`. Skip it to use the defaults (`resume_sections/`,
    `applications/{Company}/`).
-3. Run `/ingest <path to your CVs>` (pointing at a folder of your past CVs) to build
-   `resume_sections/` in that folder.
+3. Run `/job-application:ingest <path to your CVs>` (pointing at a folder of your past
+   CVs) to build `resume_sections/` in that folder.
 4. Review `resume_sections/profile.yml` — confirm your contact details, canonical
    company names, job titles, and employment dates.
 5. Review `resume_sections/factual-bounds.md` — the "never claim" rules that constrain
@@ -70,11 +70,12 @@ resolved by `Get-JobAppConfig` walking up for `jobapp.config.yml`.
 ### Try it against the bundled fixture
 
 Before pointing the plugin at your own data, run it against the synthetic candidate in
-`tests/fixtures/`: `/ingest tests/fixtures/raw_cvs` to build the source of truth, then
-`/jd-intake` on `tests/fixtures/sample-jd.md` and name the company `Testco` (the sample
-JD is written for a fictional "Meridian Integration Partners"; you name the application
-`Testco`), then `/generate` — you get a full resume + cover letter for a fictional
-"Sample Dev" and can see the whole pipeline end to end.
+`tests/fixtures/`: `/job-application:ingest tests/fixtures/raw_cvs` to build the source
+of truth, then `/job-application:jd-intake` on `tests/fixtures/sample-jd.md` and name
+the company `Testco` (the sample JD is written for a fictional "Meridian Integration
+Partners"; you name the application `Testco`), then `/job-application:generate` — you
+get a full resume + cover letter for a fictional "Sample Dev" and can see the whole
+pipeline end to end.
 
 `example/` holds a rendered sample of that output — nothing but the four PDFs:
 résumé and cover letter, English and Chinese (`resume.pdf` / `resume.zh.pdf` /
@@ -86,24 +87,25 @@ live in `tests/fixtures/`.
 One pass per job, in order:
 
 ```
-/ingest <folder>                       # once (or after adding a new CV): build resume_sections/
-/jd-intake                             # paste the job description, name the company
-/generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
-/review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
-/interview research|prep|mock          # company research | self-intro + HR prep | mock interview
+/job-application:ingest <folder>                       # once (or after adding a new CV): build resume_sections/
+/job-application:jd-intake                             # paste the job description, name the company
+/job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
+/job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
+/job-application:interview research|prep|mock          # company research | self-intro + HR prep | mock interview
 ```
 
-- `/generate` flags: `--density compact|standard` sets the résumé spacing (default
-  from `profile.yml`); `--lang zh` produces a Chinese résumé and cover letter (body
-  text translated from your English source of truth); `--with-projects` adds a
-  Selected Projects section built from the JD-relevant `projects/*.md`;
-  `--max-pages N` is a soft page ceiling (a warning, never a truncation);
-  `--order relevance|chronological` sets experience ordering; `--answers "Q1; Q2"`
-  also writes `answers.md`.
-- `/review-application --fix` applies only unambiguous safe corrections (present-tense
-  bullets in past roles, fields that disagree with `profile.yml`, a stale
-  `cover_letter.txt`), re-renders, and re-runs the checks once.
-- `/interview` subcommands: `research` dispatches the `company-researcher` subagent to
+- `/job-application:generate` flags: `--density compact|standard` sets the résumé
+  spacing (default from `profile.yml`); `--lang zh` produces a Chinese résumé and
+  cover letter (body text translated from your English source of truth);
+  `--with-projects` adds a Selected Projects section built from the JD-relevant
+  `projects/*.md`; `--max-pages N` is a soft page ceiling (a warning, never a
+  truncation); `--order relevance|chronological` sets experience ordering;
+  `--answers "Q1; Q2"` also writes `answers.md`.
+- `/job-application:review-application --fix` applies only unambiguous safe corrections
+  (present-tense bullets in past roles, fields that disagree with `profile.yml`, a
+  stale `cover_letter.txt`), re-renders, and re-runs the checks once.
+- `/job-application:interview` subcommands: `research` dispatches the
+  `company-researcher` subagent to
   `{dir}/company_research.md`; `prep` writes `{dir}/self_intro.md` and
   `{dir}/hr_questions_prep.md`; `mock` runs a résumé-grounded mock interview with
   balanced feedback and appends new recurring lessons to `interview_playbook.md` at

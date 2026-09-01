@@ -6,8 +6,9 @@ description: Produce a tailored resume, cover letter, and optional application-f
 ## When to use
 
 The user says "generate the resume/cover letter for {Company}", "tailor my CV for
-{Company}", or "/generate". Requires `{dir}/analysis.md` from the `jd-intake` skill —
-if it is absent, tell the user to run `/jd-intake` first and stop.
+{Company}", or "/job-application:generate". Requires `{dir}/analysis.md` from the
+`jd-intake` skill — if it is absent, tell the user to run `/job-application:jd-intake`
+first and stop.
 
 ## Flags
 
@@ -60,8 +61,8 @@ if it is absent, tell the user to run `/jd-intake` first and stop.
   `{dir}` by substituting the literal token `{Company}` in `.OutputDir` with the
   company name and joining onto `.Root` (e.g. `<Root>/applications/Testco`), exactly
   as `jd-intake` does.
-- `{dir}/analysis.md` must already exist. If not: "run `/jd-intake` for {Company}
-  first" and stop.
+- `{dir}/analysis.md` must already exist. If not: "run `/job-application:jd-intake`
+  for {Company} first" and stop.
 
 ## Reading `analysis.md` (Task 6 output)
 

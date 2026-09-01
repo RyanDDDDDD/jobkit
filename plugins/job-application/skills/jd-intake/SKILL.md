@@ -6,9 +6,9 @@ description: Analyze a job description - save it verbatim, extract essential/des
 ## When to use
 
 The user pastes a job description, uploads a JD file, or says "analyze this JD for
-{Company}", "assess fit for {Company}", or "/jd-intake". Run this before the
-`generate` skill so the resume/cover-letter step drafts from retrieved evidence, not
-from memory of the conversation.
+{Company}", "assess fit for {Company}", or "/job-application:jd-intake". Run this
+before the `generate` skill so the resume/cover-letter step drafts from retrieved
+evidence, not from memory of the conversation.
 
 ## Steps
 
@@ -27,7 +27,7 @@ from memory of the conversation.
      semantics).
    - Also resolve the source-of-truth dir as `<Root>/<SourceOfTruthDir>` (default
      `resume_sections/`) — the retrieve step needs it. If it does not exist, tell the
-     user to run `/ingest` first and stop.
+     user to run `/job-application:ingest` first and stop.
 
 2. **Save the raw JD.** Write the job description **verbatim** — exactly as the user
    provided it, no reformatting, no trimming — to `{dir}/jd.md`.

@@ -1,0 +1,11 @@
+# Ship LF everywhere, regardless of the user's git core.autocrlf.
+# A stray CR at the end of a SKILL.md / command frontmatter line corrupts the
+# Claude Code command/skill picker on Windows checkouts (core.autocrlf=true):
+# the \r returns the cursor to column 0 and the picker overpaints instead of
+# clearing, so scrolled-past rows stay on screen.
+* text=auto eol=lf
+
+# Binary assets — never normalize
+*.pdf   binary
+*.png   binary
+*.woff2 binary

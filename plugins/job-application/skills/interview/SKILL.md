@@ -15,6 +15,18 @@ The user says "prep me for the {Company} interview", "mock interview for {Compan
 `/job-application:interview mock`. If no subcommand is given, ask which of the three
 the user wants. All three operate on one company's per-application directory.
 
+## Flags
+
+- `--lang en|zh` — language for every artifact this skill writes this session:
+  `company_research.md`, `self_intro.md`, `hr_questions_prep.md`, the mock chat and
+  debrief, and any `interview_playbook.md` entries appended this run. Default:
+  `{dir}/resume.data.json`'s `lang` field — the decision `generate` already made for
+  this application. Override with `--lang` when the interview will happen in a
+  different language than the résumé was generated in (e.g. an English résumé
+  screened for a role interviewed in Chinese). This does **not** affect the initial
+  `interview_playbook.md` seed copy (see Inputs and paths), which always stays
+  English.
+
 ## Inputs and paths
 
 - **Plugin-internal paths use `${CLAUDE_PLUGIN_ROOT}`**: the config loader
@@ -45,17 +57,19 @@ the user wants. All three operate on one company's per-application directory.
 
 ## Subcommand: research
 
-1. Resolve `{dir}`. Read `{dir}/jd.md` and (if present) `{dir}/analysis.md`,
+1. Resolve `{dir}` and `--lang` (see Flags — default from `{dir}/resume.data.json`'s
+   `lang` field). Read `{dir}/jd.md` and (if present) `{dir}/analysis.md`,
    `{dir}/resume.data.json`.
 2. Dispatch the `company-researcher` agent
    (`${CLAUDE_PLUGIN_ROOT}/agents/company-researcher.md`) with
-   `{ company: <name>, role: <title from jd.md>, jd: <text of {dir}/jd.md>, dir: <{dir}> }`.
+   `{ company: <name>, role: <title from jd.md>, jd: <text of {dir}/jd.md>, dir: <{dir}>, lang: <resolved --lang> }`.
 3. Save its report **verbatim** to `{dir}/company_research.md`. Print a short summary
    (2–4 lines) and the source count.
 
 ## Subcommand: prep
 
-Read `{dir}/analysis.md`, `{dir}/resume.data.json`, `{dir}/company_research.md` (if
+Resolve `--lang` (see Flags) — both files below are written in that language. Read
+`{dir}/analysis.md`, `{dir}/resume.data.json`, `{dir}/company_research.md` (if
 present), and `<repo-root>/interview_playbook.md` (seed it first if absent). Then
 write two files:
 
@@ -83,8 +97,10 @@ write two files:
 
 Conduct a live mock interview in the chat.
 
-1. Read `{dir}/resume.data.json`, `{dir}/analysis.md`, `{dir}/company_research.md` (if
-   present), and `<repo-root>/interview_playbook.md`.
+1. Resolve `--lang` (see Flags) — conduct the whole mock, the debrief, and any
+   playbook entry appended in step 5 in that language. Read `{dir}/resume.data.json`,
+   `{dir}/analysis.md`, `{dir}/company_research.md` (if present), and
+   `<repo-root>/interview_playbook.md`.
 2. Ask questions **one at a time**, strictly answerable from `resume.data.json`
    (`bullets[]`, `intro[]`, the `sections[]` entries) and the JD's own
    responsibilities. Never assume experience, a technology, an employer, or a metric
@@ -116,7 +132,9 @@ Conduct a live mock interview in the chat.
   (appends to) `interview_playbook.md`. None of them touch `{sourceDir}`, `jd.md`,
   `analysis.md`, `resume.data.json` / `resume.pdf`, or `cover_letter.data.json` /
   `cover_letter.pdf`.
-- This skill's own output (`self_intro.md`, `hr_questions_prep.md`, the mock chat and
-  debrief, `interview_playbook.md` entries) is English-only regardless of the
-  conversation language. This is about the prep text itself — the résumé's language
-  is `generate`'s call.
+- This skill's own output (`company_research.md`, `self_intro.md`,
+  `hr_questions_prep.md`, the mock chat and debrief, `interview_playbook.md` entries
+  appended this run) follows the resolved `--lang` (see Flags), not necessarily the
+  conversation language. The initial `interview_playbook.md` seed copy is the one
+  exception — it always stays English, since it is the plugin's own bundled
+  reference content, not this skill's output.

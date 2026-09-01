@@ -88,7 +88,7 @@ One pass per job, in order:
 /job-application:jd-intake                             # paste the job description, name the company
 /job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
 /job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
-/job-application:interview research|prep|mock          # company research | self-intro + HR prep | mock interview
+/job-application:interview research|prep|mock [--lang en|zh]   # company research | self-intro + HR prep | mock interview
 ```
 
 - `/job-application:generate` flags: `--density compact|standard` sets the résumé
@@ -102,11 +102,16 @@ One pass per job, in order:
   (present-tense bullets in past roles, fields that disagree with `profile.yml`, a
   stale `cover_letter.txt`), re-renders, and re-runs the checks once.
 - `/job-application:interview` subcommands: `research` dispatches the
-  `company-researcher` subagent to
+  `company-researcher` subagent — it judges whether the company's hiring is
+  domestic-China, overseas, or both, and searches accordingly (Glassdoor/Seek/
+  Indeed/LinkedIn overseas; 牛客网/脉脉/看准网/知乎/BOSS直聘 domestically) — to
   `{dir}/company_research.md`; `prep` writes `{dir}/self_intro.md` and
   `{dir}/hr_questions_prep.md`; `mock` runs a résumé-grounded mock interview with
   balanced feedback and appends new recurring lessons to `interview_playbook.md` at
-  your repo root (seeded on first use from the plugin's `interview-frameworks.md`).
+  your repo root (seeded on first use, always in English, from the plugin's
+  `interview-frameworks.md`). `--lang en|zh` sets the language for everything this
+  subcommand writes (research report, prep files, mock chat, new playbook entries);
+  default is whatever `--lang` `generate` used for this application's résumé.
 
 Every application's files land in one directory — `applications/{Company}/` by
 default (`jd.md`, `analysis.md`, `resume.data.json/pdf`,

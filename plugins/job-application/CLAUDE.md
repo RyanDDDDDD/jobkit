@@ -17,10 +17,11 @@ mistaken for a second copy of the plugin.
 | `.claude-plugin/plugin.json` | plugin manifest | plugin format |
 | `skills/` | the five skills — `ingest`, `jd-intake`, `generate`, `review-application`, `interview` | plugin format |
 | `agents/` | subagents the skills dispatch — `sot-retriever`, `company-researcher` | plugin format |
-| `scripts/` | PowerShell helpers — `render_pdf.ps1`, `compress_pdf.ps1`, `cover_letter_to_txt.ps1`, `extract_cv.ps1`, `lib/config.ps1` | ours |
+| `scripts/` | Python helpers, run via `uv run` — `render_pdf.py`, `compress_pdf.py`, `cover_letter_to_txt.py`, `extract_cv.py`, `lib/config.py` | ours |
+| `pyproject.toml`, `uv.lock` | `uv`-managed dependencies (`playwright`, `pikepdf`, `pymupdf`, `python-docx`, `pyyaml`) | ours |
 | `templates/` | HTML résumé / cover-letter templates + bundled fonts (OFL) | ours |
 | `reference/` | prose shared across skills — `workflow-rules.md`, `ats-checklist.md`, `interview-frameworks.md` | ours |
-| `tests/` | `run-pipeline.ps1` (single entry point), `scripts/*.Tests.ps1`, `skills/*.expected.md`, `fixtures/` (synthetic candidate) | ours |
+| `tests/` | `pytest` script tests under `tests/scripts/`, `skills/*.expected.md`, `fixtures/` (synthetic candidate) | ours |
 | `example/` | four rendered sample PDFs (résumé + cover letter, EN + ZH) | ours |
 
 There is no `commands/` directory. An earlier version shipped one — thin `/slash`
@@ -33,12 +34,12 @@ same name as a `skills/<name>/` directory.
 ## Working on the plugin
 
 Follow `reference/workflow-rules.md`. Specs and plans go in `docs/` (git-ignored).
-Run `pwsh tests/run-pipeline.ps1` before opening a PR — plain PowerShell assertions,
-no Pester; render checks skip cleanly with no Chromium.
+Run `uv run pytest` before opening a PR. Render checks skip cleanly (not fail) if
+`uv run playwright install chromium` hasn't been run yet.
 
 ## Using the plugin (not from this repo)
 
-Install it, then run Claude Code from a **separate private folder**. `Get-JobAppConfig`
+Install it, then run Claude Code from a **separate private folder**. `config.py`
 resolves `resume_sections/` and the per-application output directory from that working
 directory (walking up for `jobapp.config.yml`). Everything under `${CLAUDE_PLUGIN_ROOT}`
 is read-only; nothing is ever written back into the plugin. See `README.md` § Setup.

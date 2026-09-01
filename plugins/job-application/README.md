@@ -16,19 +16,16 @@ repo and is never shipped with the plugin.
 
 ## Prerequisites
 
-- Windows with PowerShell 7 (`pwsh`).
-- **A Chromium browser** — Microsoft Edge (preinstalled on Windows), Google Chrome, or
-  Chromium — used by `scripts/render_pdf.ps1` to render the HTML templates to PDF.
-  Auto-detected from Program Files / PATH, or set `browser_path` in
-  `jobapp.config.yml`.
-- [Ghostscript](https://www.ghostscript.com/) (`gs` / `gswin64c` on the path) — used
-  by `scripts/compress_pdf.ps1` to shrink the rendered PDFs. This step needs
-  Ghostscript; a full TinyTeX install also satisfies it because it bundles a `ps2pdf`
-  wrapper around Ghostscript, which the script will use as a fallback.
-- `pdftotext` (Poppler) — used by `generate` and `review-application` to verify the
-  rendered PDF's text, and by `ingest` for `.pdf` source CVs.
-- Optional: `pandoc` for ingesting `.docx` source CVs. Plain `.tex` / `.md` CVs need
-  neither it nor `pdftotext`.
+- **Windows, macOS, or Linux** — the plugin has no OS-specific dependency.
+- [`uv`](https://docs.astral.sh/uv/) — manages the plugin's Python environment.
+  One-time install: see uv's own install instructions for your OS.
+- A one-time browser download: `uv run --project ${CLAUDE_PLUGIN_ROOT} playwright
+  install chromium` (downloads a Chromium binary Playwright manages itself — no
+  system browser install needed).
+
+No Ghostscript, Poppler, or `pandoc` install is required — PDF compression and
+`.pdf`/`.docx` text extraction are pure-Python (`pikepdf`, `pymupdf`,
+`python-docx`), installed automatically the first time a script runs via `uv run`.
 
 ## Install
 
@@ -52,12 +49,12 @@ claude plugin install job-application@job-application-marketplace
 The plugin holds no candidate data. It reads its assets from where it is installed
 (`${CLAUDE_PLUGIN_ROOT}`, read-only) and reads/writes **everything else — your source
 of truth and every generated document — in the directory you run Claude Code from**,
-resolved by `Get-JobAppConfig` walking up for `jobapp.config.yml`.
+resolved by `config.py` walking up for `jobapp.config.yml`.
 
 1. Make a private working folder (e.g. `~/job-hunt/`) and run Claude Code there. Keep
    it separate from this repo; nothing you generate belongs in the plugin.
 2. Optional: copy `jobapp.config.example.yml` into it as `jobapp.config.yml` if you
-   want non-default paths — `browser_path`, `ghostscript_path`, `source_of_truth_dir`,
+   want non-default paths — `browser_path`, `source_of_truth_dir`,
    `output_dir`. Skip it to use the defaults (`resume_sections/`,
    `applications/{Company}/`).
 3. Run `/job-application:ingest <path to your CVs>` (pointing at a folder of your past
@@ -134,17 +131,14 @@ It contains:
 
 ## Running the tests
 
-All mechanical tests run from one entry point — plain PowerShell, no Pester:
+From `plugins/job-application/`:
 
 ```
-pwsh tests/run-pipeline.ps1
+uv run pytest
 ```
 
-It renders the bundled HTML templates with the `tests/fixtures/*.data.json` fixtures
-(asserting the résumé is one page), exercises `cover_letter_to_txt.ps1` and
-`Get-JobAppConfig`, and then runs each `tests/scripts/*.Tests.ps1`, folding their
-exit codes into the pass/fail count. Exit 0 means every check passed. The render
-checks skip cleanly on a machine with no Chromium browser.
+Render checks skip cleanly (not fail) if `uv run playwright install chromium` hasn't
+been run yet.
 
 The synthetic candidate fixture the skills' expected-output checklists
 (`tests/skills/*.expected.md`) are written against lives under `tests/fixtures/`

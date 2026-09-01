@@ -15,17 +15,17 @@ evidence, not from memory of the conversation.
 1. **Resolve `{Company}` and the output directory.**
    - Determine `{Company}` from what the user said. If it is unclear or missing, ask
      before continuing.
-   - Dot-source `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1` and call
-     `Get-JobAppConfig`. It returns a `Root` key — the directory where
-     `jobapp.config.yml` was found by walking up from the current working directory,
-     or `(Get-Location).Path` if none is found — plus `BrowserPath`,
-     `GhostscriptPath`, `SourceOfTruthDir`, and `OutputDir`.
-   - Take `.OutputDir` (default `applications/{Company}`), substitute the literal
-     token `{Company}` with the company name, then join onto `.Root`: `{dir}` is
-     `<Root>/<OutputDir with {Company} substituted>` (e.g.
-     `<Root>/applications/Testco`). Create the directory if absent (`mkdir -p`
+   - Run `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`,
+     which prints the resolved config as JSON. It returns a `root` key — the
+     directory where `jobapp.config.yml` was found by walking up from the current
+     working directory, or the current directory if none is found — plus
+     `browser_path`, `source_of_truth_dir`, and `output_dir`.
+   - Take `output_dir` (default `applications/{Company}`), substitute the literal
+     token `{Company}` with the company name, then join onto `root`: `{dir}` is
+     `<root>/<output_dir with {Company} substituted>` (e.g.
+     `<root>/applications/Testco`). Create the directory if absent (`mkdir -p`
      semantics).
-   - Also resolve the source-of-truth dir as `<Root>/<SourceOfTruthDir>` (default
+   - Also resolve the source-of-truth dir as `<root>/<source_of_truth_dir>` (default
      `resume_sections/`) — the retrieve step needs it. If it does not exist, tell the
      user to run `/job-application:ingest` first and stop.
 

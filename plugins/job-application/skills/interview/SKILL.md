@@ -18,14 +18,15 @@ the user wants. All three operate on one company's per-application directory.
 ## Inputs and paths
 
 - **Plugin-internal paths use `${CLAUDE_PLUGIN_ROOT}`**: the config loader
-  (`${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`), the research agent
+  (`${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`, run via `uv run --project
+  ${CLAUDE_PLUGIN_ROOT}`), the research agent
   (`${CLAUDE_PLUGIN_ROOT}/agents/company-researcher.md`), and the generic frameworks
   (`${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md`).
-- **`{dir}` (per-application directory):** dot-source
-  `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`, take
-  `.OutputDir` (default `applications/{Company}`), substitute the literal `{Company}`
-  token with the company name, then join onto `.Root`: `{dir}` is
-  `<Root>/<OutputDir with {Company} substituted>`. `{dir}` must already contain
+- **`{dir}` (per-application directory):** run `uv run --project
+  ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`, take
+  `output_dir` (default `applications/{Company}`), substitute the literal `{Company}`
+  token with the company name, then join onto `root`: `{dir}` is
+  `<root>/<output_dir with {Company} substituted>`. `{dir}` must already contain
   `jd.md`, `analysis.md`, and `resume.data.json` — if not, tell the user to run
   `/job-application:jd-intake` and `/job-application:generate` first and stop.
 - **`resume.data.json` shape** (design amendment §3.1): `name`, `contact`,
@@ -33,9 +34,9 @@ the user wants. All three operate on one company's per-application directory.
   `type` ∈ `entries` | `education` | `skills` | `list`). All strings are plain text —
   the résumé's claims live in `intro[]`, the `sections[].items[].bullets[]`, and the
   `skills` groups' `value` strings.
-- **`interview_playbook.md` lives at the USER's repo root** — `Get-JobAppConfig`'s
-  `Root` key (the directory containing `jobapp.config.yml` found by walking up from
-  the current working directory, or `(Get-Location).Path` if there is none). It is
+- **`interview_playbook.md` lives at the USER's repo root** — `config.py`'s
+  `root` key (the directory containing `jobapp.config.yml` found by walking up from
+  the current working directory, or the current directory if there is none). It is
   **not** a plugin file and **never** lives under `${CLAUDE_PLUGIN_ROOT}`. If it does
   not exist yet, seed it by
   copying `${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md` to

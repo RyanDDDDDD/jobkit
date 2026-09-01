@@ -20,6 +20,10 @@ interview_playbook.md
 *.synctex.gz
 *.rendered.html
 templates/preview/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
 
 # --- Keep tracked ---
 !/plugins/job-application/example/

@@ -1,15 +1,20 @@
 # job-application (jobkit) — plugin source
 
-This repository **is** the `job-application` Claude Code plugin: a generic engine for
+This directory is the `job-application` Claude Code plugin: a generic engine for
 JD analysis, tailored résumé + cover-letter generation, and interview prep. It ships
 **no personal data** — the candidate's source of truth and all generated output live
 in the user's own working directory, never here.
 
-## Layout
+The repository root one level up is the **marketplace** (`../.claude-plugin/marketplace.json`,
+which points its one plugin `source` at `./plugins/job-application`). The plugin lives in
+this subdirectory — not at the repo root — so a marketplace checkout is never itself
+mistaken for a second copy of the plugin.
+
+## Layout (within `plugins/job-application/`)
 
 | Path | Purpose | Required by |
 |---|---|---|
-| `.claude-plugin/` | manifest (`plugin.json`) + local marketplace (`marketplace.json`) | plugin format |
+| `.claude-plugin/plugin.json` | plugin manifest | plugin format |
 | `skills/` | the five skills — `ingest`, `jd-intake`, `generate`, `review-application`, `interview` (the actual logic) | plugin format |
 | `commands/` | the `/slash` entrypoints — thin shims that forward args to the skills | plugin format |
 | `agents/` | subagents the skills dispatch — `sot-retriever`, `company-researcher` | plugin format |

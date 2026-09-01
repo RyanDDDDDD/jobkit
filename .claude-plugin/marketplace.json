@@ -2,6 +2,6 @@
   "name": "job-application-marketplace",
   "owner": { "name": "RyanDDDDDD" },
   "plugins": [
-    { "name": "job-application", "source": "./", "description": "Job application engine: JD analysis, resume/cover-letter generation, interview prep." }
+    { "name": "job-application", "source": "./plugins/job-application", "description": "Job application engine: JD analysis, resume/cover-letter generation, interview prep." }
   ]
 }

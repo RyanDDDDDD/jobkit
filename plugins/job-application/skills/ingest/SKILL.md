@@ -11,12 +11,14 @@ or a source-of-truth directory does not exist yet.
 ## Steps
 
 1. **Resolve directories.**
-   - Source-of-truth dir: dot-source `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`
-     and call `Get-JobAppConfig`. Resolve the directory by joining its `Root` key
-     onto `.SourceOfTruthDir` (default `resume_sections/`) — i.e.
-     `<Root>/<SourceOfTruthDir>`. `Root` is the directory where `jobapp.config.yml`
+   - Source-of-truth dir: run
+     `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`
+     (prints the resolved config as JSON) and resolve the directory by joining its
+     `root` key
+     onto `source_of_truth_dir` (default `resume_sections/`) — i.e.
+     `<root>/<source_of_truth_dir>`. `root` is the directory where `jobapp.config.yml`
      was found by walking up from the current working directory, or
-     `(Get-Location).Path` if none is found. Create the directory if absent.
+     the current directory if none is found. Create the directory if absent.
    - Input dir: the folder path the user supplied (the `/job-application:ingest`
      argument). It must
      be a directory containing past CVs. If the user gave a single file, use its
@@ -26,13 +28,14 @@ or a source-of-truth directory does not exist yet.
    input folder, run:
 
    ```
-   pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/extract_cv.ps1 -Path <file>
+   uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/extract_cv.py <file>
    ```
 
    Collect each file's text, labelled by filename (so contradictions can be cited as
-   `sample-cv-a.md` vs `sample-cv-b.md`). `.pdf` needs `pdftotext` (poppler); `.docx`
-   needs `pandoc` — if a call throws, tell the user which tool to install and skip
-   that file.
+   `sample-cv-a.md` vs `sample-cv-b.md`). `.pdf` and `.docx` extraction has no
+   external tool dependency (PyMuPDF / python-docx are part of the plugin's own `uv`
+   environment) — if a call still fails (a corrupt or encrypted file), tell the user
+   and skip that file.
 
 3. **Cluster.** Dispatch the `sot-retriever` subagent
    (`${CLAUDE_PLUGIN_ROOT}/agents/sot-retriever.md`) in `cluster` mode with
@@ -104,7 +107,7 @@ or a source-of-truth directory does not exist yet.
      (boolean) are workflow defaults — use `1` and `false` unless the user says
      otherwise.
    - `output_dir` is NOT part of `profile.yml` — it is machine/repo config in
-     `jobapp.config.yml` (resolved by `Get-JobAppConfig`, default
+     `jobapp.config.yml` (resolved by `config.py`, default
      `applications/{Company}`). Do not write it here.
    - Dates: use the CV's own format normalised to `Mon. YYYY` (e.g. `Jan. 2024`),
      `Present` for a current role.

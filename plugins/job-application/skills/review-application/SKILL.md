@@ -21,24 +21,25 @@ user to run `/job-application:generate` for that company first and stop.
 ## Inputs and paths
 
 - All plugin-internal paths use `${CLAUDE_PLUGIN_ROOT}`: the config loader
-  (`${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`), the plain-text cover-letter
-  script (`${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.ps1`), the HTML→PDF
-  renderer (`${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1`), the bundled templates
+  (`${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`), the plain-text cover-letter
+  script (`${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py`), the HTML→PDF
+  renderer (`${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py`) — all run via `uv run
+  --project ${CLAUDE_PLUGIN_ROOT}` — the bundled templates
   (`${CLAUDE_PLUGIN_ROOT}/templates/resume.html`,
   `${CLAUDE_PLUGIN_ROOT}/templates/cover_letter.html`), and `reference/`
   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`,
   `${CLAUDE_PLUGIN_ROOT}/reference/ats-checklist.md`).
-- **Source-of-truth dir** and **output dir**: dot-source
-  `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`. It returns
-  `Root` (the directory where `jobapp.config.yml` was found by walking up from the
-  current working directory, or `(Get-Location).Path` if none), `BrowserPath` and
-  `GhostscriptPath` (machine hints, may be `$null`), `SourceOfTruthDir` (default
-  `resume_sections/`), and `OutputDir` (default `applications/{Company}`). The
-  source-of-truth dir is `<Root>/<SourceOfTruthDir>`. `profile.yml` has **no**
-  `output_dir` key — resolve `{dir}` by substituting the literal token `{Company}` in
-  `.OutputDir` with the company name and joining onto `.Root`
-  (e.g. `<Root>/applications/Testco`), exactly as `jd-intake` and `generate` do.
-- If a repo-level `templates/` dir exists under `.Root`, its `resume.html` /
+- **Source-of-truth dir** and **output dir**: run `uv run --project
+  ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`, which prints
+  the resolved config as JSON. It returns `root` (the directory where
+  `jobapp.config.yml` was found by walking up from the current working directory, or
+  the current directory if none), `browser_path` (a machine hint, may be `null`),
+  `source_of_truth_dir` (default `resume_sections/`), and `output_dir` (default
+  `applications/{Company}`). The source-of-truth dir is `<root>/<source_of_truth_dir>`.
+  `profile.yml` has **no** `output_dir` key — resolve `{dir}` by substituting the
+  literal token `{Company}` in `output_dir` with the company name and joining onto
+  `root` (e.g. `<root>/applications/Testco`), exactly as `jd-intake` and `generate` do.
+- If a repo-level `templates/` dir exists under `root`, its `resume.html` /
   `cover_letter.html` override the plugin's bundled ones — use the resolved path for
   the render check.
 
@@ -112,16 +113,16 @@ there is no markup to parse.
 
 ### 4. ATS & quality
 - Render the résumé (or read an existing `{dir}/resume.pdf`):
-  `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1 -TemplatePath <resume.html>
-  -DataPath {dir}/resume.data.json -OutPath <temp>.pdf`. Then run
-  `pdftotext -enc UTF-8 <temp>.pdf -` and assert the candidate `name` **and** every
+  `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py
+  --template-path <resume.html> --data-path {dir}/resume.data.json --out-path
+  <temp>.pdf`. Then run `uv run --project ${CLAUDE_PLUGIN_ROOT}
+  ${CLAUDE_PLUGIN_ROOT}/scripts/extract_cv.py <temp>.pdf` and assert the candidate
+  `name` **and** every
   company name (`items[].secondary`) appear in the extracted text — these round-trip
   cleanly. (Some ligature clusters — `ft`, `fi` — and a leading `+` do not survive
-  `pdftotext` on the bundled fonts; do not assert on strings that contain them.
+  text extraction on the bundled fonts; do not assert on strings that contain them.
   Also assert the PDF text does **not** contain `Invalid resume JSON` — that string
-  is the renderer's fallback when the JSON is the wrong shape.) If `pdftotext` is not
-  available, state that explicitly in the report and mark the text-extraction check
-  as not-run — never assume it passed.
+  is the renderer's fallback when the JSON is the wrong shape.)
 - The bundled template is single-column with standard headings (`Introduction` /
   the experience title / `Skills` / `Education` / `Projects`) **by construction** —
   confirm the section `title`s in the JSON are conventional, not creative renames.
@@ -149,15 +150,15 @@ there is no markup to parse.
 - The rendered letter is one page (render `cover_letter.html` with
   `-Placeholder '{{COVER_LETTER_JSON}}'` if you need to confirm).
 - `{dir}/cover_letter.txt` exists and is **current**: regenerate a scratch copy with
-  `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.ps1 -DataPath
-  {dir}/cover_letter.data.json -OutPath <temp>` and diff it against the committed
+  `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py
+  --data-path {dir}/cover_letter.data.json --out-path <temp>` and diff it against the committed
   `cover_letter.txt`. Any difference (or a missing `.txt`, or a `.txt` whose
   modification time precedes `cover_letter.data.json`'s) means the `.txt` is stale.
   Its first `Subject:` line must match `cover_letter.data.json.subject`.
 
 ### Render failure
-If `render_pdf.ps1` returns `Ok=$false` (or the CLI prints `Render failed:`), surface
-the `Log` — this is a **browser** render failure (missing Chromium, malformed
+If `render_pdf.py` returns `ok=False` (or the CLI prints `Render failed:`), surface
+the `log` — this is a **browser** render failure (missing Chromium, malformed
 template), not a LaTeX compile. Report it under `## Flag` and skip the checks that
 depend on the PDF; do not claim the application passed.
 
@@ -183,8 +184,8 @@ Only these count as safe auto-fixes under `--fix`:
    rewrite the JSON string to match `profile.yml` **verbatim** (`profile.yml` wins,
    always).
 3. **Stale `cover_letter.txt`** — regenerate it with
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.ps1 -DataPath
-   {dir}/cover_letter.data.json`.
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py
+   --data-path {dir}/cover_letter.data.json`.
 
 Anything touching the substance of a claim, the selection of evidence, or the
 wording of an argument is a **Flag**, never a **Fix**.
@@ -194,13 +195,14 @@ wording of an argument is a **Flag**, never a **Fix**.
 1. Write `review.md` from the first pass.
 2. Apply every item in `## Fix` (and only those). If a fix edits
    `cover_letter.data.json`, regenerate `cover_letter.txt` afterwards
-   (`cover_letter_to_txt.ps1 -DataPath {dir}/cover_letter.data.json`). If a fix edits
-   `resume.data.json`, re-render it
-   (`pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1 -TemplatePath <resume.html>
-   -DataPath {dir}/resume.data.json -OutPath {dir}/resume.pdf`) and, on success,
-   recompress (`${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1 -PdfPath
-   {dir}/resume.pdf`). If a re-render fails, revert that edit, move the item to
-   `## Flag`, and keep going.
+   (`uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py
+   --data-path {dir}/cover_letter.data.json`). If a fix edits `resume.data.json`,
+   re-render it (`uv run --project ${CLAUDE_PLUGIN_ROOT}
+   ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py --template-path <resume.html>
+   --data-path {dir}/resume.data.json --out-path {dir}/resume.pdf`) and, on success,
+   recompress (`uv run --project ${CLAUDE_PLUGIN_ROOT}
+   ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.py --pdf-path {dir}/resume.pdf`). If a
+   re-render fails, revert that edit, move the item to `## Flag`, and keep going.
 3. Re-run every check **once**. Rewrite `review.md` with the new results and an
    `## Applied` note listing what was changed.
 4. Do not loop a third time — remaining issues stay in `## Flag` / `## Fix` for the

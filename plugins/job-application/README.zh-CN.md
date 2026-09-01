@@ -14,19 +14,15 @@
 
 ## 前置条件
 
-- Windows，并安装 PowerShell 7（`pwsh`）。
-- **一个 Chromium 内核浏览器** —— Microsoft Edge（Windows 预装）、Google Chrome 或
-  Chromium —— 由 `scripts/render_pdf.ps1` 用来把 HTML 模板渲染为 PDF。会自动从
-  Program Files / PATH 中检测，或在 `jobapp.config.yml` 中设置 `browser_path`。
-- [Ghostscript](https://www.ghostscript.com/)（`gs` / `gswin64c` 在 PATH 上）——
-  由 `scripts/compress_pdf.ps1` 用来压缩渲染出的 PDF。这一步需要 Ghostscript；完整安装的
-  TinyTeX 也能满足，因为它捆绑了一个包装 Ghostscript 的 `ps2pdf`，脚本会将其作为回退方案。
-- `pdftotext`（Poppler）—— `generate` 和 `review-application` 用它校验渲染出的 PDF 的
-  文本，`ingest` 用它导入 `.pdf` 格式的源简历。
-- 可选：`pandoc`，用于导入 `.docx` 格式的源简历。纯 `.tex` / `.md` 简历既不需要它，也不
-  需要 `pdftotext`。
-- 使用 `--lang zh` 时，需要系统安装一款 CJK 衬线字体（如 Noto Serif CJK / 思源宋体）——
-  裸 Linux / CI 机器需要手动安装；Windows 和 macOS 自带。
+- **Windows、macOS 或 Linux** —— 插件没有操作系统相关的依赖。
+- [`uv`](https://docs.astral.sh/uv/) —— 管理插件的 Python 环境。一次性安装：请参阅 uv
+  官方文档中针对你操作系统的说明。
+- 一次性浏览器下载：`uv run --project ${CLAUDE_PLUGIN_ROOT} playwright install chromium`
+  （下载由 Playwright 自行管理的 Chromium 二进制 —— 无需安装系统浏览器）。
+
+不需要安装 Ghostscript、Poppler 或 `pandoc` —— PDF 压缩以及 `.pdf` / `.docx` 文本提取
+均为纯 Python 实现（`pikepdf`、`pymupdf`、`python-docx`），首次通过 `uv run` 运行脚本时
+会自动安装。
 
 ## 安装
 
@@ -48,12 +44,12 @@ claude plugin install job-application
 
 插件本身不存放任何候选人数据。它只从安装位置（`${CLAUDE_PLUGIN_ROOT}`，只读）读取自身资源，
 **其余的一切 —— 你的事实来源和所有生成文档 —— 都在你运行 Claude Code 的那个目录里读写**，
-由 `Get-JobAppConfig` 向上查找 `jobapp.config.yml` 来确定。
+由 `config.py` 向上查找 `jobapp.config.yml` 来确定。
 
 1. 新建一个私有工作文件夹（例如 `~/job-hunt/`），在里面开 Claude Code。它要和本仓库分开，
    你生成的任何东西都不属于插件。
 2. 可选：如果你想使用非默认路径，把 `jobapp.config.example.yml` 复制进去改名为
-   `jobapp.config.yml` —— `browser_path`、`ghostscript_path`、`source_of_truth_dir`、
+   `jobapp.config.yml` —— `browser_path`、`source_of_truth_dir`、
    `output_dir`。跳过则使用默认值（`resume_sections/`、`applications/{Company}/`）。
 3. 运行 `/job-application:ingest <你的简历路径>`（指向存放过往简历的文件夹）在该文件夹里构建
    `resume_sections/`。
@@ -121,16 +117,13 @@ claude plugin install job-application
 
 ## 运行测试
 
-所有机械性测试都从一个入口运行 —— 纯 PowerShell，不用 Pester：
+在 `plugins/job-application/` 目录下：
 
 ```
-pwsh tests/run-pipeline.ps1
+uv run pytest
 ```
 
-它用 `tests/fixtures/*.data.json` 夹具渲染内置的 HTML 模板（断言简历为一页），运行
-`cover_letter_to_txt.ps1` 和 `Get-JobAppConfig`，然后运行每个
-`tests/scripts/*.Tests.ps1`，把它们的退出码折算进通过 / 失败计数。退出码 0 表示每一项检查
-都通过。在没有 Chromium 浏览器的机器上，渲染相关的检查会干净地跳过。
+若尚未运行 `uv run playwright install chromium`，渲染相关检查会干净地跳过（不会失败）。
 
 skill 的预期输出清单（`tests/skills/*.expected.md`）所针对的合成候选人夹具位于
 `tests/fixtures/`（`tests/fixtures/raw_cvs/`、`tests/fixtures/resume_sections/`、

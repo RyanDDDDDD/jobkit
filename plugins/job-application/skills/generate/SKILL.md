@@ -34,15 +34,16 @@ first and stop.
   the ordering decision recorded in `analysis.md` `## Framing`.
 - `--answers "Q1; Q2; ..."` — also write `{dir}/answers.md`, one grounded answer per
   `;`-separated question.
-- `--keep-html` — pass `-KeepHtml` to `render_pdf.ps1` so the `{dir}/*.rendered.html`
+- `--keep-html` — pass `--keep-html` to `render_pdf.py` so the `{dir}/*.rendered.html`
   files are kept instead of being cleaned up.
 
 ## Inputs and paths
 
 - All plugin-internal paths use `${CLAUDE_PLUGIN_ROOT}`: scripts
-  (`${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1`,
-  `${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1`,
-  `${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.ps1`), templates
+  (`${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py`,
+  `${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.py`,
+  `${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py`, run via `uv run
+  --project ${CLAUDE_PLUGIN_ROOT}`), templates
   (`${CLAUDE_PLUGIN_ROOT}/templates/*.html`), the retriever agent
   (`${CLAUDE_PLUGIN_ROOT}/agents/sot-retriever.md`), and `reference/`
   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`,
@@ -51,15 +52,16 @@ first and stop.
   override. If `./templates/<name>.html` exists in the user's working repo, use it
   instead of `${CLAUDE_PLUGIN_ROOT}/templates/<name>.html`. `<name>` is `resume` or
   `cover_letter`.
-- **Source-of-truth dir** and **output dir**: dot-source
-  `${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.ps1`, call `Get-JobAppConfig`. It returns
-  `Root` (the directory where `jobapp.config.yml` was found by walking up from the
-  current working directory, or `(Get-Location).Path` if none), `BrowserPath`,
-  `GhostscriptPath`, `SourceOfTruthDir` (default `resume_sections/`), and `OutputDir`
-  (default `applications/{Company}`). The source-of-truth dir is
-  `<Root>/<SourceOfTruthDir>`. `profile.yml` has **no** `output_dir` key — resolve
-  `{dir}` by substituting the literal token `{Company}` in `.OutputDir` with the
-  company name and joining onto `.Root` (e.g. `<Root>/applications/Testco`), exactly
+- **Source-of-truth dir** and **output dir**: run `uv run --project
+  ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`, which prints
+  the resolved config as JSON. It returns `root` (the directory where
+  `jobapp.config.yml` was found by walking up from the current working directory, or
+  the current directory if none), `browser_path` (a machine hint, may be `null`),
+  `source_of_truth_dir` (default `resume_sections/`), and `output_dir` (default
+  `applications/{Company}`). The source-of-truth dir is
+  `<root>/<source_of_truth_dir>`. `profile.yml` has **no** `output_dir` key — resolve
+  `{dir}` by substituting the literal token `{Company}` in `output_dir` with the
+  company name and joining onto `root` (e.g. `<root>/applications/Testco`), exactly
   as `jd-intake` does.
 - `{dir}/analysis.md` must already exist. If not: "run `/job-application:jd-intake`
   for {Company} first" and stop.
@@ -108,7 +110,7 @@ Parse it with these exact rules:
      one résumé template — no `--length` variant selection.
    - Resolve `--density` (per the default rule in Flags), `--order`, `--lang`,
      `--with-projects`, and `--max-pages`.
-   - Read the `###` category headings in `<Root>/<SourceOfTruthDir>/skills.md`
+   - Read the `###` category headings in `<root>/<source_of_truth_dir>/skills.md`
      directly — you need them for the Skills section and `sot-retriever` `retrieve`
      mode returns flat bullets, not `###` categories.
 
@@ -133,8 +135,8 @@ Parse it with these exact rules:
 
 6. **Write and render the résumé.** Emit the data object with `ConvertTo-Json`
    (see "Building the data files" — this guarantees valid JSON). Then:
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1 -TemplatePath <resume.html override-resolved> -DataPath {dir}/resume.data.json -OutPath {dir}/resume.pdf`
-   (add `-KeepHtml` when `--keep-html` was passed). CLI contract: on success it
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py --template-path <resume.html override-resolved> --data-path {dir}/resume.data.json --out-path {dir}/resume.pdf`
+   (add `--keep-html` when `--keep-html` was passed). CLI contract: on success it
    prints `OK: <pdf> (N page…)` to stdout and exits 0; on failure it prints
    `Render failed:` plus the log tail to stderr and exits 1; it exits 2 if a required
    parameter is missing.
@@ -145,13 +147,12 @@ Parse it with these exact rules:
      it draws a visible "Invalid resume JSON: …" page for a JSON scalar / `null`, and
      a near-empty page for a valid-JSON-but-wrong-shape object (no `sections`). After
      a successful render, extract the PDF text
-     (`pdftotext -enc UTF-8 {dir}/resume.pdf -`) and confirm **both**: it does not
-     contain `Invalid resume JSON`, **and** it contains the candidate's `name` plus
-     at least one company name from the experience section. If either check fails,
-     treat it exactly like a render failure: surface it, keep the `.data.json`, do
-     not compress, do not claim success — fix the data and re-render. If `pdftotext`
-     is not available, state that explicitly in the report and mark the
-     text-extraction check as not-run — never assume it passed.
+     (`uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/extract_cv.py {dir}/resume.pdf`)
+     and confirm **both**: it does not contain `Invalid resume JSON`, **and** it
+     contains the candidate's `name` plus at least one company name from the
+     experience section. If either check fails, treat it exactly like a render
+     failure: surface it, keep the `.data.json`, do not compress, do not claim
+     success — fix the data and re-render.
    - **Page count** is the integer in the `OK: … (N page…)` line. If it exceeds
      `--max-pages`: WARN the user and list candidate trims (drop the lowest-ranked
      bullet from each role, shorten the intro, drop a de-emphasized skill group). Do
@@ -159,7 +160,7 @@ Parse it with these exact rules:
      without telling the user.
 
 7. **Compress.** On success:
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1 -PdfPath {dir}/resume.pdf`.
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.py --pdf-path {dir}/resume.pdf`.
 
 8. **Cover letter.** Build `{dir}/cover_letter.data.json` per "Building the data
    files". Content must follow the cover-letter rules in
@@ -170,18 +171,18 @@ Parse it with these exact rules:
    4. name the specific tech stacks, each tied to the company where it was used.
    Obey every `factual-bounds.md` cover-letter rule (e.g. no university mention).
    Emit with `ConvertTo-Json`, then render:
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.ps1 -TemplatePath <cover_letter.html override-resolved> -DataPath {dir}/cover_letter.data.json -OutPath {dir}/cover_letter.pdf -Placeholder '{{COVER_LETTER_JSON}}'`
-   (add `-KeepHtml` with `--keep-html`). Same CLI contract — non-zero exit ⇒
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py --template-path <cover_letter.html override-resolved> --data-path {dir}/cover_letter.data.json --out-path {dir}/cover_letter.pdf --placeholder '{{COVER_LETTER_JSON}}'`
+   (add `--keep-html` with `--keep-html`). Same CLI contract — non-zero exit ⇒
    failure; the `OK: … (N page…)` line should report 1 page. Apply the same
-   silent-failure guard as step 6: after a successful render, extract the PDF text
-   and confirm it does **not** contain `Invalid cover letter JSON` and **does**
-   contain the candidate's `name` and the `subject` text. If either check fails,
-   keep the `.data.json`, do not compress, do not claim success — fix the data and
-   re-render. Then
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.ps1 -PdfPath {dir}/cover_letter.pdf`.
+   silent-failure guard as step 6 (via `extract_cv.py`): after a
+   successful render, extract the PDF text and confirm it does **not** contain
+   `Invalid cover letter JSON` and **does** contain the candidate's `name` and the
+   `subject` text. If either check fails, keep the `.data.json`, do not compress,
+   do not claim success — fix the data and re-render. Then
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.py --pdf-path {dir}/cover_letter.pdf`.
 
 9. **Plain-text cover letter.**
-   `pwsh ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.ps1 -DataPath {dir}/cover_letter.data.json`
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py --data-path {dir}/cover_letter.data.json`
    → `{dir}/cover_letter.txt` (the script hoists the `Subject:` / `主题：` line to
    the first line and formats the structured data directly). Regenerate it any time
    `cover_letter.data.json` changes.
@@ -192,7 +193,7 @@ Parse it with these exact rules:
     short-field forms. No new facts beyond the source of truth.
 
 11. **Clean up.** There are no `.aux` / `.log` / `.out` files any more.
-    `render_pdf.ps1` removes its own `.rendered.html` unless `-KeepHtml` was passed.
+    `render_pdf.py` removes its own `.rendered.html` unless `--keep-html` was passed.
     So there is nothing to clean unless `--keep-html` was passed — in which case
     `{dir}/resume.rendered.html` and `{dir}/cover_letter.rendered.html` are
     intentionally kept. Files left in `{dir}`: `jd.md`, `analysis.md`,
@@ -201,7 +202,7 @@ Parse it with these exact rules:
 
 12. **Report.** Output:
     - every file written, with the résumé's real page count from the
-      `render_pdf.ps1` `OK:` line and the cover letter's page count;
+      `render_pdf.py` `OK:` line and the cover letter's page count;
     - a table of every metric and every named skill used in the résumé or cover
       letter, each with its source-of-truth `file:line` (Ruling: no claim without a
       citation);
@@ -271,7 +272,7 @@ grades / distinctions (experienced-hire default).
 
 **Skills section** — `{ "title": "Skills", "type": "skills", "groups": [...] }`.
 Each group is `{ "label", "value" }` with `value` a comma-separated list. Read the
-`###` category headings in `<Root>/<SourceOfTruthDir>/skills.md` **directly** for the
+`###` category headings in `<root>/<source_of_truth_dir>/skills.md` **directly** for the
 grouping (the retriever returns flat bullets, not `###` categories). Take a
 JD-relevant subset within each group and keep the source file's category structure.
 

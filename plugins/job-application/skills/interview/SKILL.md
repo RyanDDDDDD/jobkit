@@ -6,14 +6,14 @@ description: Interview preparation and practice for a specific application - com
 ## When to use
 
 The user says "prep me for the {Company} interview", "mock interview for {Company}",
-"research {Company}", or "/interview research|prep|mock". Runs after `generate` (and
-usually `review-application`) for that company.
+"research {Company}", or "/job-application:interview research|prep|mock". Runs after
+`generate` (and usually `review-application`) for that company.
 
 ## Subcommand is the first argument
 
-`/interview research` · `/interview prep` · `/interview mock`. If no subcommand is
-given, ask which of the three the user wants. All three operate on one company's
-per-application directory.
+`/job-application:interview research` · `/job-application:interview prep` ·
+`/job-application:interview mock`. If no subcommand is given, ask which of the three
+the user wants. All three operate on one company's per-application directory.
 
 ## Inputs and paths
 
@@ -27,7 +27,7 @@ per-application directory.
   token with the company name, then join onto `.Root`: `{dir}` is
   `<Root>/<OutputDir with {Company} substituted>`. `{dir}` must already contain
   `jd.md`, `analysis.md`, and `resume.data.json` — if not, tell the user to run
-  `/jd-intake` and `/generate` first and stop.
+  `/job-application:jd-intake` and `/job-application:generate` first and stop.
 - **`resume.data.json` shape** (design amendment §3.1): `name`, `contact`,
   `intro` (`[{lead, text}]`), and `sections` (each `{title, type, items | groups}`,
   `type` ∈ `entries` | `education` | `skills` | `list`). All strings are plain text —

@@ -6,10 +6,10 @@ description: QA a generated application (resume + cover letter) against factual 
 ## When to use
 
 The user says "review the {Company} application", "QA the resume for {Company}", or
-"/review-application". Runs after `generate`. Requires a per-application `{dir}` that
-already contains `resume.data.json`, `cover_letter.data.json`, and `analysis.md`. If any
-of the three is missing, tell the user to run `/generate` for that company first and
-stop.
+"/job-application:review-application". Runs after `generate`. Requires a
+per-application `{dir}` that already contains `resume.data.json`,
+`cover_letter.data.json`, and `analysis.md`. If any of the three is missing, tell the
+user to run `/job-application:generate` for that company first and stop.
 
 ## Flags
 

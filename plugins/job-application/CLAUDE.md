@@ -15,14 +15,20 @@ mistaken for a second copy of the plugin.
 | Path | Purpose | Required by |
 |---|---|---|
 | `.claude-plugin/plugin.json` | plugin manifest | plugin format |
-| `skills/` | the five skills — `ingest`, `jd-intake`, `generate`, `review-application`, `interview` (the actual logic) | plugin format |
-| `commands/` | the `/slash` entrypoints — thin shims that forward args to the skills | plugin format |
+| `skills/` | the five skills — `ingest`, `jd-intake`, `generate`, `review-application`, `interview` | plugin format |
 | `agents/` | subagents the skills dispatch — `sot-retriever`, `company-researcher` | plugin format |
 | `scripts/` | PowerShell helpers — `render_pdf.ps1`, `compress_pdf.ps1`, `cover_letter_to_txt.ps1`, `extract_cv.ps1`, `lib/config.ps1` | ours |
 | `templates/` | HTML résumé / cover-letter templates + bundled fonts (OFL) | ours |
 | `reference/` | prose shared across skills — `workflow-rules.md`, `ats-checklist.md`, `interview-frameworks.md` | ours |
 | `tests/` | `run-pipeline.ps1` (single entry point), `scripts/*.Tests.ps1`, `skills/*.expected.md`, `fixtures/` (synthetic candidate) | ours |
 | `example/` | four rendered sample PDFs (résumé + cover letter, EN + ZH) | ours |
+
+There is no `commands/` directory. An earlier version shipped one — thin `/slash`
+shims that just forwarded to the matching skill — but Claude Code now also lists
+plugin skills directly in the `/` picker as `/job-application:<skill>`, so a
+same-named command collided with its skill and showed as a duplicate, ghosting
+entry when scrolling the picker. Do not reintroduce a `commands/*.md` file with the
+same name as a `skills/<name>/` directory.
 
 ## Working on the plugin
 

@@ -5,8 +5,8 @@ description: Build or refresh the resume_sections/ source-of-truth from a folder
 
 ## When to use
 
-User says "ingest my CVs", "build resume_sections", "/ingest <path>", or a
-source-of-truth directory does not exist yet.
+User says "ingest my CVs", "build resume_sections", "/job-application:ingest <path>",
+or a source-of-truth directory does not exist yet.
 
 ## Steps
 
@@ -17,7 +17,8 @@ source-of-truth directory does not exist yet.
      `<Root>/<SourceOfTruthDir>`. `Root` is the directory where `jobapp.config.yml`
      was found by walking up from the current working directory, or
      `(Get-Location).Path` if none is found. Create the directory if absent.
-   - Input dir: the folder path the user supplied (the `/ingest` argument). It must
+   - Input dir: the folder path the user supplied (the `/job-application:ingest`
+     argument). It must
      be a directory containing past CVs. If the user gave a single file, use its
      parent and process only that file.
 

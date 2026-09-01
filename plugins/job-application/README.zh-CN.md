@@ -79,7 +79,7 @@ claude plugin install job-application
 /job-application:jd-intake                             # paste the job description, name the company
 /job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
 /job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
-/job-application:interview research|prep|mock          # company research | self-intro + HR prep | mock interview
+/job-application:interview research|prep|mock [--lang en|zh]   # company research | self-intro + HR prep | mock interview
 ```
 
 - `/job-application:generate` 参数：`--density compact|standard` 设置简历的行距密度（默认取自
@@ -90,11 +90,15 @@ claude plugin install job-application
   `answers.md`。
 - `/job-application:review-application --fix` 只应用明确且安全的更正（过往岗位里用现在时的要点、与
   `profile.yml` 不一致的字段、过时的 `cover_letter.txt`），重新渲染，并把各项检查再跑一次。
-- `/job-application:interview` 子命令：`research` 调度 `company-researcher` 子代理写入
+- `/job-application:interview` 子命令：`research` 调度 `company-researcher` 子代理——它
+  会先判断目标公司主要在国内还是海外招聘（或两者都有），据此选择搜索源（海外用
+  Glassdoor/Seek/Indeed/LinkedIn；国内用 牛客网/脉脉/看准网/知乎/BOSS直聘）——写入
   `{dir}/company_research.md`；`prep` 写出 `{dir}/self_intro.md` 和
   `{dir}/hr_questions_prep.md`；`mock` 运行一场以简历为依据的模拟面试，给出均衡的反馈，并把
   新出现的、反复出现的经验教训追加到你仓库根目录的 `interview_playbook.md`（首次使用时
-  以插件的 `interview-frameworks.md` 为种子）。
+  始终以英文的插件 `interview-frameworks.md` 为种子）。`--lang en|zh` 设置这个子命令本次
+  写出的一切内容的语言（研究报告、准备材料、模拟面试对话、新增的 playbook 条目）；默认跟随
+  这份申请 `generate` 时用的 `--lang`。
 
 每个申请的文件都落在同一个目录里 —— 默认是 `applications/{Company}/`
 （`jd.md`、`analysis.md`、`resume.data.json/pdf`、`cover_letter.data.json/pdf/txt`、

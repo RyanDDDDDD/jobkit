@@ -1,5 +1,5 @@
 ---
-description: QA a generated application — factual bounds, JD coverage, consistency, ATS, cover letter. Writes review.md
+description: QA a generated application - factual bounds, JD coverage, consistency, ATS, cover letter. Writes review.md
 ---
 
 Invoke the `review-application` skill

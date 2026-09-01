@@ -1,5 +1,5 @@
 ---
-description: Produce a tailored resume, cover letter, and optional answers for an analyzed job — renders and compresses the PDFs
+description: Produce a tailored resume, cover letter, and optional answers for an analyzed job - renders and compresses the PDFs
 ---
 
 Invoke the `generate` skill (`${CLAUDE_PLUGIN_ROOT}/skills/generate/SKILL.md`).

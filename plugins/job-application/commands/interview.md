@@ -1,5 +1,5 @@
 ---
-description: Interview prep for an application — research | prep | mock
+description: Interview prep for an application - research | prep | mock
 ---
 
 Invoke the `interview` skill (`${CLAUDE_PLUGIN_ROOT}/skills/interview/SKILL.md`).

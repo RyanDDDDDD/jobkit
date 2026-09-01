@@ -1,6 +1,6 @@
 ---
 name: jd-intake
-description: Analyze a job description — save it verbatim, extract essential/desirable criteria, map each criterion to source-of-truth evidence, and classify fit. Run before generate.
+description: Analyze a job description - save it verbatim, extract essential/desirable criteria, map each criterion to source-of-truth evidence, and classify fit. Run before generate.
 ---
 
 ## When to use

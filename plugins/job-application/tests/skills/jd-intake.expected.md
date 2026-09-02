@@ -5,7 +5,7 @@ After running the `jd-intake` skill on `tests/fixtures/sample-jd.md` (the synthe
 retrieving against the `tests/fixtures/resume_sections/` source of truth (candidate "Sample
 Dev"), the produced output must satisfy every assertion below.
 
-The fixture ships no `jobapp.config.yml`, so `Get-JobAppConfig` returns the plugin
+The fixture ships no `jobapp.config.yml`, so `config.py` returns the plugin
 default `output_dir` of `applications/{Company}`; the resolved directory is therefore
 `applications/Testco/`. Assertions are **structural** — they check file existence,
 section presence, and table shape, not exact prose.

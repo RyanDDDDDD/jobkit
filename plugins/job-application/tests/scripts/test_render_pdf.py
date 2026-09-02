@@ -115,3 +115,20 @@ def test_keep_html_rewrites_font_urls_to_absolute(tmp_path):
     rendered = Path(result.html).read_text(encoding="utf-8")
     assert 'url("fonts/' not in rendered
     assert rendered.count('src: url("file://') == 2
+
+
+def test_keep_html_lands_next_to_data_path(tmp_path):
+    """The .rendered.html sits beside the data file, not the output PDF -- so
+    `generate` can keep data in tmp/ while the PDF stays flat."""
+    data_dir = tmp_path / "tmp"
+    data_dir.mkdir()
+    data = data_dir / "resume.data.json"
+    data.write_text('{"name": "T", "sections": []}', encoding="utf-8")
+    out_pdf = tmp_path / "resume.pdf"  # flat, a level up from the data file
+    result = render_pdf(str(TEMPLATE), str(data), str(out_pdf), keep_html=True)
+    assert result.ok, result.log
+    assert result.html is not None
+    html_path = Path(result.html)
+    assert html_path.parent == data_dir
+    assert html_path.name == "resume.rendered.html"
+    assert html_path.is_file()

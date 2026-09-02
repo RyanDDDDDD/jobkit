@@ -5,6 +5,9 @@ CLI usage:
   uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py \
       --template-path t.html --data-path d.json --out-path o.pdf \
       [--placeholder {{X}}] [--keep-html]
+
+Note: with --keep-html the .rendered.html is written next to --data-path (not
+--out-path), so it follows the data file into a tmp/ subdirectory.
 """
 import argparse
 import sys
@@ -55,7 +58,10 @@ def render_pdf(
     font_dir_url = (template_path.parent / "fonts").as_uri() + "/"
     html = html.replace('url("fonts/', f'url("{font_dir_url}')
 
-    rendered_html_path = out_path.with_name(out_path.stem + ".rendered.html")
+    # The .rendered.html is the data spliced into the template -- a sibling of the
+    # data file, not the output PDF. `generate` keeps the data in {dir}/tmp/ while
+    # the PDF lands flat in {dir}/, so derive the dir from data_path.
+    rendered_html_path = data_path.parent / (out_path.stem + ".rendered.html")
 
     ok = False
     pages = 0

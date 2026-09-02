@@ -20,7 +20,7 @@ mistaken for a second copy of the plugin.
 | `scripts/` | Python helpers, run via `uv run` — `render_pdf.py`, `compress_pdf.py`, `cover_letter_to_txt.py`, `extract_cv.py`, `lib/config.py` | ours |
 | `pyproject.toml`, `uv.lock` | `uv`-managed dependencies (`playwright`, `pikepdf`, `pymupdf`, `python-docx`, `pyyaml`) | ours |
 | `templates/` | HTML résumé / cover-letter templates + bundled fonts (OFL) | ours |
-| `reference/` | prose shared across skills — `workflow-rules.md`, `ats-checklist.md`, `interview-frameworks.md` | ours |
+| `reference/` | prose shared across skills — `workflow-rules.md`, `output-layout.md`, `ats-checklist.md`, `interview-frameworks.md` | ours |
 | `tests/` | `pytest` script tests under `tests/scripts/`, `skills/*.expected.md`, `fixtures/` (synthetic candidate) | ours |
 | `example/` | four rendered sample PDFs (résumé + cover letter, EN + ZH) | ours |
 
@@ -41,5 +41,8 @@ Run `uv run pytest` before opening a PR. Render checks skip cleanly (not fail) i
 
 Install it, then run Claude Code from a **separate private folder**. `config.py`
 resolves `resume_sections/` and the per-application output directory from that working
-directory (walking up for `jobapp.config.yml`). Everything under `${CLAUDE_PLUGIN_ROOT}`
-is read-only; nothing is ever written back into the plugin. See `README.md` § Setup.
+directory (walking up for `jobapp.config.yml`). The structure inside each
+`applications/{Company}/` directory (flat deliverables, `tmp/` for machine artifacts,
+`interview/` for prep) is fixed — see `reference/output-layout.md`. Everything under
+`${CLAUDE_PLUGIN_ROOT}` is read-only; nothing is ever written back into the plugin.
+See `README.md` § Setup.

@@ -98,3 +98,13 @@ the university may be named) live in that user's `factual-bounds.md`.
   source of truth.
 - Feedback must be balanced: name what went well **and** concrete weaknesses. Do
   not give purely positive or flattering responses.
+
+## 9. Per-application directory layout
+
+Generated output for one job lives under `{dir}` (default `applications/{Company}/`)
+in the fixed structure documented in `output-layout.md`: `jd.md` / `analysis.md` /
+`review.md` and the résumé / cover-letter deliverables flat; machine artifacts
+(`*.data.json`, `*.rendered.html`) under `tmp/`; interview collateral under
+`interview/`, with mock-interview session records at
+`interview/mock/<behavioural|technical>/<date>.md`. `tmp/` is regenerable — never
+put anything there that cannot be rebuilt by re-running `generate`.

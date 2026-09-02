@@ -20,11 +20,21 @@ sub-service scopes) does **not** belong here — it belongs in that user's
 - Only highlight and reword material that already exists in the source of truth.
   Do not add skills, employers, projects, tools, or experiences that are not
   recorded there.
+- **Reframing real experience is the job, not a violation.** Selecting,
+  re-weighting, re-languaging, and combining recorded material to fit a JD —
+  mapping a bullet onto JD keywords, leading with a transferable angle, describing
+  a recorded pipeline in more JD-aligned wording than the source file uses — is
+  expected. The prohibition is on *zero-basis* additions: a technology, tool,
+  domain, employer, or metric with no grounding in any real experience. The source
+  of truth not phrasing something the JD's way is not, by itself, a reason to
+  exclude it.
 
 ## 2. No hallucinated skills or metrics
 
-- Never introduce a skill, framework, or tool that is not present in the source of
-  truth just because the JD asks for it.
+- Never introduce a skill, framework, or tool with no grounding anywhere in the
+  source of truth just because the JD asks for it (a zero-basis claim). This targets
+  inventions — not the reframing of experience that is genuinely recorded (see
+  rule 1).
 - Never invent numeric data, metrics, or performance figures (uptime percentages,
   latency reductions, cost savings, team sizes, etc.). Use only numbers explicitly
   recorded in the source of truth or supplied by the user for this application.

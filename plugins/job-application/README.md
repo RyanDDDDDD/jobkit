@@ -86,9 +86,9 @@ One pass per job, in order:
 ```
 /job-application:ingest <folder>                       # once (or after adding a new CV): build resume_sections/
 /job-application:jd-intake                             # paste the job description, name the company
-/job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
+/job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # tmp/*.data.json + resume.pdf + cover_letter.pdf/txt
 /job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
-/job-application:interview research|prep|mock [--lang en|zh]   # company research | self-intro + HR prep | mock interview
+/job-application:interview research|prep|mock [behavioural|technical] [--lang en|zh]   # research | self-intro + HR prep | mock interview
 ```
 
 - `/job-application:generate` flags: `--density compact|standard` sets the résumé
@@ -105,18 +105,27 @@ One pass per job, in order:
   `company-researcher` subagent — it judges whether the company's hiring is
   domestic-China, overseas, or both, and searches accordingly (Glassdoor/Seek/
   Indeed/LinkedIn overseas; 牛客网/脉脉/看准网/知乎/BOSS直聘 domestically) — to
-  `{dir}/company_research.md`; `prep` writes `{dir}/self_intro.md` and
-  `{dir}/hr_questions_prep.md`; `mock` runs a résumé-grounded mock interview with
-  balanced feedback and appends new recurring lessons to `interview_playbook.md` at
-  your repo root (seeded on first use, always in English, from the plugin's
-  `interview-frameworks.md`). `--lang en|zh` sets the language for everything this
-  subcommand writes (research report, prep files, mock chat, new playbook entries);
-  default is whatever `--lang` `generate` used for this application's résumé.
+  `{dir}/interview/company_research.md`; `prep` writes
+  `{dir}/interview/self_intro.md` and `{dir}/interview/hr_questions_prep.md`; `mock
+  behavioural|technical` runs a résumé-grounded mock interview (a behavioural round,
+  or a role-by-role / project-by-project technical deep-dive), gives balanced
+  feedback, writes a dated session record to
+  `{dir}/interview/mock/<mode>/<date>.md` (never overwritten — a same-day re-run
+  gets `-2`, `-3`, …), and appends new recurring lessons to `interview_playbook.md`
+  at your repo root (seeded on first use, always in English, from the plugin's
+  `interview-frameworks.md`). `mock technical` also takes `--focus "<role or
+  project>"`. `--lang en|zh` sets the language for everything this subcommand writes
+  (research report, prep files, mock chat and record, new playbook entries); default
+  is whatever `--lang` `generate` used for this application's résumé.
 
 Every application's files land in one directory — `applications/{Company}/` by
-default (`jd.md`, `analysis.md`, `resume.data.json/pdf`,
-`cover_letter.data.json/pdf/txt`, `review.md`, and the interview-prep files).
-Override the location with `output_dir` in `jobapp.config.yml`.
+default. Deliverables and working notes sit flat (`jd.md`, `analysis.md`,
+`review.md`, `resume.pdf`, `cover_letter.pdf`, `cover_letter.txt`); machine
+artifacts (`resume.data.json`, `cover_letter.data.json`) sit under `tmp/` and are
+regenerable; interview-prep files sit under `interview/` (with mock-interview
+records at `interview/mock/<behavioural|technical>/<date>.md`). Full tree:
+`reference/output-layout.md`. Override the directory location with `output_dir` in
+`jobapp.config.yml`.
 
 ## The `resume_sections/` contract
 

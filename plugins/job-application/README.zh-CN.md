@@ -77,9 +77,9 @@ claude plugin install job-application
 ```
 /job-application:ingest <folder>                       # once (or after adding a new CV): build resume_sections/
 /job-application:jd-intake                             # paste the job description, name the company
-/job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # resume.data.json/pdf + cover_letter.data.json/pdf/txt
+/job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # tmp/*.data.json + resume.pdf + cover_letter.pdf/txt
 /job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
-/job-application:interview research|prep|mock [--lang en|zh]   # company research | self-intro + HR prep | mock interview
+/job-application:interview research|prep|mock [behavioural|technical] [--lang en|zh]   # research | self-intro + HR prep | mock interview
 ```
 
 - `/job-application:generate` 参数：`--density compact|standard` 设置简历的行距密度（默认取自
@@ -93,16 +93,22 @@ claude plugin install job-application
 - `/job-application:interview` 子命令：`research` 调度 `company-researcher` 子代理——它
   会先判断目标公司主要在国内还是海外招聘（或两者都有），据此选择搜索源（海外用
   Glassdoor/Seek/Indeed/LinkedIn；国内用 牛客网/脉脉/看准网/知乎/BOSS直聘）——写入
-  `{dir}/company_research.md`；`prep` 写出 `{dir}/self_intro.md` 和
-  `{dir}/hr_questions_prep.md`；`mock` 运行一场以简历为依据的模拟面试，给出均衡的反馈，并把
-  新出现的、反复出现的经验教训追加到你仓库根目录的 `interview_playbook.md`（首次使用时
-  始终以英文的插件 `interview-frameworks.md` 为种子）。`--lang en|zh` 设置这个子命令本次
-  写出的一切内容的语言（研究报告、准备材料、模拟面试对话、新增的 playbook 条目）；默认跟随
+  `{dir}/interview/company_research.md`；`prep` 写出 `{dir}/interview/self_intro.md` 和
+  `{dir}/interview/hr_questions_prep.md`；`mock behavioural|technical` 运行一场以简历为
+  依据的模拟面试（行为面一轮，或逐个岗位、逐个项目的技术深挖），给出均衡的反馈，把带日期的
+  记录写入 `{dir}/interview/mock/<mode>/<date>.md`（绝不覆盖——同一天再跑一次会得到
+  `-2`、`-3`……），并把新出现的、反复出现的经验教训追加到你仓库根目录的
+  `interview_playbook.md`（首次使用时始终以英文的插件 `interview-frameworks.md` 为种子）。
+  `mock technical` 还接受 `--focus "<岗位或项目>"`。`--lang en|zh` 设置这个子命令本次写出的
+  一切内容的语言（研究报告、准备材料、模拟面试对话与记录、新增的 playbook 条目）；默认跟随
   这份申请 `generate` 时用的 `--lang`。
 
-每个申请的文件都落在同一个目录里 —— 默认是 `applications/{Company}/`
-（`jd.md`、`analysis.md`、`resume.data.json/pdf`、`cover_letter.data.json/pdf/txt`、
-`review.md`，以及面试准备文件）。可通过 `jobapp.config.yml` 中的 `output_dir` 覆盖该位置。
+每个申请的文件都落在同一个目录里 —— 默认是 `applications/{Company}/`。可交给他人查看或
+投递的成品与工作笔记平铺在根目录（`jd.md`、`analysis.md`、`review.md`、`resume.pdf`、
+`cover_letter.pdf`、`cover_letter.txt`）；机器产物（`resume.data.json`、
+`cover_letter.data.json`）放在 `tmp/` 下，可随时重新生成；面试准备文件放在 `interview/` 下
+（模拟面试记录在 `interview/mock/<behavioural|technical>/<date>.md`）。完整目录树见
+`reference/output-layout.md`。可通过 `jobapp.config.yml` 中的 `output_dir` 覆盖该位置。
 
 ## `resume_sections/` 约定
 

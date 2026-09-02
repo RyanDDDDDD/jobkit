@@ -34,8 +34,8 @@ first and stop.
   the ordering decision recorded in `analysis.md` `## Framing`.
 - `--answers "Q1; Q2; ..."` — also write `{dir}/answers.md`, one grounded answer per
   `;`-separated question.
-- `--keep-html` — pass `--keep-html` to `render_pdf.py` so the `{dir}/*.rendered.html`
-  files are kept instead of being cleaned up.
+- `--keep-html` — pass `--keep-html` to `render_pdf.py` so the
+  `{dir}/tmp/*.rendered.html` files are kept instead of being cleaned up.
 
 ## Inputs and paths
 
@@ -63,6 +63,11 @@ first and stop.
   `{dir}` by substituting the literal token `{Company}` in `output_dir` with the
   company name and joining onto `root` (e.g. `<root>/applications/Testco`), exactly
   as `jd-intake` does.
+- **Layout:** machine artifacts (`resume.data.json`, `cover_letter.data.json`, and
+  with `--keep-html` the `*.rendered.html`) go in `{dir}/tmp/`; the résumé / cover
+  letter PDFs, `cover_letter.txt`, and optional `answers.md` stay flat in `{dir}`.
+  Full tree: `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`. Create `{dir}/tmp/`
+  before writing to it (`mkdir -p` semantics).
 - `{dir}/analysis.md` must already exist. If not: "run `/job-application:jd-intake`
   for {Company} first" and stop.
 
@@ -114,7 +119,7 @@ Parse it with these exact rules:
      directly — you need them for the Skills section and `sot-retriever` `retrieve`
      mode returns flat bullets, not `###` categories.
 
-4. **Build the résumé data object.** Assemble `{dir}/resume.data.json` per
+4. **Build the résumé data object.** Assemble `{dir}/tmp/resume.data.json` per
    "Building the data files" below — `name` / `lang` / `density` / `contact` /
    `intro` / `sections` (Experience, optional Selected Projects, Education, Skills,
    any extra source-of-truth section). Company / title / employment-date / location
@@ -141,7 +146,7 @@ Parse it with these exact rules:
 
 6. **Write and render the résumé.** Emit the data object with `ConvertTo-Json`
    (see "Building the data files" — this guarantees valid JSON). Then:
-   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py --template-path <resume.html override-resolved> --data-path {dir}/resume.data.json --out-path {dir}/resume.pdf`
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py --template-path <resume.html override-resolved> --data-path {dir}/tmp/resume.data.json --out-path {dir}/resume.pdf`
    (add `--keep-html` when `--keep-html` was passed). CLI contract: on success it
    prints `OK: <pdf> (N page…)` to stdout and exits 0; on failure it prints
    `Render failed:` plus the log tail to stderr and exits 1; it exits 2 if a required
@@ -168,7 +173,7 @@ Parse it with these exact rules:
 7. **Compress.** On success:
    `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.py --pdf-path {dir}/resume.pdf`.
 
-8. **Cover letter.** Build `{dir}/cover_letter.data.json` per "Building the data
+8. **Cover letter.** Build `{dir}/tmp/cover_letter.data.json` per "Building the data
    files". Content must follow the cover-letter rules in
    `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §7:
    1. state the total professional software-engineering experience duration;
@@ -177,7 +182,7 @@ Parse it with these exact rules:
    4. name the specific tech stacks, each tied to the company where it was used.
    Obey every `factual-bounds.md` cover-letter rule (e.g. no university mention).
    Emit with `ConvertTo-Json`, then render:
-   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py --template-path <cover_letter.html override-resolved> --data-path {dir}/cover_letter.data.json --out-path {dir}/cover_letter.pdf --placeholder '{{COVER_LETTER_JSON}}'`
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py --template-path <cover_letter.html override-resolved> --data-path {dir}/tmp/cover_letter.data.json --out-path {dir}/cover_letter.pdf --placeholder '{{COVER_LETTER_JSON}}'`
    (add `--keep-html` with `--keep-html`). Same CLI contract — non-zero exit ⇒
    failure; the `OK: … (N page…)` line should report 1 page. Apply the same
    silent-failure guard as step 6 (via `extract_cv.py`): after a
@@ -188,10 +193,10 @@ Parse it with these exact rules:
    `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.py --pdf-path {dir}/cover_letter.pdf`.
 
 9. **Plain-text cover letter.**
-   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py --data-path {dir}/cover_letter.data.json`
-   → `{dir}/cover_letter.txt` (the script hoists the `Subject:` / `主题：` line to
-   the first line and formats the structured data directly). Regenerate it any time
-   `cover_letter.data.json` changes.
+   `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py --data-path {dir}/tmp/cover_letter.data.json --out-path {dir}/cover_letter.txt`
+   (the script hoists the `Subject:` / `主题：` line to the first line and formats
+   the structured data directly). Regenerate it any time
+   `{dir}/tmp/cover_letter.data.json` changes.
 
 10. **Answers (only if `--answers`).** Write `{dir}/answers.md`: one `##` heading per
     question, each answer grounded in the same retrieved bullets (cite the
@@ -199,16 +204,20 @@ Parse it with these exact rules:
     short-field forms. No new facts beyond the source of truth.
 
 11. **Clean up.** There are no `.aux` / `.log` / `.out` files any more.
-    `render_pdf.py` removes its own `.rendered.html` unless `--keep-html` was passed.
-    So there is nothing to clean unless `--keep-html` was passed — in which case
-    `{dir}/resume.rendered.html` and `{dir}/cover_letter.rendered.html` are
-    intentionally kept. Files left in `{dir}`: `jd.md`, `analysis.md`,
-    `resume.data.json`, `resume.pdf`, `cover_letter.data.json`, `cover_letter.pdf`,
-    `cover_letter.txt`, optional `answers.md`, optional `*.rendered.html`.
+    `render_pdf.py` removes its own `.rendered.html` unless `--keep-html` was passed;
+    with `--keep-html`, `{dir}/tmp/resume.rendered.html` and
+    `{dir}/tmp/cover_letter.rendered.html` are intentionally kept. End state:
+    `{dir}/` holds `jd.md`, `analysis.md`, `resume.pdf`, `cover_letter.pdf`,
+    `cover_letter.txt`, and optional `answers.md`; `{dir}/tmp/` holds
+    `resume.data.json`, `cover_letter.data.json`, and (with `--keep-html`) the two
+    `*.rendered.html` files. Full tree:
+    `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
 
 12. **Report.** Output:
     - every file written, with the résumé's real page count from the
       `render_pdf.py` `OK:` line and the cover letter's page count;
+    - confirm `{dir}/tmp/` holds the two `.data.json` files (and the `.rendered.html`
+      pair only if `--keep-html`), and nothing machine-generated was left flat;
     - a table of every metric and every named skill used in the résumé or cover
       letter, each with its source-of-truth `file:line` (Ruling: no claim without a
       citation);
@@ -222,7 +231,7 @@ Parse it with these exact rules:
 Build each file as a PowerShell hashtable / array and emit it with `ConvertTo-Json`:
 
 ```powershell
-$data | ConvertTo-Json -Depth 12 | Set-Content -Encoding utf8NoBOM {dir}/resume.data.json
+$data | ConvertTo-Json -Depth 12 | Set-Content -Encoding utf8NoBOM {dir}/tmp/resume.data.json
 ```
 
 (Use `utf8NoBOM` on PowerShell 7. If you need Windows PowerShell 5.1 compatibility,
@@ -237,7 +246,7 @@ rendering. There is no LaTeX escaping any more: every string is text-escaped by 
 renderer, so the only escaping concern is producing valid JSON strings — which
 `ConvertTo-Json` handles.
 
-### `{dir}/resume.data.json` (design amendment §3.1)
+### `{dir}/tmp/resume.data.json` (design amendment §3.1)
 
 | Key | Fill |
 |---|---|
@@ -292,7 +301,7 @@ de-emphasized skill groups. Render, check the page count, and if it is over targ
 trim the lowest-ranked bullet from each role and re-render — the soft-trim loop in
 step 6 applies here too.
 
-### `{dir}/cover_letter.data.json` (design amendment §3.2)
+### `{dir}/tmp/cover_letter.data.json` (design amendment §3.2)
 
 | Key | Fill |
 |---|---|
@@ -343,6 +352,9 @@ When `--lang zh`:
 - `factual-bounds.md` is a hard constraint. On any conflict: STOP and ask.
 - English by default; `--lang zh` produces Chinese, faithfully translated from the
   English source of truth — never invented.
+- Machine artifacts (`resume.data.json`, `cover_letter.data.json`,
+  `*.rendered.html`) live in `{dir}/tmp/`; deliverables stay flat in `{dir}`. See
+  `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
 - `jd.md` stays in `{dir}` (workflow-rules §5) — this skill never deletes it.
 - Full workflow rules: `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`.
   ATS checklist: `${CLAUDE_PLUGIN_ROOT}/reference/ats-checklist.md`.

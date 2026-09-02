@@ -28,6 +28,10 @@ evidence, not from memory of the conversation.
    - Also resolve the source-of-truth dir as `<root>/<source_of_truth_dir>` (default
      `resume_sections/`) — the retrieve step needs it. If it does not exist, tell the
      user to run `/job-application:ingest` first and stop.
+   - The per-application directory layout (what lands flat vs. under `tmp/` and
+     `interview/`) is documented in
+     `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`. This skill owns `jd.md` and
+     `analysis.md`, both flat in `{dir}`.
 
 2. **Save the raw JD.** Write the job description **verbatim** — exactly as the user
    provided it, no reformatting, no trimming — to `{dir}/jd.md`.

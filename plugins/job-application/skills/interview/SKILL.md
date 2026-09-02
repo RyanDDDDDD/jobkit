@@ -18,14 +18,18 @@ the user wants. All three operate on one company's per-application directory.
 ## Flags
 
 - `--lang en|zh` — language for every artifact this skill writes this session:
-  `company_research.md`, `self_intro.md`, `hr_questions_prep.md`, the mock chat and
-  debrief, and any `interview_playbook.md` entries appended this run. Default:
-  `{dir}/resume.data.json`'s `lang` field — the decision `generate` already made for
+  `interview/company_research.md`, `interview/self_intro.md`,
+  `interview/hr_questions_prep.md`, the mock chat and its session record, and any
+  `interview_playbook.md` entries appended this run. Default:
+  `{dir}/tmp/resume.data.json`'s `lang` field — the decision `generate` already made for
   this application. Override with `--lang` when the interview will happen in a
   different language than the résumé was generated in (e.g. an English résumé
   screened for a role interviewed in Chinese). This does **not** affect the initial
   `interview_playbook.md` seed copy (see Inputs and paths), which always stays
   English.
+- `--focus "<role or project name>"` — `mock technical` only: restrict the deep-dive
+  to the single matching grill target (one role or one project). Ignored by
+  `mock behavioural` and the other subcommands.
 
 ## Inputs and paths
 
@@ -39,9 +43,11 @@ the user wants. All three operate on one company's per-application directory.
   `output_dir` (default `applications/{Company}`), substitute the literal `{Company}`
   token with the company name, then join onto `root`: `{dir}` is
   `<root>/<output_dir with {Company} substituted>`. `{dir}` must already contain
-  `jd.md`, `analysis.md`, and `resume.data.json` — if not, tell the user to run
-  `/job-application:jd-intake` and `/job-application:generate` first and stop.
-- **`resume.data.json` shape** (design amendment §3.1): `name`, `contact`,
+  `jd.md`, `analysis.md`, and `tmp/resume.data.json` — if not, tell the user to run
+  `/job-application:jd-intake` and `/job-application:generate` first and stop. This
+  skill writes under `{dir}/interview/` (create it, `mkdir -p` semantics); layout:
+  `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
+- **`tmp/resume.data.json` shape** (design amendment §3.1): `name`, `contact`,
   `intro` (`[{lead, text}]`), and `sections` (each `{title, type, items | groups}`,
   `type` ∈ `entries` | `education` | `skills` | `list`). All strings are plain text —
   the résumé's claims live in `intro[]`, the `sections[].items[].bullets[]`, and the
@@ -57,30 +63,31 @@ the user wants. All three operate on one company's per-application directory.
 
 ## Subcommand: research
 
-1. Resolve `{dir}` and `--lang` (see Flags — default from `{dir}/resume.data.json`'s
-   `lang` field). Read `{dir}/jd.md` and (if present) `{dir}/analysis.md`,
-   `{dir}/resume.data.json`.
+1. Resolve `{dir}` and `--lang` (see Flags — default from
+   `{dir}/tmp/resume.data.json`'s `lang` field). Read `{dir}/jd.md` and (if present)
+   `{dir}/analysis.md`, `{dir}/tmp/resume.data.json`. Create `{dir}/interview/`.
 2. Dispatch the `company-researcher` agent
    (`${CLAUDE_PLUGIN_ROOT}/agents/company-researcher.md`) with
    `{ company: <name>, role: <title from jd.md>, jd: <text of {dir}/jd.md>, dir: <{dir}>, lang: <resolved --lang> }`.
-3. Save its report **verbatim** to `{dir}/company_research.md`. Print a short summary
+3. Save its report **verbatim** to `{dir}/interview/company_research.md`. Print a short summary
    (2–4 lines) and the source count.
 
 ## Subcommand: prep
 
 Resolve `--lang` (see Flags) — both files below are written in that language. Read
-`{dir}/analysis.md`, `{dir}/resume.data.json`, `{dir}/company_research.md` (if
-present), and `<repo-root>/interview_playbook.md` (seed it first if absent). Then
-write two files:
+`{dir}/analysis.md`, `{dir}/tmp/resume.data.json`,
+`{dir}/interview/company_research.md` (if present), and
+`<repo-root>/interview_playbook.md` (seed it first if absent). Create
+`{dir}/interview/`. Then write two files:
 
-- **`{dir}/self_intro.md`** — a spoken-length self-introduction (about 45–60
+- **`{dir}/interview/self_intro.md`** — a spoken-length self-introduction (about 45–60
   seconds read aloud) that hits anchor points, structured for delivery not
   memorisation: current role and focus → one or two relevant threads from the
-  résumé → why this company / role. Every fact traces to `resume.data.json`
+  résumé → why this company / role. Every fact traces to `tmp/resume.data.json`
   (`intro[]`, the `sections[]` entries) / `analysis.md` / `company_research.md`. Mark
   the 3–4 anchor points as a bullet list
   at the top so the user can rehearse the beats, not the words.
-- **`{dir}/hr_questions_prep.md`** — the likely behavioural / motivation / gap
+- **`{dir}/interview/hr_questions_prep.md`** — the likely behavioural / motivation / gap
   questions for this application, each with a bullet-point answer grounded in the
   résumé:
   - Motivation: "why this company", "why this role" — must use real company facts
@@ -89,7 +96,7 @@ write two files:
     `## Criteria → Evidence`, a one-clean-sentence framing plus the transferable
     bridge (never a claim the source of truth does not support).
   - Behavioural: 3–5 "tell me about a time…" prompts answerable from
-    `resume.data.json` (`bullets[]`, `intro[]`, the `sections[]` entries), each
+    `tmp/resume.data.json` (`bullets[]`, `intro[]`, the `sections[]` entries), each
     mapped to the specific bullet(s) it draws on.
   Apply the answer-structuring principles from `interview_playbook.md` §2.
 
@@ -122,19 +129,24 @@ Conduct a live mock interview in the chat.
 ## Guardrails
 
 - Mock questions and prep answers never assume experience absent from
-  `resume.data.json` / the source of truth.
+  `tmp/resume.data.json` / the source of truth.
 - Feedback is specific and balanced — never generic praise, never purely positive
   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §8).
 - `interview_playbook.md` is the user's file: additive edits only, no deletions, no
   duplicate entries, and it stays at the repo root — never copied into the plugin.
-- `research` writes only `{dir}/company_research.md`; `prep` writes only
-  `{dir}/self_intro.md` and `{dir}/hr_questions_prep.md`; `mock` writes only
-  (appends to) `interview_playbook.md`. None of them touch `{sourceDir}`, `jd.md`,
-  `analysis.md`, `resume.data.json` / `resume.pdf`, or `cover_letter.data.json` /
+- `research` writes only `{dir}/interview/company_research.md`; `prep` writes only
+  `{dir}/interview/self_intro.md` and `{dir}/interview/hr_questions_prep.md`; `mock`
+  writes its session record under `{dir}/interview/mock/<mode>/` and appends to
+  `interview_playbook.md`. None of them touch `{sourceDir}`, `jd.md`, `analysis.md`,
+  `tmp/resume.data.json` / `resume.pdf`, or `tmp/cover_letter.data.json` /
   `cover_letter.pdf`.
-- This skill's own output (`company_research.md`, `self_intro.md`,
-  `hr_questions_prep.md`, the mock chat and debrief, `interview_playbook.md` entries
-  appended this run) follows the resolved `--lang` (see Flags), not necessarily the
-  conversation language. The initial `interview_playbook.md` seed copy is the one
-  exception — it always stays English, since it is the plugin's own bundled
-  reference content, not this skill's output.
+- `mock` asks behavioural-or-technical (if not given as the second argument) before
+  reading any file, so an aborted mock writes nothing. The session record is written
+  once at the end; an existing `<date>.md` is never overwritten — the next run of
+  that mode/day gets `-2`, `-3`, ….
+- This skill's own output (`interview/company_research.md`, `interview/self_intro.md`,
+  `interview/hr_questions_prep.md`, the mock chat and its session record,
+  `interview_playbook.md` entries appended this run) follows the resolved `--lang`
+  (see Flags), not necessarily the conversation language. The initial
+  `interview_playbook.md` seed copy is the one exception — it always stays English,
+  since it is the plugin's own bundled reference content, not this skill's output.

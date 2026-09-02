@@ -123,6 +123,12 @@ Parse it with these exact rules:
 
 5. **Bounds check (before writing anything).** Re-read every line you are about to
    place against `factual-bounds.md` and the `analysis.md` `gap` rows:
+   - Reframing and re-weighting real `resume_sections/` experience to match JD
+     language is expected — mapping a bullet onto JD keywords, leading with a
+     transferable angle, describing a recorded pipeline in more JD-aligned wording, or
+     combining two real bullets into one is **not** a bounds violation. Only
+     `factual-bounds.md` violations and zero-basis claims (a tool, domain, employer,
+     or metric with no grounding in any real experience) are off-limits.
    - No bullet may claim a technology, employer, project, metric, or scope that a
      bound forbids or that the source of truth does not support.
    - Keep every tech stack tied to the employer/project it belongs to — no blending.
@@ -323,9 +329,14 @@ When `--lang zh`:
 
 - Company names, job titles, employment dates, and locations come from `profile.yml`
   **verbatim** — never re-derived from the JD or the conversation.
-- No skill, tool, employer, project, or metric appears that is not in the
-  source-of-truth directory. A genuine gap stated honestly is the expected outcome
-  for some criteria; papering over it is a bounds violation.
+- No skill, tool, employer, project, or metric appears that has no grounding anywhere
+  in the source-of-truth directory (a zero-basis claim). A genuine gap stated honestly
+  is the expected outcome for some criteria; papering over it is a bounds violation.
+- Reframing and re-weighting real `resume_sections/` experience to match JD language
+  is expected. Only `factual-bounds.md` violations and zero-basis claims (a tool,
+  domain, employer, or metric with no grounding in any real experience) are
+  off-limits — the source of truth not phrasing something the JD's way is not a
+  reason to drop it.
 - Every metric and every named skill in either document is paired with a
   source-of-truth `file:line` citation in the report (Ruling: no claim without a
   citation).

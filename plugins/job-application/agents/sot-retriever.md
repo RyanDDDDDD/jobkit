@@ -83,8 +83,12 @@ collapse into ONE `[NEW]` bullet; keep the clearest phrasing, union the specific
 Input: a job description + the source-of-truth dir.
 
 Output (markdown): the most relevant bullets per section, ranked, each annotated with
-its `file:line`. Note coverage gaps where the JD asks for something absent from the
-source of truth (do not invent it — list it as a gap).
+its `file:line`. Note coverage gaps where the JD asks for something with **no basis
+anywhere** in the source of truth — a technology, tool, domain, or employer the
+candidate has genuinely never touched (do not invent it — list it as a gap). If real
+experience exists that the JD's keyword can honestly be framed from, surface that
+bullet as a match instead; the source of truth phrasing something differently than
+the JD does is not a gap.
 
 Structure:
 

@@ -102,14 +102,55 @@ evidence, not from memory of the conversation.
    tailored application. Do not run `generate`. Do not produce a resume or cover
    letter.
 
+## Source-of-truth philosophy
+
+The source of truth is a *record of what the candidate has actually done*. Tailoring
+an application means selecting, reframing, re-weighting, and re-languaging that real
+experience to fit each JD — that is the job, not a violation. "Adjacent",
+"transferable", or "phrased differently than the SOT phrases it" is expected and fine,
+as long as the claim is rooted in something the candidate actually did.
+
+Three tiers, in order of hardness:
+
+1. **`factual-bounds.md` — hard, non-negotiable boundary.** Genuinely-never-used
+   tech, per-employer stack-scoping rules ("no blend"), invented metrics / grades /
+   dates. Never crossed, never softened.
+2. **Everything in `resume_sections/` — real experience, fully reframable.** You may
+   map it onto JD keywords, lead with a transferable angle, describe a pipeline the
+   SOT records in more JD-aligned language, or combine two real bullets into one
+   framing — without treating any of this as a violation. The SOT not phrasing
+   something exactly the JD's way is **not** a reason to exclude it or to mark a
+   criterion `gap`.
+3. **Zero-basis claims — the only thing prohibited beyond tier 1.** A technology,
+   tool, domain, employer, or metric with no grounding in *any* real experience.
+   These stay off the résumé.
+
+So `gap` means **nothing real to root the claim in** — not "the SOT doesn't use these
+words". If a criterion asks for X and the candidate has done something X can honestly
+be framed from, that is `met` or `partial`, never `gap`.
+
+Examples:
+- ✅ "self-built an agentic workflow orchestrating Claude Code + headless Cursor
+  agents" when the SOT records a plan-dispatch engine plus a multi-agent pipeline with
+  guardrails — reframing to the JD's "direct agents" language is correct.
+- ✅ Presenting GCP/Azure CI/CD experience against a JD asking "AWS/GCP" — real, just
+  partial on AWS; frame honestly, mark `partial`, don't drop it.
+- ❌ Listing MongoDB because the JD says "MySQL and/or MongoDB" when only MySQL is in
+  the SOT — MongoDB has no basis anywhere, so the criterion is met via MySQL and
+  MongoDB stays off.
+
 ## Guardrails
 
 - Every `met` / `partial` row cites a real `file:line` in the source-of-truth
   directory. No invented evidence, no guessed line numbers.
 - Never soften a `gap` to `partial` without a concrete citation for the partial
   evidence. A genuine gap stated honestly is the expected outcome for some criteria.
-- Do not add a skill, tool, employer, or metric that is not in the source of truth
-  just because the JD asks for it — that is a `gap`, not a `met`.
+- Do not add a skill, tool, employer, or metric that has **no basis anywhere** in the
+  source of truth just because the JD asks for it — that is a zero-basis claim and
+  stays a `gap`. This targets inventions, not the reframing of real evidence (see
+  *Source-of-truth philosophy* above): mapping existing experience onto JD language,
+  or describing it in more JD-aligned words than the source file uses, is expected and
+  is not a reason to withhold a `met` / `partial`.
 - `jd.md` is verbatim. `analysis.md` always has all eight `##` sections in order:
   `## Essential`, `## Desirable`, `## Responsibilities`, `## Keywords`,
   `## Language / Stack emphasis`, `## Criteria → Evidence`, `## Fit`, `## Framing`.

@@ -81,6 +81,13 @@ there is no markup to parse.
   titles, dates, locations, technologies in `stack` / `groups[].value`, project
   names, domains, metrics, and every `bullets[]` / `paragraphs[]` claim) traces to a
   specific source-of-truth line. Anything that does not is a **Flag**.
+- "Traces to" allows reframing. A bullet that re-languages, re-weights, or combines
+  real source-of-truth material to match JD wording is supported as long as the
+  underlying claim is rooted in a real line — do not flag it merely for being phrased
+  differently than the source file, leading with a transferable angle, or mapping
+  real evidence onto JD keywords. Flag only claims with **no** such root: a
+  `factual-bounds.md` violation, or a zero-basis claim (a tool, domain, employer, or
+  metric with no grounding in any real experience).
 - No `factual-bounds.md` rule is violated. For each violation quote the rule
   verbatim **and** the offending text (the exact JSON string value).
 - No numeric metric appears that is not recorded verbatim in `{sourceDir}`. A number
@@ -220,6 +227,12 @@ wording of an argument is a **Flag**, never a **Fix**.
   (or `## Fix` only when the safe correction is a verbatim `profile.yml` match).
 - A genuine, honestly-stated gap is the expected outcome for some criteria — do not
   flag an application for *not* claiming something it has no basis to claim.
+- Reframing and re-weighting real `resume_sections/` experience to match JD language
+  is expected — do not flag a bullet as an unsupported claim merely because it maps
+  real evidence onto JD keywords, leads with a transferable angle, or describes a
+  recorded pipeline in more JD-aligned wording than the source file uses. Only
+  `factual-bounds.md` violations and zero-basis claims (a tool, domain, employer, or
+  metric with no grounding in any real experience) are off-limits.
 - This skill's own `review.md` report text is English-only, regardless of the
   conversation language. The résumé / cover-letter language is `generate`'s call
   (`--lang zh` is a sanctioned Chinese output); when reviewing a `lang: "zh"`

@@ -4,3 +4,5 @@
 # ghostscript_path: "%ProgramFiles%/gs/gs10.0/bin/gswin64c.exe"
 source_of_truth_dir: "resume_sections"
 output_dir: "applications/{Company}"
+# interview_playbook.md is resolved relative to this file's directory.
+interview_playbook: "interview_playbook.md"

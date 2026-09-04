@@ -54,9 +54,9 @@ resolved by `config.py` walking up for `jobapp.config.yml`.
 1. Make a private working folder (e.g. `~/job-hunt/`) and run Claude Code there. Keep
    it separate from this repo; nothing you generate belongs in the plugin.
 2. Optional: copy `jobapp.config.example.yml` into it as `jobapp.config.yml` if you
-   want non-default paths — `browser_path`, `source_of_truth_dir`,
-   `output_dir`. Skip it to use the defaults (`resume_sections/`,
-   `applications/{Company}/`).
+   want non-default paths — `browser_path`, `source_of_truth_dir`, `output_dir`,
+   `interview_playbook`. Skip it to use the defaults (`resume_sections/`,
+   `applications/{Company}/`, `interview_playbook.md`).
 3. Run `/job-application:ingest <path to your CVs>` (pointing at a folder of your past
    CVs) to build `resume_sections/` in that folder.
 4. Review `resume_sections/profile.yml` — confirm your contact details, canonical
@@ -111,9 +111,11 @@ One pass per job, in order:
   or a role-by-role / project-by-project technical deep-dive), gives balanced
   feedback, writes a dated session record to
   `{dir}/interview/mock/<mode>/<date>.md` (never overwritten — a same-day re-run
-  gets `-2`, `-3`, …), and appends new recurring lessons to `interview_playbook.md`
-  at your repo root (seeded on first use, always in English, from the plugin's
-  `interview-frameworks.md`). `mock technical` also takes `--focus "<role or
+  gets `-2`, `-3`, …), and appends new recurring lessons to the interview playbook
+  (`interview_playbook.md` at your working-directory root by default; override with
+  `interview_playbook` in `jobapp.config.yml`, e.g. `private/interview_playbook.md`).
+  It is seeded on first use, always in English, from the plugin's
+  `interview-frameworks.md`. `mock technical` also takes `--focus "<role or
   project>"`. `--lang en|zh` sets the language for everything this subcommand writes
   (research report, prep files, mock chat and record, new playbook entries); default
   is whatever `--lang` `generate` used for this application's résumé.

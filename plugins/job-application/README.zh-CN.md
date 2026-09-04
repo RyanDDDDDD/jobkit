@@ -49,8 +49,9 @@ claude plugin install job-application
 1. 新建一个私有工作文件夹（例如 `~/job-hunt/`），在里面开 Claude Code。它要和本仓库分开，
    你生成的任何东西都不属于插件。
 2. 可选：如果你想使用非默认路径，把 `jobapp.config.example.yml` 复制进去改名为
-   `jobapp.config.yml` —— `browser_path`、`source_of_truth_dir`、
-   `output_dir`。跳过则使用默认值（`resume_sections/`、`applications/{Company}/`）。
+   `jobapp.config.yml` —— `browser_path`、`source_of_truth_dir`、`output_dir`、
+   `interview_playbook`。跳过则使用默认值（`resume_sections/`、`applications/{Company}/`、
+   `interview_playbook.md`）。
 3. 运行 `/job-application:ingest <你的简历路径>`（指向存放过往简历的文件夹）在该文件夹里构建
    `resume_sections/`。
 4. 检查 `resume_sections/profile.yml` —— 确认你的联系方式、规范的公司名称、职位名称和
@@ -97,8 +98,10 @@ claude plugin install job-application
   `{dir}/interview/hr_questions_prep.md`；`mock behavioural|technical` 运行一场以简历为
   依据的模拟面试（行为面一轮，或逐个岗位、逐个项目的技术深挖），给出均衡的反馈，把带日期的
   记录写入 `{dir}/interview/mock/<mode>/<date>.md`（绝不覆盖——同一天再跑一次会得到
-  `-2`、`-3`……），并把新出现的、反复出现的经验教训追加到你仓库根目录的
-  `interview_playbook.md`（首次使用时始终以英文的插件 `interview-frameworks.md` 为种子）。
+  `-2`、`-3`……），并把新出现的、反复出现的经验教训追加到面试 playbook（默认是工作目录
+  根部的 `interview_playbook.md`；可用 `jobapp.config.yml` 中的 `interview_playbook`
+  覆盖，例如 `private/interview_playbook.md`）。它首次使用时始终以英文的插件
+  `interview-frameworks.md` 为种子。
   `mock technical` 还接受 `--focus "<岗位或项目>"`。`--lang en|zh` 设置这个子命令本次写出的
   一切内容的语言（研究报告、准备材料、模拟面试对话与记录、新增的 playbook 条目）；默认跟随
   这份申请 `generate` 时用的 `--lang`。

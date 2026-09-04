@@ -17,6 +17,7 @@ def get_job_app_config() -> dict:
         "browser_path": None,
         "source_of_truth_dir": "resume_sections",
         "output_dir": "applications/{Company}",
+        "interview_playbook": "interview_playbook.md",
     }
     directory = Path.cwd()
     while True:
@@ -30,6 +31,8 @@ def get_job_app_config() -> dict:
                 cfg["source_of_truth_dir"] = data["source_of_truth_dir"]
             if data.get("output_dir"):
                 cfg["output_dir"] = data["output_dir"]
+            if data.get("interview_playbook"):
+                cfg["interview_playbook"] = data["interview_playbook"]
             break
         parent = directory.parent
         if parent == directory:

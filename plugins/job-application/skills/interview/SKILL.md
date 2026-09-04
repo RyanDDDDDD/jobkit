@@ -20,12 +20,12 @@ the user wants. All three operate on one company's per-application directory.
 - `--lang en|zh` — language for every artifact this skill writes this session:
   `interview/company_research.md`, `interview/self_intro.md`,
   `interview/hr_questions_prep.md`, the mock chat and its session record, and any
-  `interview_playbook.md` entries appended this run. Default:
+  `{playbook}` entries appended this run. Default:
   `{dir}/tmp/resume.data.json`'s `lang` field — the decision `generate` already made for
   this application. Override with `--lang` when the interview will happen in a
   different language than the résumé was generated in (e.g. an English résumé
   screened for a role interviewed in Chinese). This does **not** affect the initial
-  `interview_playbook.md` seed copy (see Inputs and paths), which always stays
+  `{playbook}` seed copy (see Inputs and paths), which always stays
   English.
 - `--focus "<role or project name>"` — `mock technical` only: restrict the deep-dive
   to the single matching grill target (one role or one project). Ignored by
@@ -52,14 +52,16 @@ the user wants. All three operate on one company's per-application directory.
   `type` ∈ `entries` | `education` | `skills` | `list`). All strings are plain text —
   the résumé's claims live in `intro[]`, the `sections[].items[].bullets[]`, and the
   `skills` groups' `value` strings.
-- **`interview_playbook.md` lives at the USER's repo root** — `config.py`'s
-  `root` key (the directory containing `jobapp.config.yml` found by walking up from
-  the current working directory, or the current directory if there is none). It is
-  **not** a plugin file and **never** lives under `${CLAUDE_PLUGIN_ROOT}`. If it does
-  not exist yet, seed it by
-  copying `${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md` to
-  `<repo-root>/interview_playbook.md`, then tell the user it was created and that
-  it is theirs to extend.
+- **`{playbook}` (the interview playbook):** `<root>/<interview_playbook>` where
+  `<root>` is `config.py`'s `root` key (the directory containing `jobapp.config.yml`
+  found by walking up from the current working directory, or the current directory
+  if there is none) and `<interview_playbook>` is `config.py`'s `interview_playbook`
+  key (default `interview_playbook.md`, override with `interview_playbook` in
+  `jobapp.config.yml` — e.g. `private/interview_playbook.md`). It is **not** a plugin
+  file and **never** lives under `${CLAUDE_PLUGIN_ROOT}`. If it does not exist yet,
+  seed it by copying `${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md` to
+  `{playbook}` (creating parent directories as needed), then tell the user it was
+  created and that it is theirs to extend.
 
 ## Subcommand: research
 
@@ -77,7 +79,7 @@ the user wants. All three operate on one company's per-application directory.
 Resolve `--lang` (see Flags) — both files below are written in that language. Read
 `{dir}/analysis.md`, `{dir}/tmp/resume.data.json`,
 `{dir}/interview/company_research.md` (if present), and
-`<repo-root>/interview_playbook.md` (seed it first if absent). Create
+`{playbook}` (seed it first if absent). Create
 `{dir}/interview/`. Then write two files:
 
 - **`{dir}/interview/self_intro.md`** — a spoken-length self-introduction (about 45–60
@@ -98,7 +100,7 @@ Resolve `--lang` (see Flags) — both files below are written in that language. 
   - Behavioural: 3–5 "tell me about a time…" prompts answerable from
     `tmp/resume.data.json` (`bullets[]`, `intro[]`, the `sections[]` entries), each
     mapped to the specific bullet(s) it draws on.
-  Apply the answer-structuring principles from `interview_playbook.md` §2.
+  Apply the answer-structuring principles from `{playbook}` §2.
 
 ## Subcommand: mock
 
@@ -118,7 +120,7 @@ so an aborted mock writes nothing.
 1. Resolve `{dir}`, `--lang` (see Flags), the mode, and (technical only) `--focus`.
    Read `{dir}/tmp/resume.data.json`, `{dir}/analysis.md`,
    `{dir}/interview/company_research.md` (if present), and
-   `<repo-root>/interview_playbook.md` (seed it first if absent). A `technical` mock
+   `{playbook}` (seed it first if absent). A `technical` mock
    also resolves `{sourceDir}` (`<root>/<source_of_truth_dir>` from `config.py`, as
    `jd-intake` and `generate` do) and reads `{sourceDir}/factual-bounds.md` and, for
    the projects fallback, `{sourceDir}/projects/*.md`.
@@ -131,13 +133,13 @@ so an aborted mock writes nothing.
    recorded.
 3. After each answer give **balanced** feedback: exactly one genuine strength and
    one concrete, specific improvement ("you said 'we' — the question asked for your
-   personal action"). Never purely positive. Reference `interview_playbook.md`
+   personal action"). Never purely positive. Reference `{playbook}`
    framings where they apply.
 4. At the end, produce a short debrief: recurring patterns across answers, strongest
    answer, weakest answer, and the 2–3 threads to go rehearse.
 5. **Playbook update.** If the mock surfaced a *new, recurring* lesson (a pattern
    the user hit more than once that is not already covered), append it to
-   `<repo-root>/interview_playbook.md` under the most relevant existing `##` section
+   `{playbook}` under the most relevant existing `##` section
    (or a new one). Check the file first — if an equivalent point already exists, do
    **not** duplicate it; say so instead. A one-off slip is not a playbook entry.
 6. **Write the session record** — see "Session record" below. Do this last, once,
@@ -151,7 +153,7 @@ language), the `gap` / `partial` rows in `analysis.md` `## Criteria → Evidence
 (one clean framing plus the transferable bridge, never a claim the source of truth
 does not support), and "tell me about a time…" prompts answerable from
 `tmp/resume.data.json`. Apply the answer-structuring principles from
-`interview_playbook.md` §2.
+`{playbook}` §2.
 
 ### technical mode
 
@@ -204,7 +206,7 @@ the run, in the resolved `--lang`, with this structure:
 
     ## Playbook
 
-    - <"Appended '<lesson>' to interview_playbook.md § <section>", or "No new
+    - <"Appended '<lesson>' to the interview playbook § <section>", or "No new
       recurring lesson — nothing appended.">
 
 Every fact in a **Stronger answer** traces to `tmp/resume.data.json` / the source of
@@ -218,12 +220,13 @@ philosophy in the `jd-intake` skill).
   `tmp/resume.data.json` / the source of truth.
 - Feedback is specific and balanced — never generic praise, never purely positive
   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §8).
-- `interview_playbook.md` is the user's file: additive edits only, no deletions, no
-  duplicate entries, and it stays at the repo root — never copied into the plugin.
+- `{playbook}` is the user's file: additive edits only, no deletions, no
+  duplicate entries, and it stays at `{playbook}` (outside `${CLAUDE_PLUGIN_ROOT}`)
+  — never copied into the plugin.
 - `research` writes only `{dir}/interview/company_research.md`; `prep` writes only
   `{dir}/interview/self_intro.md` and `{dir}/interview/hr_questions_prep.md`; `mock`
   writes its session record under `{dir}/interview/mock/<mode>/` and appends to
-  `interview_playbook.md`. None of them touch `{sourceDir}`, `jd.md`, `analysis.md`,
+  `{playbook}`. None of them touch `{sourceDir}`, `jd.md`, `analysis.md`,
   `tmp/resume.data.json` / `resume.pdf`, or `tmp/cover_letter.data.json` /
   `cover_letter.pdf`.
 - `mock` asks behavioural-or-technical (if not given as the second argument) before
@@ -232,7 +235,7 @@ philosophy in the `jd-intake` skill).
   that mode/day gets `-2`, `-3`, ….
 - This skill's own output (`interview/company_research.md`, `interview/self_intro.md`,
   `interview/hr_questions_prep.md`, the mock chat and its session record,
-  `interview_playbook.md` entries appended this run) follows the resolved `--lang`
+  `{playbook}` entries appended this run) follows the resolved `--lang`
   (see Flags), not necessarily the conversation language. The initial
-  `interview_playbook.md` seed copy is the one exception — it always stays English,
+  `{playbook}` seed copy is the one exception — it always stays English,
   since it is the plugin's own bundled reference content, not this skill's output.

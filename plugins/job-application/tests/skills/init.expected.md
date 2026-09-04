@@ -36,3 +36,9 @@ Assertions are **structural** — file / directory existence and substring check
 11. If `<ws>/jobapp.config.yml` exists with custom content before the run, it is
     reported as skipped and its content is byte-for-byte unchanged; the rest of the
     scaffold is still created.
+
+## flat-layout guard
+
+12. If `<ws>` contained a top-level `resume_sections/` directory and no
+    `jobapp.config.yml` before the run, the `init_workspace.py` JSON output's
+    `warnings` array is non-empty and names both `resume_sections` and `private/`.

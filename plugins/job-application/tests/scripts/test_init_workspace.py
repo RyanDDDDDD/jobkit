@@ -82,6 +82,25 @@ def test_profile_template_has_todo_markers(tmp_path):
     assert "# TODO" in profile
 
 
+def test_no_warnings_on_clean_fresh_dir(tmp_path):
+    result = init_workspace(str(tmp_path))
+    assert result["warnings"] == []
+
+
+def test_warns_on_preexisting_flat_resume_sections(tmp_path):
+    (tmp_path / "resume_sections").mkdir()
+    result = init_workspace(str(tmp_path))
+    assert result["warnings"]
+    assert any("resume_sections" in w and "private/" in w for w in result["warnings"])
+
+
+def test_no_warning_when_config_already_present(tmp_path):
+    (tmp_path / "jobapp.config.yml").write_text("# my custom config\n", encoding="utf-8")
+    (tmp_path / "resume_sections").mkdir()
+    result = init_workspace(str(tmp_path))
+    assert result["warnings"] == []
+
+
 def test_rerun_is_idempotent_and_mutates_nothing(tmp_path):
     init_workspace(str(tmp_path))
     before = _digests(tmp_path)
@@ -129,3 +148,4 @@ def test_cli_text_output_mentions_next_steps(tmp_path):
     )
     assert "created" in result.stdout
     assert "profile.yml" in result.stdout
+    assert "/job-application:jd-intake" in result.stdout

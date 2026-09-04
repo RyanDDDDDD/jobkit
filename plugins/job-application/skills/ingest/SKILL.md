@@ -119,8 +119,10 @@ been set up at all (no `jobapp.config.yml`), run `/job-application:init` first.
      keys and report what you changed. A key counts as **missing** when it is
      absent, its value is an empty string, or its line carries a `# TODO` comment
      (the state `/job-application:init` leaves the template in) — fill those from
-     the CVs. A key already set to a real value is left untouched. `phone` and
-     `email` are still never invented; if the CVs contain none, leave the `# TODO`
+     the CVs. A key already set to a real value is left untouched. An all-empty placeholder entry
+     in `conventions.roles` / `conventions.education` (every field `""`) is
+     **replaced** by the real entries derived from the CVs, never appended to. `phone`
+     and `email` are still never invented; if the CVs contain none, leave the `# TODO`
      line as it is.
 
 6. **Seed `factual-bounds.md`.** If it is absent in the source-of-truth dir, create

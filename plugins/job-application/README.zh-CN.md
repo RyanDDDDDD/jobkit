@@ -81,7 +81,7 @@ claude plugin install job-application
 
 ```
 /job-application:init                                  # once per workspace: scaffold config + private/ + applications/
-/job-application:ingest <folder>                       # once (or after adding a new CV): build resume_sections/
+/job-application:ingest <folder>                       # once (or after adding a new CV): build private/resume_sections/
 /job-application:jd-intake                             # paste the job description, name the company
 /job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # tmp/*.data.json + resume.pdf + cover_letter.pdf/txt
 /job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)

@@ -9,10 +9,8 @@ location: ""        # TODO City, Region, Country
 working_rights: ""  # TODO e.g. full working rights in Australia
 conventions:
   roles:
-    # TODO one entry per role, most recent first; dates as "Mon. YYYY" or "Present"
-    - { company: "", title: "", start: "", end: "", location: "" }
+    - { company: "", title: "", start: "", end: "", location: "" }   # TODO one entry per role, most recent first; dates "Mon. YYYY" / "Present"
   education:
-    # TODO one entry per credential
-    - { institution: "", credential: "", start: "", end: "", location: "" }
+    - { institution: "", credential: "", start: "", end: "", location: "" }   # TODO one entry per credential
   default_resume_length: 1        # pages
   default_include_projects: false

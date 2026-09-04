@@ -27,14 +27,19 @@ SCAFFOLD_DIRS = (
 
 
 def init_workspace(target: str) -> dict:
-    """Scaffold `target`. Return {"created": [...], "skipped": [...]} of paths
-    relative to `target` (POSIX form, sorted). Never modifies an existing file."""
+    """Scaffold `target`. Return {"created": [...], "skipped": [...], "warnings": [...]}
+    of paths relative to `target` (POSIX form, sorted). Never modifies an existing file."""
     root = Path(target).resolve()
     if not TEMPLATE_ROOT.is_dir():
         raise FileNotFoundError(f"template bundle missing: {TEMPLATE_ROOT}")
+    if not FRAMEWORKS.is_file():
+        raise FileNotFoundError(f"framework reference missing: {FRAMEWORKS}")
+
+    config_existed = (root / "jobapp.config.yml").exists()
 
     created: list[str] = []
     skipped: list[str] = []
+    warnings: list[str] = []
 
     def place(dest: Path, src: Path) -> None:
         rel = dest.relative_to(root).as_posix()
@@ -56,17 +61,31 @@ def init_workspace(target: str) -> dict:
     for d in SCAFFOLD_DIRS:
         (root / d).mkdir(parents=True, exist_ok=True)
 
+    if not config_existed:
+        for legacy in ("resume_sections", "interview_playbook.md"):
+            if (root / legacy).exists():
+                warnings.append(
+                    f"'{legacy}' already exists at the workspace root, but the "
+                    f"jobapp.config.yml just written points at 'private/{legacy}'. "
+                    f"Move the existing content under private/, or edit jobapp.config.yml."
+                )
+
     created.sort()
     skipped.sort()
-    return {"created": created, "skipped": skipped}
+    warnings.sort()
+    return {"created": created, "skipped": skipped, "warnings": warnings}
 
 
 def _format_summary(result: dict, target: str) -> str:
     lines = [f"Workspace: {Path(target).resolve()}", ""]
     for path in result["created"]:
-        lines.append(f"  created          {path}")
+        lines.append(f"  {'created':<18}{path}")
     for path in result["skipped"]:
-        lines.append(f"  exists — skipped  {path}")
+        lines.append(f"  {'exists (skipped)':<18}{path}")
+    if result["warnings"]:
+        lines.append("")
+        for warning in result["warnings"]:
+            lines.append(f"WARNING: {warning}")
     lines.append("")
     if result["created"]:
         lines.append(
@@ -76,7 +95,7 @@ def _format_summary(result: dict, target: str) -> str:
             "section files), then /job-application:jd-intake."
         )
     else:
-        lines.append("Workspace already initialised — nothing to do.")
+        lines.append("Workspace already initialised - nothing to do.")
     return "\n".join(lines)
 
 

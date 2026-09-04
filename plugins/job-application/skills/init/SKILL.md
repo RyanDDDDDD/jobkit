@@ -11,7 +11,14 @@ The user says "set up jobkit", "initialise a job-hunt workspace",
 
 ## Steps
 
-1. **Scaffold.** Run, in the current working directory:
+1. **Check for an existing flat layout.** If the working directory already has a
+   top-level `resume_sections/` or `interview_playbook.md` and no `jobapp.config.yml`,
+   it is a v0.3.x flat-layout workspace. Tell the user that `init` introduces the
+   `private/` layout: after it runs they must move that existing content under
+   `private/` (or hand-write `jobapp.config.yml` with the flat paths and skip
+   `init`). Get their go-ahead before continuing.
+
+2. **Scaffold.** Run, in the current working directory:
 
    ```
    uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/init_workspace.py --json
@@ -24,11 +31,13 @@ The user says "set up jobkit", "initialise a job-hunt workspace",
    `private/interview_playbook.md` (seeded from the plugin's
    `reference/interview-frameworks.md`), and `private/questions_to_ask.md`.
 
-2. **Report.** Parse the JSON (`{"created": [...], "skipped": [...]}`) and show the
-   user a short list — what was created vs already present. If `created` is empty,
-   say the workspace is already initialised.
+3. **Report.** Parse the JSON (`{"created": [...], "skipped": [...], "warnings": [...]}`)
+   and show the user a short list — what was created vs already present. If `created`
+   is empty, say the workspace is already initialised. If the JSON `warnings` array is
+   non-empty, show every warning prominently and do not move on to the next steps until
+   the user has resolved it.
 
-3. **Next steps.** Tell the user, in order:
+4. **Next steps.** Tell the user, in order:
    - Fill in `private/resume_sections/profile.yml` (identity, canonical company
      names / titles / dates) and `private/resume_sections/factual-bounds.md` (the
      "never claim" rules).

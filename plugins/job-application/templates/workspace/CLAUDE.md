@@ -30,7 +30,7 @@ One-time: `/job-application:init` scaffolds this folder. Then fill in
 `private/resume_sections/profile.yml` and `private/resume_sections/factual-bounds.md`.
 
 Populate the source of truth — either:
-- `/job-application:ingest <folder of your old CVs>` to build `resume_sections/`
+- `/job-application:ingest <folder of your old CVs>` to build `private/resume_sections/`
   automatically, or
 - hand-fill `introduction.md` / `skills.md` / `education.md` / `companies/*.md`.
 

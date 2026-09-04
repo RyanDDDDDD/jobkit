@@ -27,3 +27,4 @@ __pycache__/
 
 # --- Keep tracked ---
 !/plugins/job-application/example/
+!/plugins/job-application/templates/workspace/**

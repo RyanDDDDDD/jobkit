@@ -1,0 +1,18 @@
+# Your identity and canonical history. `generate` uses these values verbatim on
+# every résumé and cover letter. Fill every line; `/job-application:ingest` can
+# populate the blanks from your old CVs, but never invents a phone or email.
+name: ""            # TODO your full name, exactly as it should appear on the résumé
+phone: ""           # TODO
+email: ""           # TODO
+# links: { github: "" }   # TODO uncomment and set your GitHub handle only (not a URL)
+location: ""        # TODO City, Region, Country
+working_rights: ""  # TODO e.g. full working rights in Australia
+conventions:
+  roles:
+    # TODO one entry per role, most recent first; dates as "Mon. YYYY" or "Present"
+    - { company: "", title: "", start: "", end: "", location: "" }
+  education:
+    # TODO one entry per credential
+    - { institution: "", credential: "", start: "", end: "", location: "" }
+  default_resume_length: 1        # pages
+  default_include_projects: false

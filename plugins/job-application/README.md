@@ -5,12 +5,13 @@
 ## What it is
 
 `job-application` is a Claude Code plugin that turns a folder of your past CVs into a
-tailored application for every job you apply to. It bundles five skills — `ingest`,
-`jd-intake`, `generate`, `review-application`, and `interview` — plus supporting
-scripts, HTML templates, and subagents. `ingest` consolidates your historical CVs into
-a structured source-of-truth directory; `jd-intake` analyses a job description against
-it; `generate` produces a tailored resume and cover letter; `review-application` runs a
-QA gate over the result; and `interview` handles company research, question prep, and
+tailored application for every job you apply to. It bundles six skills — `init`,
+`ingest`, `jd-intake`, `generate`, `review-application`, and `interview` — plus
+supporting scripts, HTML templates, and subagents. `init` scaffolds a fresh working
+directory; `ingest` consolidates your historical CVs into a structured source-of-truth
+directory; `jd-intake` analyses a job description against it; `generate` produces a
+tailored resume and cover letter; `review-application` runs a QA gate over the
+result; and `interview` handles company research, question prep, and
 mock interviews. The plugin is a generic engine: your candidate data lives in your own
 repo and is never shipped with the plugin.
 
@@ -53,16 +54,21 @@ resolved by `config.py` walking up for `jobapp.config.yml`.
 
 1. Make a private working folder (e.g. `~/job-hunt/`) and run Claude Code there. Keep
    it separate from this repo; nothing you generate belongs in the plugin.
-2. Optional: copy `jobapp.config.example.yml` into it as `jobapp.config.yml` if you
-   want non-default paths — `browser_path`, `source_of_truth_dir`, `output_dir`,
-   `interview_playbook`. Skip it to use the defaults (`resume_sections/`,
-   `applications/{Company}/`, `interview_playbook.md`).
-3. Run `/job-application:ingest <path to your CVs>` (pointing at a folder of your past
-   CVs) to build `resume_sections/` in that folder.
-4. Review `resume_sections/profile.yml` — confirm your contact details, canonical
-   company names, job titles, and employment dates.
-5. Review `resume_sections/factual-bounds.md` — the "never claim" rules that constrain
-   every generated document.
+2. Run `/job-application:init`. It scaffolds the folder — `jobapp.config.yml`,
+   `CLAUDE.md`, a `private/` subtree with the `resume_sections/` templates and a
+   seeded `interview_playbook.md`, and an `applications/` output directory. It never
+   overwrites an existing file, so it is safe to re-run.
+3. Fill in `private/resume_sections/profile.yml` (identity, canonical company names /
+   titles / dates) and `private/resume_sections/factual-bounds.md` (the "never
+   claim" rules that constrain every generated document).
+4. Populate the source of truth — either run
+   `/job-application:ingest <path to your CVs>` to build `private/resume_sections/`
+   from a folder of your past CVs, or hand-fill the section files.
+
+`jobapp.config.yml` keys — `source_of_truth_dir`, `output_dir`, `interview_playbook`,
+`browser_path` — override the built-in defaults (`resume_sections/`,
+`applications/{Company}/`, `interview_playbook.md`); `init` writes the first three to
+the `private/` layout. See `jobapp.config.example.yml`.
 
 ### Try it against the bundled fixture
 
@@ -84,6 +90,7 @@ live in `tests/fixtures/`.
 One pass per job, in order:
 
 ```
+/job-application:init                                  # once per workspace: scaffold config + private/ + applications/
 /job-application:ingest <folder>                       # once (or after adding a new CV): build resume_sections/
 /job-application:jd-intake                             # paste the job description, name the company
 /job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # tmp/*.data.json + resume.pdf + cover_letter.pdf/txt

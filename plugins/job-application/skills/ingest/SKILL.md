@@ -6,7 +6,8 @@ description: Build or refresh the resume_sections/ source-of-truth from a folder
 ## When to use
 
 User says "ingest my CVs", "build resume_sections", "/job-application:ingest <path>",
-or a source-of-truth directory does not exist yet.
+or a source-of-truth directory does not exist yet. If the working directory has not
+been set up at all (no `jobapp.config.yml`), run `/job-application:init` first.
 
 ## Steps
 
@@ -115,7 +116,14 @@ or a source-of-truth directory does not exist yet.
      best guess and append a `# TODO confirm` comment on that line. Never invent a
      phone number or email.
    - If `profile.yml` already exists, do not clobber user edits: fill only missing
-     keys and report what you changed.
+     keys and report what you changed. A key counts as **missing** when it is
+     absent, its value is an empty string, or its line carries a `# TODO` comment
+     (the state `/job-application:init` leaves the template in) — fill those from
+     the CVs. A key already set to a real value is left untouched. An all-empty placeholder entry
+     in `conventions.roles` / `conventions.education` (every field `""`) is
+     **replaced** by the real entries derived from the CVs, never appended to. `phone`
+     and `email` are still never invented; if the CVs contain none, leave the `# TODO`
+     line as it is.
 
 6. **Seed `factual-bounds.md`.** If it is absent in the source-of-truth dir, create
    it:

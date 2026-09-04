@@ -4,7 +4,7 @@ Stable, candidate-agnostic rules for the job-application workflow. The skills li
 here instead of copying these rules inline. Anything specific to one person's history
 (technologies they have never used, per-employer stack scoping, cloud-provider
 sub-service scopes) does **not** belong here — it belongs in that user's
-`resume_sections/factual-bounds.md`.
+`factual-bounds.md`, in the source-of-truth dir.
 
 ---
 

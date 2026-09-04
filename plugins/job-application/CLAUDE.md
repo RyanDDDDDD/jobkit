@@ -15,11 +15,12 @@ mistaken for a second copy of the plugin.
 | Path | Purpose | Required by |
 |---|---|---|
 | `.claude-plugin/plugin.json` | plugin manifest | plugin format |
-| `skills/` | the five skills — `ingest`, `jd-intake`, `generate`, `review-application`, `interview` | plugin format |
+| `skills/` | the six skills — `init`, `ingest`, `jd-intake`, `generate`, `review-application`, `interview` | plugin format |
 | `agents/` | subagents the skills dispatch — `sot-retriever`, `company-researcher` | plugin format |
-| `scripts/` | Python helpers, run via `uv run` — `render_pdf.py`, `compress_pdf.py`, `cover_letter_to_txt.py`, `extract_cv.py`, `lib/config.py` | ours |
+| `scripts/` | Python helpers, run via `uv run` — `render_pdf.py`, `compress_pdf.py`, `cover_letter_to_txt.py`, `extract_cv.py`, `init_workspace.py`, `lib/config.py` | ours |
 | `pyproject.toml`, `uv.lock` | `uv`-managed dependencies (`playwright`, `pikepdf`, `pymupdf`, `python-docx`, `pyyaml`) | ours |
 | `templates/` | HTML résumé / cover-letter templates + bundled fonts (OFL) | ours |
+| `templates/workspace/` | files `/job-application:init` scaffolds into a new working directory | ours |
 | `reference/` | prose shared across skills — `workflow-rules.md`, `output-layout.md`, `ats-checklist.md`, `interview-frameworks.md` | ours |
 | `tests/` | `pytest` script tests under `tests/scripts/`, `skills/*.expected.md`, `fixtures/` (synthetic candidate) | ours |
 | `example/` | four rendered sample PDFs (résumé + cover letter, EN + ZH) | ours |
@@ -39,8 +40,11 @@ Run `uv run pytest` before opening a PR. Render checks skip cleanly (not fail) i
 
 ## Using the plugin (not from this repo)
 
-Install it, then run Claude Code from a **separate private folder**. `config.py`
-resolves `resume_sections/` and the per-application output directory from that working
+Install it, then run Claude Code from a **separate private folder**. Run
+`/job-application:init` once there to scaffold `jobapp.config.yml`, `CLAUDE.md`, the
+`private/` source-of-truth templates, and `applications/`. `config.py`
+resolves the source-of-truth directory (default `resume_sections/`, `private/resume_sections/`
+after `init`) and the per-application output directory from that working
 directory (walking up for `jobapp.config.yml`). The structure inside each
 `applications/{Company}/` directory (flat deliverables, `tmp/` for machine artifacts,
 `interview/` for prep) is fixed — see `reference/output-layout.md`. Everything under

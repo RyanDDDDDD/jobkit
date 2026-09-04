@@ -5,9 +5,10 @@
 ## 简介
 
 `job-application` 是一个 Claude Code 插件，它把你过往简历所在的文件夹，转化为面向每一个
-投递职位的定制申请材料。插件内置五个 skill —— `ingest`、`jd-intake`、`generate`、
-`review-application`、`interview` —— 以及配套的脚本、HTML 模板和子代理。`ingest` 将你
-历史上的简历整合为一个结构化的事实来源目录；`jd-intake` 对照该目录分析职位描述；
+投递职位的定制申请材料。插件内置六个 skill —— `init`、`ingest`、`jd-intake`、`generate`、
+`review-application`、`interview` —— 以及配套的脚本、HTML 模板和子代理。`init` 搭建一个
+全新的工作目录；`ingest` 将你历史上的简历整合为一个结构化的事实来源目录；`jd-intake`
+对照该目录分析职位描述；
 `generate` 生成一份定制的简历和求职信；`review-application` 对结果执行 QA 门禁；
 `interview` 负责公司调研、问题准备和模拟面试。插件本身是一个通用引擎：你的候选人数据保存
 在你自己的仓库里，绝不会随插件一起分发。
@@ -48,14 +49,18 @@ claude plugin install job-application
 
 1. 新建一个私有工作文件夹（例如 `~/job-hunt/`），在里面开 Claude Code。它要和本仓库分开，
    你生成的任何东西都不属于插件。
-2. 可选：如果你想使用非默认路径，把 `jobapp.config.example.yml` 复制进去改名为
-   `jobapp.config.yml` —— `browser_path`、`source_of_truth_dir`、
-   `output_dir`。跳过则使用默认值（`resume_sections/`、`applications/{Company}/`）。
-3. 运行 `/job-application:ingest <你的简历路径>`（指向存放过往简历的文件夹）在该文件夹里构建
-   `resume_sections/`。
-4. 检查 `resume_sections/profile.yml` —— 确认你的联系方式、规范的公司名称、职位名称和
-   任职日期。
-5. 检查 `resume_sections/factual-bounds.md` —— 约束每一份生成文档的“绝不声称”规则。
+2. 运行 `/job-application:init`。它会搭建这个文件夹 —— `jobapp.config.yml`、`CLAUDE.md`、
+   一个包含 `resume_sections/` 模板和已播种 `interview_playbook.md` 的 `private/` 子目录，
+   以及 `applications/` 输出目录。它绝不覆盖已存在的文件，可以放心重复运行。
+3. 填写 `private/resume_sections/profile.yml`（身份、规范的公司名称／职位／日期）和
+   `private/resume_sections/factual-bounds.md`（约束每一份生成文档的“绝不声称”规则）。
+4. 构建事实来源 —— 要么运行 `/job-application:ingest <你的简历路径>` 从一个存放过往简历的
+   文件夹构建 `private/resume_sections/`，要么手动填写各个 section 文件。
+
+`jobapp.config.yml` 的键 —— `source_of_truth_dir`、`output_dir`、`interview_playbook`、
+`browser_path` —— 覆盖内置默认值（`resume_sections/`、`applications/{Company}/`、
+`interview_playbook.md`）；`init` 会把前三个写成 `private/` 布局。参见
+`jobapp.config.example.yml`。
 
 ### 用内置样例试跑
 
@@ -75,7 +80,8 @@ claude plugin install job-application
 每个职位一轮，按顺序执行：
 
 ```
-/job-application:ingest <folder>                       # once (or after adding a new CV): build resume_sections/
+/job-application:init                                  # once per workspace: scaffold config + private/ + applications/
+/job-application:ingest <folder>                       # once (or after adding a new CV): build private/resume_sections/
 /job-application:jd-intake                             # paste the job description, name the company
 /job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # tmp/*.data.json + resume.pdf + cover_letter.pdf/txt
 /job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
@@ -97,8 +103,10 @@ claude plugin install job-application
   `{dir}/interview/hr_questions_prep.md`；`mock behavioural|technical` 运行一场以简历为
   依据的模拟面试（行为面一轮，或逐个岗位、逐个项目的技术深挖），给出均衡的反馈，把带日期的
   记录写入 `{dir}/interview/mock/<mode>/<date>.md`（绝不覆盖——同一天再跑一次会得到
-  `-2`、`-3`……），并把新出现的、反复出现的经验教训追加到你仓库根目录的
-  `interview_playbook.md`（首次使用时始终以英文的插件 `interview-frameworks.md` 为种子）。
+  `-2`、`-3`……），并把新出现的、反复出现的经验教训追加到面试 playbook（默认是工作目录
+  根部的 `interview_playbook.md`；可用 `jobapp.config.yml` 中的 `interview_playbook`
+  覆盖，例如 `private/interview_playbook.md`）。它首次使用时始终以英文的插件
+  `interview-frameworks.md` 为种子。
   `mock technical` 还接受 `--focus "<岗位或项目>"`。`--lang en|zh` 设置这个子命令本次写出的
   一切内容的语言（研究报告、准备材料、模拟面试对话与记录、新增的 playbook 条目）；默认跟随
   这份申请 `generate` 时用的 `--lang`。

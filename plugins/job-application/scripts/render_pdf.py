@@ -1,10 +1,10 @@
 """Render an HTML template + JSON data file to a PDF via a headless Chromium
-(Playwright's own managed browser), preserving render_pdf.ps1's CLI contract.
+(Playwright's own managed browser), preserving render_pdf.py's CLI contract.
 
 CLI usage:
   uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py \
       --template-path t.html --data-path d.json --out-path o.pdf \
-      [--placeholder {{X}}] [--keep-html]
+      [--keep-html]
 
 Note: with --keep-html the .rendered.html is written next to --data-path (not
 --out-path), so it follows the data file into a tmp/ subdirectory.
@@ -33,7 +33,6 @@ def render_pdf(
     template_path: str,
     data_path: str,
     out_path: str,
-    placeholder: str = "{{RESUME_JSON}}",
     keep_html: bool = False,
 ) -> RenderResult:
     template_path = Path(template_path).resolve()
@@ -50,7 +49,7 @@ def render_pdf(
     # JSON.parse; '<\/' is a legal JSON escape, invisible after parsing, and can
     # never terminate the element.
     json_text = json_text.replace("</", "<\\/")
-    html = tpl.replace(placeholder, json_text)
+    html = tpl.replace("{{DATA_JSON}}", json_text)
 
     # Chromium resolves relative url() against the page's URL. Rewrite the
     # bundled-font url("fonts/...") strings to absolute file:/// paths at the
@@ -80,8 +79,7 @@ def render_pdf(
             browser = p.chromium.launch(**launch_kwargs)
             try:
                 page = browser.new_page()
-                # timeout bounds page load/JS execution — the step that can hang,
-                # per the equivalent PowerShell comment this replaces.
+                # timeout bounds page load/JS execution — the step that can hang.
                 page.goto(rendered_html_path.as_uri(), timeout=60000)
                 page.pdf(
                     path=str(out_path),
@@ -119,12 +117,11 @@ def main() -> None:
     parser.add_argument("--template-path", required=True)
     parser.add_argument("--data-path", required=True)
     parser.add_argument("--out-path", required=True)
-    parser.add_argument("--placeholder", default="{{RESUME_JSON}}")
     parser.add_argument("--keep-html", action="store_true")
     args = parser.parse_args()
 
     result = render_pdf(
-        args.template_path, args.data_path, args.out_path, args.placeholder, args.keep_html
+        args.template_path, args.data_path, args.out_path, args.keep_html
     )
     if result.ok:
         suffix = "" if result.pages == 1 else "s"

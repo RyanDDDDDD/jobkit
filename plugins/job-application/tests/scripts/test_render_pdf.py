@@ -1,3 +1,4 @@
+import inspect
 import subprocess
 import sys
 from pathlib import Path
@@ -11,6 +12,13 @@ from render_pdf import render_pdf  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
 TEMPLATE = REPO / "templates" / "resume.html"
+COVER_TEMPLATE = REPO / "templates" / "cover_letter.html"
+
+# Structural checks that do not launch Chromium.
+_NO_CHROMIUM_TESTS = {
+    "test_render_pdf_has_no_placeholder_param",
+    "test_both_templates_use_the_shared_data_token",
+}
 
 
 @pytest.fixture(scope="session")
@@ -25,9 +33,38 @@ def chromium_available() -> bool:
 
 
 @pytest.fixture(autouse=True)
-def _skip_without_chromium(chromium_available):
+def _skip_without_chromium(request, chromium_available):
+    if request.node.name in _NO_CHROMIUM_TESTS:
+        return
     if not chromium_available:
         pytest.skip("no Chromium available (run `uv run playwright install chromium`)")
+
+
+def test_render_pdf_has_no_placeholder_param():
+    assert "placeholder" not in inspect.signature(render_pdf).parameters
+
+
+def test_both_templates_use_the_shared_data_token():
+    for tpl in (TEMPLATE, COVER_TEMPLATE):
+        text = tpl.read_text(encoding="utf-8")
+        assert "{{DATA_JSON}}" in text
+        assert "{{RESUME_JSON}}" not in text
+        assert "{{COVER_LETTER_JSON}}" not in text
+
+
+def test_cover_letter_renders_with_shared_token(tmp_path):
+    data = tmp_path / "cl.json"
+    data.write_text(
+        '{"name":"Testy McTest","subject":"Application for the Position of X",'
+        '"salutation":"Dear Hiring Manager,","paragraphs":["I am writing to apply."],'
+        '"closing":"Sincerely,","signature":"Testy McTest"}',
+        encoding="utf-8",
+    )
+    result = render_pdf(str(COVER_TEMPLATE), str(data), str(tmp_path / "cl.pdf"))
+    assert result.ok, result.log
+    text = extract_text(result.pdf)
+    assert "Invalid cover letter JSON" not in text
+    assert "Application for the Position of X" in text
 
 
 def test_small_json_renders_one_page(tmp_path):

@@ -82,6 +82,16 @@ def test_profile_template_has_todo_markers(tmp_path):
     assert "# TODO" in profile
 
 
+def test_profile_template_uses_flat_convention_keys(tmp_path):
+    init_workspace(str(tmp_path))
+    profile = (tmp_path / "private/resume_sections/profile.yml").read_text(encoding="utf-8")
+    assert "density:" in profile
+    assert "include_projects:" in profile
+    assert "default_density" not in profile
+    assert "default_resume_length" not in profile
+    assert "default_include_projects" not in profile
+
+
 def test_no_warnings_on_clean_fresh_dir(tmp_path):
     result = init_workspace(str(tmp_path))
     assert result["warnings"] == []
@@ -148,4 +158,4 @@ def test_cli_text_output_mentions_next_steps(tmp_path):
     )
     assert "created" in result.stdout
     assert "profile.yml" in result.stdout
-    assert "/job-application:jd-intake" in result.stdout
+    assert "/job-application:apply" in result.stdout

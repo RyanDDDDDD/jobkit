@@ -12,5 +12,5 @@ conventions:
     - { company: "", title: "", start: "", end: "", location: "" }   # TODO one entry per role, most recent first; dates "Mon. YYYY" / "Present"
   education:
     - { institution: "", credential: "", start: "", end: "", location: "" }   # TODO one entry per credential
-  default_resume_length: 1        # pages
-  default_include_projects: false
+  density: compact          # resume spacing: compact | standard
+  include_projects: false   # add a Selected Projects section when the JD makes projects relevant

@@ -11,7 +11,7 @@ applicant-tracking systems (ATS) and readable by a human screener.
       reordered or scrambled by ATS text extraction. The bundled
       `templates/resume.html` is single-column with standard headings by
       construction — a repo-level `templates/` override must keep that.
-- [ ] **The generated PDF is text-extractable.** `render_pdf.ps1` produces PDFs
+- [ ] **The generated PDF is text-extractable.** `render_pdf.py` produces PDFs
       whose text `pdftotext -enc UTF-8` round-trips, CJK included. Never bake résumé
       text into an image, and avoid multi-column layouts or content trapped in
       floats — both defeat ATS extraction.
@@ -20,8 +20,8 @@ applicant-tracking systems (ATS) and readable by a human screener.
       document body. A screen reader or copy-paste must recover every word in order.
 - [ ] **Standard, recognisable fonts** at a readable size (roughly 10–12pt body).
 - [ ] **Length: within `--max-pages` (default 2).** Never let content overflow onto
-      a near-empty extra page — trim to fit the last full page. (`profile.yml`
-      `default_resume_length` is a density input now, not a page cap.)
+      a near-empty extra page — trim to fit the last full page. (page budget is a
+      fixed soft ceiling of 2; résumé density is the `conventions.density` key.)
 
 ## Section headings
 

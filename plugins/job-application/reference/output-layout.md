@@ -8,7 +8,7 @@ configurable.
 
     {dir}/
     ├── jd.md                       verbatim job description            (jd-intake)
-    ├── analysis.md                 criteria -> evidence, fit, framing  (jd-intake)
+    ├── analysis.md                 criteria -> evidence, fit, framing  (jd-intake)  analysis.md is a working note the `apply` run writes and `interview` later reads as prose — not a strictly-parsed contract.
     ├── review.md                   QA report                          (review-application)
     ├── resume.pdf                  deliverable                        (generate)
     ├── cover_letter.pdf            deliverable                        (generate)

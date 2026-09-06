@@ -19,9 +19,9 @@ applicant-tracking systems (ATS) and readable by a human screener.
       All text — including contact details, dates, and skills — sits in the normal
       document body. A screen reader or copy-paste must recover every word in order.
 - [ ] **Standard, recognisable fonts** at a readable size (roughly 10–12pt body).
-- [ ] **Length: within `--max-pages` (default 2).** Never let content overflow onto
-      a near-empty extra page — trim to fit the last full page. (page budget is a
-      fixed soft ceiling of 2; résumé density is the `conventions.density` key.)
+- [ ] **Length: within the soft ceiling of 2 pages.** Never let content overflow
+      onto a near-empty extra page — trim to fit the last full page. (The page
+      budget is a fixed soft 2; résumé density is the `conventions.density` key.)
 
 ## Section headings
 

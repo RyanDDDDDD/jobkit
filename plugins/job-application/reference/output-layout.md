@@ -4,11 +4,12 @@ Every generated application for one job lives in one directory, `{dir}` — by
 default `<root>/applications/{Company}/`, where `<root>` is the directory holding
 `jobapp.config.yml` (or the working directory) and `{Company}` is the application
 name. `config.py` resolves `{dir}`; the structure **inside** it is fixed and is not
-configurable.
+configurable. `analysis.md` is a working note the `apply` run writes and `interview`
+later reads as prose — not a strictly-parsed contract.
 
     {dir}/
     ├── jd.md                       verbatim job description            (apply)
-    ├── analysis.md                 criteria -> evidence, fit, framing  (apply)  analysis.md is a working note the `apply` run writes and `interview` later reads as prose — not a strictly-parsed contract.
+    ├── analysis.md                 criteria -> evidence, fit, framing  (apply)
     ├── review.md                   QA report                          (apply)
     ├── resume.pdf                  deliverable                        (apply)
     ├── cover_letter.pdf            deliverable                        (apply)

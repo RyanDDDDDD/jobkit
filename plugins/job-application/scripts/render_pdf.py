@@ -1,5 +1,5 @@
 """Render an HTML template + JSON data file to a PDF via a headless Chromium
-(Playwright's own managed browser), preserving render_pdf.py's CLI contract.
+(Playwright's own managed browser).
 
 CLI usage:
   uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py \

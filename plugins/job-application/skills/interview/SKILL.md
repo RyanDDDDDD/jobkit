@@ -7,7 +7,7 @@ description: Interview preparation and practice for a specific application - com
 
 The user says "prep me for the {Company} interview", "mock interview for {Company}",
 "research {Company}", or "/job-application:interview research|prep|mock". Runs after
-`generate` (and usually `review-application`) for that company.
+`apply` for that company.
 
 ## Subcommand is the first argument
 
@@ -21,7 +21,7 @@ the user wants. All three operate on one company's per-application directory.
   `interview/company_research.md`, `interview/self_intro.md`,
   `interview/hr_questions_prep.md`, the mock chat and its session record, and any
   `{playbook}` entries appended this run. Default:
-  `{dir}/tmp/resume.data.json`'s `lang` field — the decision `generate` already made for
+  `{dir}/tmp/resume.data.json`'s `lang` field — the decision `apply` already made for
   this application. Override with `--lang` when the interview will happen in a
   different language than the résumé was generated in (e.g. an English résumé
   screened for a role interviewed in Chinese). This does **not** affect the initial
@@ -33,24 +33,19 @@ the user wants. All three operate on one company's per-application directory.
 
 ## Inputs and paths
 
-- **Plugin-internal paths use `${CLAUDE_PLUGIN_ROOT}`**: the config loader
-  (`${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`, run via `uv run --project
-  ${CLAUDE_PLUGIN_ROOT}`), the research agent
+- **Plugin-internal paths use `${CLAUDE_PLUGIN_ROOT}`**: the research agent
   (`${CLAUDE_PLUGIN_ROOT}/agents/company-researcher.md`), and the generic frameworks
   (`${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md`).
-- **`{dir}` (per-application directory):** run `uv run --project
-  ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`, take
-  `output_dir` (default `applications/{Company}`), substitute the literal `{Company}`
-  token with the company name, then join onto `root`: `{dir}` is
-  `<root>/<output_dir with {Company} substituted>`. `{dir}` must already contain
-  `jd.md`, `analysis.md`, and `tmp/resume.data.json` — if not, tell the user to run
-  `/job-application:jd-intake` and `/job-application:generate` first and stop. This
-  skill writes under `{dir}/interview/` (create it, `mkdir -p` semantics); layout:
+- Resolve `{dir}` and `{sourceDir}` per
+  `${CLAUDE_PLUGIN_ROOT}/reference/config-resolution.md`. `{dir}` must already
+  contain `jd.md`, `analysis.md`, and `tmp/resume.data.json` — if not, tell the user
+  to run `/job-application:apply` first and stop. This skill writes under
+  `{dir}/interview/` (create it, `mkdir -p` semantics); layout:
   `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
-- **`tmp/resume.data.json` shape** (design amendment §3.1): `name`, `contact`,
-  `intro` (`[{lead, text}]`), and `sections` (each `{title, type, items | groups}`,
-  `type` ∈ `entries` | `education` | `skills` | `list`). All strings are plain text —
-  the résumé's claims live in `intro[]`, the `sections[].items[].bullets[]`, and the
+- **`tmp/resume.data.json`** follows the shape in the `apply` skill's *Building the
+  data files* section (`name`, `contact`, `intro[]`, `sections[]` with `type` ∈
+  `entries` | `education` | `skills` | `list`). All strings are plain text — the
+  résumé's claims live in `intro[]`, the `sections[].items[].bullets[]`, and the
   `skills` groups' `value` strings.
 - **`{playbook}` (the interview playbook):** `<root>/<interview_playbook>` where
   `<root>` is `config.py`'s `root` key (the directory containing `jobapp.config.yml`
@@ -67,7 +62,9 @@ the user wants. All three operate on one company's per-application directory.
 
 1. Resolve `{dir}` and `--lang` (see Flags — default from
    `{dir}/tmp/resume.data.json`'s `lang` field). Read `{dir}/jd.md` and (if present)
-   `{dir}/analysis.md`, `{dir}/tmp/resume.data.json`. Create `{dir}/interview/`.
+   `{dir}/analysis.md` (treat `analysis.md` as prose — read `## Criteria → Evidence`,
+   `## Fit`, `## Framing`, use the `gap` / `partial` rows for gap questions; tolerate
+   formatting variation), `{dir}/tmp/resume.data.json`. Create `{dir}/interview/`.
 2. Dispatch the `company-researcher` agent
    (`${CLAUDE_PLUGIN_ROOT}/agents/company-researcher.md`) with
    `{ company: <name>, role: <title from jd.md>, jd: <text of {dir}/jd.md>, dir: <{dir}>, lang: <resolved --lang> }`.
@@ -77,7 +74,9 @@ the user wants. All three operate on one company's per-application directory.
 ## Subcommand: prep
 
 Resolve `--lang` (see Flags) — both files below are written in that language. Read
-`{dir}/analysis.md`, `{dir}/tmp/resume.data.json`,
+`{dir}/analysis.md` (treat as prose — read `## Criteria → Evidence`, `## Fit`,
+`## Framing`, use the `gap` / `partial` rows for gap questions; tolerate formatting
+variation), `{dir}/tmp/resume.data.json`,
 `{dir}/interview/company_research.md` (if present), and
 `{playbook}` (seed it first if absent). Create
 `{dir}/interview/`. Then write two files:
@@ -118,12 +117,15 @@ so an aborted mock writes nothing.
 ### Both modes
 
 1. Resolve `{dir}`, `--lang` (see Flags), the mode, and (technical only) `--focus`.
-   Read `{dir}/tmp/resume.data.json`, `{dir}/analysis.md`,
+   Read `{dir}/tmp/resume.data.json`, `{dir}/analysis.md` (treat as prose — read
+   `## Criteria → Evidence`, `## Fit`, `## Framing`, use the `gap` / `partial` rows
+   for gap questions; tolerate formatting variation),
    `{dir}/interview/company_research.md` (if present), and
    `{playbook}` (seed it first if absent). A `technical` mock
-   also resolves `{sourceDir}` (`<root>/<source_of_truth_dir>` from `config.py`, as
-   `jd-intake` and `generate` do) and reads `{sourceDir}/factual-bounds.md` and, for
-   the projects fallback, `{sourceDir}/projects/*.md`.
+   also resolves `{sourceDir}` per
+   `${CLAUDE_PLUGIN_ROOT}/reference/config-resolution.md` and reads
+   `{sourceDir}/factual-bounds.md` and, for the projects fallback,
+   `{sourceDir}/projects/*.md`.
 2. Ask questions **one at a time**, strictly answerable from `tmp/resume.data.json`
    (`bullets[]`, `intro[]`, the `sections[]` entries), `analysis.md`, and the JD's
    own responsibilities. Never presume an experience, a technology, an employer, or
@@ -169,8 +171,12 @@ does not support), and "tell me about a time…" prompts answerable from
    where the answers are thin. Cover, as the target warrants: the design decision
    and the alternatives rejected; the hardest bug or failure and how it was
    diagnosed; scale and bottlenecks (what breaks at 10×); the candidate's personal
-   contribution vs. the team's; what they would do differently now; and, for any
-   metric the résumé cites, how it was measured.
+   contribution vs. the team's; what they would do differently now. **For every
+   number and every claim on the résumé**, the follow-ups MUST cover: how it was
+   measured; its boundaries; what breaks at 10×; the candidate's personal
+   contribution vs the team's. This is the pressure test that replaces
+   generation-time citation gating
+   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §5).
 
 ### Session record
 
@@ -211,15 +217,14 @@ the run, in the resolved `--lang`, with this structure:
 
 Every fact in a **Stronger answer** traces to `tmp/resume.data.json` / the source of
 truth — it may reframe and sharpen, never invent (see
-`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` and the source-of-truth
-philosophy in the `jd-intake` skill).
+`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`).
 
 ## Guardrails
 
 - Mock questions and prep answers never assume experience absent from
   `tmp/resume.data.json` / the source of truth.
 - Feedback is specific and balanced — never generic praise, never purely positive
-  (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §8).
+  (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §11).
 - `{playbook}` is the user's file: additive edits only, no deletions, no
   duplicate entries, and it stays at `{playbook}` (outside `${CLAUDE_PLUGIN_ROOT}`)
   — never copied into the plugin.

@@ -91,8 +91,8 @@ def _format_summary(result: dict, target: str) -> str:
         lines.append(
             "Next: fill in private/resume_sections/profile.yml and "
             "private/resume_sections/factual-bounds.md, then run "
-            "/job-application:ingest <folder of your old CVs> (or hand-fill the "
-            "section files), then /job-application:jd-intake."
+            "/job-application:setup <folder of your old CVs> (or hand-fill the "
+            "section files), then /job-application:apply."
         )
     else:
         lines.append("Workspace already initialised - nothing to do.")

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Resume</title>
 <style>
-  /* render_pdf.ps1 rewrites the two @font-face url()s below to absolute file:/// paths at
+  /* render_pdf.py rewrites the two @font-face url()s below to absolute file:/// paths at
      the template's own location before rendering (headless Chromium resolves relative URLs
      against the rendered file, which lives elsewhere). It does a literal string replace on
      url("fonts/Newsreader.woff2") and url("fonts/SourceSerif4.woff2") — keep both EXACTLY
@@ -113,7 +113,7 @@
 <main id="resume"></main>
 
 <script type="application/json" id="resume-data">
-{{RESUME_JSON}}
+{{DATA_JSON}}
 </script>
 
 <script>

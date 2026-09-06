@@ -1,5 +1,5 @@
-# Your identity and canonical history. `generate` uses these values verbatim on
-# every résumé and cover letter. Fill every line; `/job-application:ingest` can
+# Your identity and canonical history. `apply` uses these values verbatim on
+# every résumé and cover letter. Fill every line; `/job-application:setup` can
 # populate the blanks from your old CVs, but never invents a phone or email.
 name: ""            # TODO your full name, exactly as it should appear on the résumé
 phone: ""           # TODO
@@ -12,5 +12,5 @@ conventions:
     - { company: "", title: "", start: "", end: "", location: "" }   # TODO one entry per role, most recent first; dates "Mon. YYYY" / "Present"
   education:
     - { institution: "", credential: "", start: "", end: "", location: "" }   # TODO one entry per credential
-  default_resume_length: 1        # pages
-  default_include_projects: false
+  density: compact          # resume spacing: compact | standard
+  include_projects: false   # add a Selected Projects section when the JD makes projects relevant

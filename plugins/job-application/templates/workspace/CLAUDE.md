@@ -26,20 +26,21 @@ Nothing here is part of the plugin — this is all personal data and generated o
 
 ## Workflow
 
-One-time: `/job-application:init` scaffolds this folder. Then fill in
-`private/resume_sections/profile.yml` and `private/resume_sections/factual-bounds.md`.
+One-time: `/job-application:setup` scaffolds this folder; `/job-application:setup <folder of your old CVs>` also builds the source of truth.
+Then fill in `private/resume_sections/profile.yml` and
+`private/resume_sections/factual-bounds.md`.
 
 Populate the source of truth — either:
-- `/job-application:ingest <folder of your old CVs>` to build `private/resume_sections/`
+- `/job-application:setup <folder of your old CVs>` to build `private/resume_sections/`
   automatically, or
 - hand-fill `introduction.md` / `skills.md` / `education.md` / `companies/*.md`.
 
 Then one pass per job:
-`/job-application:jd-intake` → `/job-application:generate` →
-`/job-application:review-application` → `/job-application:interview`.
+`/job-application:apply` → `/job-application:interview`.
 
 ## Preferences
 
-Résumé length, whether to include a projects section, and similar conventions live
-in `private/resume_sections/profile.yml` (`conventions:` block). Per-application
-"never claim" rules live in `private/resume_sections/factual-bounds.md`.
+Résumé density (`compact` | `standard`) and whether to include a Selected Projects
+section live in `private/resume_sections/profile.yml` (`conventions.density` /
+`conventions.include_projects`). Per-application "never claim" rules live in
+`private/resume_sections/factual-bounds.md`.

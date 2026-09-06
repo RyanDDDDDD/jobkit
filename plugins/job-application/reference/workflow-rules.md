@@ -1,110 +1,92 @@
 # Workflow Rules (Generic)
 
-Stable, candidate-agnostic rules for the job-application workflow. The skills link
-here instead of copying these rules inline. Anything specific to one person's history
-(technologies they have never used, per-employer stack scoping, cloud-provider
-sub-service scopes) does **not** belong here — it belongs in that user's
-`factual-bounds.md`, in the source-of-truth dir.
+Stable, candidate-agnostic rules for the job-application workflow. Skills link here
+instead of copying the rules inline. Anything specific to one person's history
+belongs in that user's `factual-bounds.md`, not here.
 
 ---
 
-## 1. Source of truth is authoritative
+## 1. The source of truth is user-authored fact
 
-- The de-duplicated markdown/YAML files under the source-of-truth directory
-  (default `resume_sections/`) are the single source of truth for achievements,
-  skills, employment history, education, and contact details.
-- When tailoring a resume or cover letter to a job description (JD), **retrieve
-  first**: pull the relevant existing history points, company facts, and
-  achievements that match the JD before drafting. Do not draft from memory of the
-  conversation.
-- Only highlight and reword material that already exists in the source of truth.
-  Do not add skills, employers, projects, tools, or experiences that are not
-  recorded there.
-- **Reframing real experience is the job, not a violation.** Selecting,
-  re-weighting, re-languaging, and combining recorded material to fit a JD —
-  mapping a bullet onto JD keywords, leading with a transferable angle, describing
-  a recorded pipeline in more JD-aligned wording than the source file uses — is
-  expected. The prohibition is on *zero-basis* additions: a technology, tool,
-  domain, employer, or metric with no grounding in any real experience. The source
-  of truth not phrasing something the JD's way is not, by itself, a reason to
-  exclude it.
+The markdown/YAML files under the source-of-truth directory (default
+`resume_sections/`) and `profile.yml` are the candidate's own record of what they
+have done. The tool does not second-guess whether an entry is accurate — that is the
+user's call and the user's risk. When tailoring an application, use any of it
+freely.
 
-## 2. No hallucinated skills or metrics
+**Retrieve first.** Pull the relevant recorded history, company facts, and
+achievements that match the job description before drafting. Do not draft from
+memory of the conversation.
 
-- Never introduce a skill, framework, or tool with no grounding anywhere in the
-  source of truth just because the JD asks for it (a zero-basis claim). This targets
-  inventions — not the reframing of experience that is genuinely recorded (see
-  rule 1).
-- Never invent numeric data, metrics, or performance figures (uptime percentages,
-  latency reductions, cost savings, team sizes, etc.). Use only numbers explicitly
-  recorded in the source of truth or supplied by the user for this application.
-- If a quantified claim would strengthen a bullet but no real number exists, use a
-  qualitative description ("significantly improved throughput") or leave it out and
-  ask the user for the real figure.
-- Keep every technology stack tied to the company or project it actually belongs
-  to. Do not shift or blend tools between employers to improve JD match.
+## 2. Reframing is the job, not a violation
 
-## 3. Redundancy control
+Selecting, re-weighting, re-languaging, and combining recorded material to fit a JD
+is expected: mapping a bullet onto JD keywords, leading with a transferable angle,
+describing a recorded pipeline in more JD-aligned wording than the source file uses,
+combining two real bullets into one. The source of truth not phrasing something the
+JD's way is never a reason to exclude it or to mark a criterion a gap.
 
-- Avoid duplicate or near-duplicate bullet points within a document and across the
-  resume and cover letter.
-- When merging new material into the source of truth, collapse bullets that state
-  the same accomplishment in different words into one canonical bullet.
+## 3. The one prohibition: zero-basis additions
 
-## 4. Output language
+Never put a technology, tool, domain, employer, or number on the résumé or cover
+letter that appears **nowhere** in the source of truth. That is the tool inventing,
+not the user asserting. A genuine gap, stated honestly, is the expected outcome for
+some criteria.
 
-All generated application content (resume PDF, cover letter, plain-text versions,
-Word text) is in English by default, regardless of the conversation language.
-`generate --lang zh` is the one sanctioned exception: it produces a Chinese résumé
-and cover letter by faithfully translating the English source-of-truth content —
-never inventing detail to smooth a sentence. No other skill emits non-English
-content; a skill's own report / prep text stays English even under `--lang zh`.
+## 4. `factual-bounds.md` is a hard constraint
 
-## 5. Save the job description
+`<sourceDir>/factual-bounds.md` is the user's own "never claim" list (technologies
+never used, per-employer stack scoping, metrics not to invent, whether the
+university may be named in a cover letter, …). Load it verbatim. On any conflict
+between what the JD pushes for and a bound: **stop and ask the user.** Do not
+silently comply and do not silently omit.
 
-Whenever a resume or cover letter is generated for a role, save a copy of the JD in
-the same output directory (e.g. `jd.md`). Later interview-preparation steps read it
-from there.
+## 5. Claims are pressure-tested in the interview, not gated at generation
 
-## 6. Experienced-hire default (configurable)
+`apply` does not require a per-bullet citation trail. Instead,
+`interview mock technical` grills every number and every claim on the résumé — how
+it was measured, its boundaries, what breaks at 10×, the candidate's personal
+contribution vs the team's. That is where a weak claim surfaces.
 
-By default, treat the candidate as an experienced hire: omit GPA, academic grades,
-class rank, and academic distinctions from the resume and cover letter; lead with
-professional work experience and engineering achievements. Education is reduced to
-institution, credential, and dates.
+## 6. Output language
 
-This is a **default, not a hard rule**. A user targeting new-graduate or
-academic roles can override it via a profile setting so that grades and coursework
-are included.
+All generated application content (résumé PDF, cover letter, plain-text and
+form-answer variants) is English by default, regardless of conversation language.
+`apply --lang zh` is the one sanctioned exception: a Chinese résumé and cover letter
+produced by faithfully translating the English source-of-truth content — never
+inventing detail to smooth a sentence. A skill's own report / prep text stays
+English even under `--lang zh`.
 
-## 7. Cover letter core content
+## 7. Save the job description
 
-Every cover letter should establish, in prose:
+Whenever a résumé or cover letter is generated for a role, the verbatim JD is saved
+in the same output directory as `jd.md`. Later interview-prep steps read it there.
 
-1. **Experience duration** — state the total professional software-engineering
-   experience (e.g. "over three years").
-2. **Named companies** — name the specific companies the candidate has worked at.
-3. **Business domains** — name the specific sectors and problem domains worked in
-   (e.g. supply chain, warehousing, logistics, payments, healthcare).
-4. **Company-tied tech stacks** — name the specific technologies used, each tied to
-   the company where it was used, consistent with the source-of-truth records.
+## 8. Experienced-hire default (configurable)
 
-Keep the letter to one page. Additional per-user constraints (for example, whether
-the university may be named) live in that user's `factual-bounds.md`.
+By default treat the candidate as an experienced hire: omit GPA, grades, class rank,
+and academic distinctions; lead with professional work experience; reduce education
+to institution, credential, and dates. A user targeting new-grad / academic roles
+can override this in `profile.yml`.
 
-## 8. Mock interviews stay grounded and balanced
+## 9. Cover letter core content
 
-- Base mock-interview questions strictly on the candidate's actual resume and
-  source of truth.
-- Feedback must be balanced: name what went well **and** concrete weaknesses. Do
-  not give purely positive or flattering responses.
+Every cover letter establishes, in prose: (1) total professional
+software-engineering experience duration; (2) the specific companies worked at by
+name; (3) the specific business domains / sectors; (4) the specific technologies,
+each tied to the company where it was used, consistent with the source-of-truth
+records. Keep it to one page. Per-user constraints (e.g. whether the university may
+be named) live in `factual-bounds.md`.
 
-## 9. Per-application directory layout
+## 10. Redundancy control
 
-Generated output for one job lives under `{dir}` (default `applications/{Company}/`)
-in the fixed structure documented in `output-layout.md`: `jd.md` / `analysis.md` /
-`review.md` and the résumé / cover-letter deliverables flat; machine artifacts
-(`*.data.json`, `*.rendered.html`) under `tmp/`; interview collateral under
-`interview/`, with mock-interview session records at
-`interview/mock/<behavioural|technical>/<date>.md`. `tmp/` is regenerable — never
-put anything there that cannot be rebuilt by re-running `generate`.
+Avoid duplicate or near-duplicate bullets within a document and across the résumé
+and cover letter. When merging new material into the source of truth, collapse
+bullets that state the same accomplishment in different words into one canonical
+bullet.
+
+## 11. Mock interviews stay grounded and balanced
+
+Base mock-interview questions strictly on the candidate's actual résumé and source
+of truth. Feedback must name what went well **and** concrete weaknesses — never
+purely positive.

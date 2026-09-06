@@ -13,5 +13,4 @@ claude plugin install job-application@job-application-marketplace
 ```
 
 Then run Claude Code from a **separate private working folder** (not this repo) and use
-`/ingest` → `/jd-intake` → `/generate` → `/review-application` → `/interview`. Full setup
-in the plugin README.
+`/setup` → `/apply` → `/interview`. Full setup in the plugin README.

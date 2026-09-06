@@ -14,10 +14,6 @@ interview_playbook.md
 /.superpowers/
 
 # --- Build artefacts ---
-*.aux
-*.log
-*.out
-*.synctex.gz
 *.rendered.html
 templates/preview/
 __pycache__/

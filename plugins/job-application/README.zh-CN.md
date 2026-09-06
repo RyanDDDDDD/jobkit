@@ -5,13 +5,10 @@
 ## 简介
 
 `job-application` 是一个 Claude Code 插件，它把你过往简历所在的文件夹，转化为面向每一个
-投递职位的定制申请材料。插件内置六个 skill —— `init`、`ingest`、`jd-intake`、`generate`、
-`review-application`、`interview` —— 以及配套的脚本、HTML 模板和子代理。`init` 搭建一个
-全新的工作目录；`ingest` 将你历史上的简历整合为一个结构化的事实来源目录；`jd-intake`
-对照该目录分析职位描述；
-`generate` 生成一份定制的简历和求职信；`review-application` 对结果执行 QA 门禁；
-`interview` 负责公司调研、问题准备和模拟面试。插件本身是一个通用引擎：你的候选人数据保存
-在你自己的仓库里，绝不会随插件一起分发。
+投递职位的定制申请材料。插件内置三个 skill —— `setup`、`apply`、`interview` —— 以及配套
+的脚本、HTML 模板和子代理。`setup` 搭建工作目录，并（在给定过往简历文件夹时）构建事实来源；
+`apply` 分析职位描述、生成定制简历与求职信并自检；`interview` 负责公司调研、问题准备和
+模拟面试。插件本身是一个通用引擎：你的候选人数据保存在你自己的仓库里，绝不会随插件一起分发。
 
 ## 前置条件
 
@@ -30,15 +27,15 @@
 将本仓库添加为插件市场并安装：
 
 ```
-claude plugin marketplace add <this repo>
-claude plugin install job-application
+claude plugin marketplace add RyanDDDDDD/jobkit
+claude plugin install job-application@job-application-marketplace
 ```
 
-或将本地检出目录添加为市场：
+或将本地检出目录添加为市场（指向仓库根目录，而非本子目录）：
 
 ```
-claude plugin marketplace add ./path/to/job-application
-claude plugin install job-application
+claude plugin marketplace add /path/to/jobkit
+claude plugin install job-application@job-application-marketplace
 ```
 
 ## 初始设置
@@ -49,27 +46,27 @@ claude plugin install job-application
 
 1. 新建一个私有工作文件夹（例如 `~/job-hunt/`），在里面开 Claude Code。它要和本仓库分开，
    你生成的任何东西都不属于插件。
-2. 运行 `/job-application:init`。它会搭建这个文件夹 —— `jobapp.config.yml`、`CLAUDE.md`、
+2. 运行 `/job-application:setup`。它会搭建这个文件夹 —— `jobapp.config.yml`、`CLAUDE.md`、
    一个包含 `resume_sections/` 模板和已播种 `interview_playbook.md` 的 `private/` 子目录，
-   以及 `applications/` 输出目录。它绝不覆盖已存在的文件，可以放心重复运行。
+   以及 `applications/` 输出目录。它绝不覆盖已存在的文件，可以放心重复运行。运行
+   `/job-application:setup <你的过往简历文件夹>` 还可同时从这些简历构建
+   `private/resume_sections/`。
 3. 填写 `private/resume_sections/profile.yml`（身份、规范的公司名称／职位／日期）和
    `private/resume_sections/factual-bounds.md`（约束每一份生成文档的“绝不声称”规则）。
-4. 构建事实来源 —— 要么运行 `/job-application:ingest <你的简历路径>` 从一个存放过往简历的
-   文件夹构建 `private/resume_sections/`，要么手动填写各个 section 文件。
+   若跳过了简历文件夹参数，可再带文件夹重跑 setup，或手动填写各个 section 文件。
 
 `jobapp.config.yml` 的键 —— `source_of_truth_dir`、`output_dir`、`interview_playbook`、
 `browser_path` —— 覆盖内置默认值（`resume_sections/`、`applications/{Company}/`、
-`interview_playbook.md`）；`init` 会把前三个写成 `private/` 布局。参见
+`interview_playbook.md`）；`setup` 会把前三个写成 `private/` 布局。参见
 `jobapp.config.example.yml`。
 
 ### 用内置样例试跑
 
 在把插件对准你自己的数据之前，先用 `tests/fixtures/` 里的合成候选人跑一遍：
-`/job-application:ingest tests/fixtures/raw_cvs` 构建事实来源，然后对
-`tests/fixtures/sample-jd.md` 运行 `/job-application:jd-intake` 并把公司命名为 `Testco`
+`/job-application:setup tests/fixtures/raw_cvs` 构建事实来源，然后对
+`tests/fixtures/sample-jd.md` 运行 `/job-application:apply` 并把公司命名为 `Testco`
 （样例 JD 是为虚构的 “Meridian Integration Partners” 写的，你把这份申请命名为
-`Testco`），再运行 `/job-application:generate` —— 你会得到虚构的 “Sample Dev” 的完整简历
-和求职信，并能从头到尾看到整条流水线。
+`Testco`）—— 你会得到虚构的 “Sample Dev” 的完整简历和求职信，并能从头到尾看到整条流水线。
 
 `example/` 里只放这套输出渲染好的样例，仅四个 PDF —— 简历和求职信的中英两版
 （`resume.pdf` / `resume.zh.pdf` / `cover_letter.pdf` / `cover_letter.zh.pdf`）。
@@ -77,25 +74,20 @@ claude plugin install job-application
 
 ## 日常使用
 
-每个职位一轮，按顺序执行：
+每个职位一轮：
 
 ```
-/job-application:init                                  # once per workspace: scaffold config + private/ + applications/
-/job-application:ingest <folder>                       # once (or after adding a new CV): build private/resume_sections/
-/job-application:jd-intake                             # paste the job description, name the company
-/job-application:generate [--density compact|standard] [--lang en|zh] [--with-projects]   # tmp/*.data.json + resume.pdf + cover_letter.pdf/txt
-/job-application:review-application [--fix]            # QA gate: writes review.md (Pass / Flag / Fix)
-/job-application:interview research|prep|mock [behavioural|technical] [--lang en|zh]   # research | self-intro + HR prep | mock interview
+/job-application:setup [<folder>]     # once: scaffold + build the source of truth
+/job-application:apply [--density compact|standard] [--lang en|zh] [--answers "Q1; Q2"]
+/job-application:interview research|prep|mock [behavioural|technical] [--lang en|zh]
 ```
 
-- `/job-application:generate` 参数：`--density compact|standard` 设置简历的行距密度（默认取自
-  `profile.yml`）；`--lang zh` 生成中文简历和求职信（正文由你的英文事实来源翻译而来）；
-  `--with-projects` 加入一个由 JD 相关的 `projects/*.md` 构建的 Selected Projects 章节；
-  `--max-pages N` 是一个软性页数上限（只发出警告，绝不截断内容）；
-  `--order relevance|chronological` 设置工作经历的排序；`--answers "Q1; Q2"` 会额外写出
-  `answers.md`。
-- `/job-application:review-application --fix` 只应用明确且安全的更正（过往岗位里用现在时的要点、与
-  `profile.yml` 不一致的字段、过时的 `cover_letter.txt`），重新渲染，并把各项检查再跑一次。
+- `/job-application:apply` 在一轮内完成分析 → 生成 → 自检，写出 `jd.md`、`analysis.md`、
+  `review.md` 以及成品（`resume.pdf`、`cover_letter.pdf` / `cover_letter.txt`、可选的
+  `answers.md`）。参数：`--density compact|standard` 设置简历行距密度（默认取自
+  `profile.yml` `conventions.density`）；`--lang zh` 生成中文简历和求职信（正文由你的
+  英文事实来源翻译而来）；`--answers "Q1; Q2"` 会额外写出 `answers.md`。当 JD 使项目
+  相关时，Selected Projects 会自动加入。
 - `/job-application:interview` 子命令：`research` 调度 `company-researcher` 子代理——它
   会先判断目标公司主要在国内还是海外招聘（或两者都有），据此选择搜索源（海外用
   Glassdoor/Seek/Indeed/LinkedIn；国内用 牛客网/脉脉/看准网/知乎/BOSS直聘）——写入
@@ -109,7 +101,7 @@ claude plugin install job-application
   `interview-frameworks.md` 为种子。
   `mock technical` 还接受 `--focus "<岗位或项目>"`。`--lang en|zh` 设置这个子命令本次写出的
   一切内容的语言（研究报告、准备材料、模拟面试对话与记录、新增的 playbook 条目）；默认跟随
-  这份申请 `generate` 时用的 `--lang`。
+  这份申请 `apply` 时用的 `--lang`。
 
 每个申请的文件都落在同一个目录里 —— 默认是 `applications/{Company}/`。可交给他人查看或
 投递的成品与工作笔记平铺在根目录（`jd.md`、`analysis.md`、`review.md`、`resume.pdf`、
@@ -125,8 +117,8 @@ claude plugin install job-application
 
 | 路径 | 用途 |
 |------|---------|
-| `profile.yml` | 结构化身份信息 —— 唯一的非 markdown 文件。姓名、联系方式、链接、所在地、工作权利，以及规范的岗位 / 教育经历（精确的公司名称、职位和日期，在每一份生成文档中逐字使用）。同时保存诸如默认简历长度、是否包含项目章节等约定。 |
-| `factual-bounds.md` | 自由格式的“绝不声称”规则，被 `generate` 和 `review-application` 作为硬约束逐字加载（例如你从未用过的技术、哪些技术栈属于哪个雇主、不编造指标、求职信中不提大学）。随着你修正生成的草稿而不断增长。 |
+| `profile.yml` | 结构化身份信息 —— 唯一的非 markdown 文件。姓名、联系方式、链接、所在地、工作权利，以及规范的岗位 / 教育经历（精确的公司名称、职位和日期，在每一份生成文档中逐字使用）。同时保存简历密度以及是否包含项目章节（`conventions.density` / `conventions.include_projects`）。 |
+| `factual-bounds.md` | 自由格式的“绝不声称”规则，被 `apply` 作为硬约束逐字加载（例如你从未用过的技术、哪些技术栈属于哪个雇主、不编造指标、求职信中不提大学）。随着你修正生成的草稿而不断增长。 |
 | `companies/*.md` | 整合、去重后的按公司划分的工作经历 —— 所有成就要点的事实来源。 |
 | `projects/*.md` | 整合后的按项目划分的成就。 |
 | `education.md` | 教育经历。 |
@@ -143,6 +135,6 @@ uv run pytest
 
 若尚未运行 `uv run playwright install chromium`，渲染相关检查会干净地跳过（不会失败）。
 
-skill 的预期输出清单（`tests/skills/*.expected.md`）所针对的合成候选人夹具位于
-`tests/fixtures/`（`tests/fixtures/raw_cvs/`、`tests/fixtures/resume_sections/`、
-`tests/fixtures/sample-jd.md`）。
+skill 的预期输出清单（`tests/skills/*.expected.md` —— `setup` / `apply` / `interview`）
+所针对的合成候选人夹具位于 `tests/fixtures/`（`tests/fixtures/raw_cvs/`、
+`tests/fixtures/resume_sections/`、`tests/fixtures/sample-jd.md`）。

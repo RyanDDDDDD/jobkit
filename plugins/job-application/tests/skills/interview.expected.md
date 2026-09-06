@@ -2,7 +2,7 @@
 
 After running `interview` subcommands for a company whose per-application directory
 `<dir>` already contains `jd.md`, `analysis.md`, and `tmp/resume.data.json`
-(produced by `jd-intake` + `generate` against `tests/fixtures/resume_sections/`,
+(produced by `/job-application:apply` against `tests/fixtures/resume_sections/`,
 candidate "Sample Dev"), the output must satisfy every assertion below. Assertions
 are **structural** — file existence, heading presence/order, and substring checks,
 not exact prose.
@@ -33,17 +33,19 @@ not exact prose.
    `- **Target:**`, and each Target value matches either a role `secondary` in
    `tmp/resume.data.json` or a project name from the résumé's Selected Projects
    section / a `tests/fixtures/resume_sections/projects/*.md` file.
+9. In a `mock technical` run, every résumé bullet carrying a number is followed up
+   on with at least one 'how was this measured / what are its bounds' question.
 
 ## grounding
 
-9. No `interview/` output file (research, prep, or any mock record) contains the
-   word `Rust` (case-insensitive) — `tests/fixtures/resume_sections/factual-bounds.md`
-   forbids claiming it and the fixture JD does not ask for it.
-10. Every mock question and every **Stronger answer** is answerable from
+10. No `interview/` output file (research, prep, or any mock record) contains the
+    word `Rust` (case-insensitive) — `tests/fixtures/resume_sections/factual-bounds.md`
+    forbids claiming it and the fixture JD does not ask for it.
+11. Every mock question and every **Stronger answer** is answerable from
     `tmp/resume.data.json` / the fixture source of truth: no employer, technology,
     or numeric metric appears that is absent from them.
 
 ## aborted run
 
-11. If the operator is asked for the mock mode and does not supply one (the run is
+12. If the operator is asked for the mock mode and does not supply one (the run is
     abandoned), no file is created under `<dir>/interview/mock/`.

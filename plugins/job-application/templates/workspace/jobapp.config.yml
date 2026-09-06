@@ -1,9 +1,8 @@
 # Working-directory config for the job-application (jobkit) plugin.
 # The plugin resolves these by walking up from the current directory (config.py).
-# All keys optional; uncomment browser_path / ghostscript_path only if auto-detect fails.
+# All keys optional; uncomment browser_path only if auto-detect fails.
 
 # browser_path: "%ProgramFiles(x86)%/Microsoft/Edge/Application/msedge.exe"
-# ghostscript_path: "%ProgramFiles%/gs/gs10.0/bin/gswin64c.exe"
 source_of_truth_dir: "private/resume_sections"
 output_dir: "applications/{Company}"
 interview_playbook: "private/interview_playbook.md"

@@ -1,7 +1,6 @@
 # Copy to jobapp.config.yml (git-ignored) to override machine/repo defaults.
 # All keys optional. Relative paths resolve from this file's directory.
 # browser_path: "%ProgramFiles(x86)%/Microsoft/Edge/Application/msedge.exe"
-# ghostscript_path: "%ProgramFiles%/gs/gs10.0/bin/gswin64c.exe"
 source_of_truth_dir: "resume_sections"
 output_dir: "applications/{Company}"
 interview_playbook: "interview_playbook.md"

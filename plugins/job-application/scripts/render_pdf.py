@@ -58,7 +58,7 @@ def render_pdf(
     html = html.replace('url("fonts/', f'url("{font_dir_url}')
 
     # The .rendered.html is the data spliced into the template -- a sibling of the
-    # data file, not the output PDF. `generate` keeps the data in {dir}/tmp/ while
+    # data file, not the output PDF. `apply` keeps the data in {dir}/tmp/ while
     # the PDF lands flat in {dir}/, so derive the dir from data_path.
     rendered_html_path = data_path.parent / (out_path.stem + ".rendered.html")
 

@@ -43,7 +43,7 @@ silently comply and do not silently omit.
 
 ## 5. Claims are pressure-tested in the interview, not gated at generation
 
-`generate` does not require a per-bullet citation trail. Instead,
+`apply` does not require a per-bullet citation trail. Instead,
 `interview mock technical` grills every number and every claim on the résumé — how
 it was measured, its boundaries, what breaks at 10×, the candidate's personal
 contribution vs the team's. That is where a weak claim surfaces.

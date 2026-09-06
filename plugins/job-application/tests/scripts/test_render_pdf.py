@@ -156,7 +156,7 @@ def test_keep_html_rewrites_font_urls_to_absolute(tmp_path):
 
 def test_keep_html_lands_next_to_data_path(tmp_path):
     """The .rendered.html sits beside the data file, not the output PDF -- so
-    `generate` can keep data in tmp/ while the PDF stays flat."""
+    `apply` can keep data in tmp/ while the PDF stays flat."""
     data_dir = tmp_path / "tmp"
     data_dir.mkdir()
     data = data_dir / "resume.data.json"

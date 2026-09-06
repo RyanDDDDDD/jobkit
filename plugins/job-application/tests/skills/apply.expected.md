@@ -12,7 +12,7 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
 `profile.yml` `conventions.density: compact`, the résumé renders with
 `density: "compact"`. Assertions are **structural**.
 
-## From jd-intake
+## Analysis (working note)
 
 1. **Raw JD saved verbatim.** `applications/Testco/jd.md` exists and its content is
    byte-for-byte equal to `tests/fixtures/sample-jd.md` (no reformatting, no trimming).
@@ -60,7 +60,7 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
    carrier/ERP integration) is a credible transferable story, so it is not a
    `hard-mismatch`.
 
-## From generate
+## Deliverables
 
 5. **All five artefacts exist.** `applications/Testco/tmp/resume.data.json`,
    `applications/Testco/resume.pdf`, `applications/Testco/tmp/cover_letter.data.json`,
@@ -129,7 +129,7 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     `tmp/resume.data.json` nor `tmp/cover_letter.data.json` claims HL7, FHIR,
     MuleSoft, Dell Boomi, or Workato experience.
 
-## From review-application
+## Self-check
 
 18. **`review.md` exists with the expected sections.**
     `applications/Testco/review.md` exists with `## Pass`, `## Flag`, and (if any

@@ -2,7 +2,7 @@
 
 Handles .md/.tex/.txt (verbatim read), .pdf (PyMuPDF), and .docx (python-docx).
 Reused both for ingesting past CVs and for verifying rendered resume/cover-letter
-PDFs (generate / review-application SKILL.md steps).
+PDFs (`apply` / `reference/render-contract.md` silent-failure guard).
 
 CLI usage: `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/extract_cv.py <path>`
 prints the extracted text to stdout.

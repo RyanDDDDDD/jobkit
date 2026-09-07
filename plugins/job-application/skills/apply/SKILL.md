@@ -270,44 +270,48 @@ When `--lang zh`:
 
 ## Self-check
 
-### 1. Compliance
-No `factual-bounds.md` rule violated (quote the rule + the offending JSON string).
-No technology / employer / domain / number in either JSON that appears **nowhere**
-in `{sourceDir}` (zero-basis — a `## Flag`). Reframing real material to JD wording
-is not a violation.
+Step 9 runs this in two halves: `verify_application.py` (step 9a) covers every
+mechanical check; the LLM (step 9c) judges only what a script cannot.
 
-### 2. JD coverage
-For each numbered `## Essential` criterion, at least one résumé bullet or
-skills-group entry supports it — list every uncovered one. A criterion the
-`## Criteria → Evidence` table marks `gap` that the résumé nonetheless claims is a
-compliance violation.
+### Mechanical — `verify_application.py` (step 9a)
 
-### 3. Consistency
-Every `type: "entries"` role item's `primary` / `secondary` / `location` / `dates`
-matches `profile.yml` `conventions.roles` **verbatim** (`dates` ==
-`"<start> – <end>"`, space–en-dash–space). Every `type: "education"` item matches
-`conventions.education` verbatim. One tense throughout `bullets[]` (past for
-finished work, present only for an ongoing duty in a current role).
+These are the script's check ids, not a separate manual pass:
 
-### 4. ATS & quality
-Run the render + `extract_cv.py` round-trip (`reference/render-contract.md`):
-candidate `name` and every company name appear in the extracted text; the text does
-not contain `Invalid resume JSON`. Section titles are conventional (not creative
-renames). Every bullet is verb-first. No near-duplicate bullets within or across
-the two documents (workflow-rules §10). Walk
-`${CLAUDE_PLUGIN_ROOT}/reference/ats-checklist.md`.
+- `profile-roles-verbatim` / `profile-education-verbatim` — every `type: "entries"`
+  role item (`primary` / `secondary` / `location` / `dates`) and every
+  `type: "education"` item matches `profile.yml` `conventions.*` **verbatim**
+  (`dates` == `"<start> – <end>"`, space–en-dash–space).
+- `date-format` — every `dates` string uses ` – ` (space, U+2013, space).
+- `resume-roundtrip` / `cover-roundtrip` — the render/`extract_cv.py` silent-failure
+  guard against the PDFs already on disk: no `Invalid resume JSON` /
+  `Invalid cover letter JSON`; candidate `name` and a company name (résumé) or the
+  `subject` (cover letter) appear in the extracted text.
+- `page-budget` — résumé ≤ 2 pages, cover letter == 1.
+- `cover-txt-fresh` — `{dir}/cover_letter.txt` exists, byte-matches a fresh
+  regeneration from `cover_letter.data.json`, and leads with its `Subject:` line.
+- `bullet-dupes` (`warn`) — no near-duplicate bullet within or across the two
+  documents (workflow-rules §10).
 
-### 5. Length
-Page count vs the soft ceiling of 2. Over ⇒ `## Flag` with the count and candidate
-trims. Never a `## Fix`.
+### Semantic — LLM (step 9c)
 
-### 6. Cover letter
-Between the `paragraphs[]`: total professional SDE experience duration; the
-specific companies by name; the specific business domains; the company-tied tech
-stacks (each tied to its employer, never blended) (workflow-rules §9). Obeys every
-`factual-bounds.md` cover-letter rule. Rendered letter is one page.
-`{dir}/cover_letter.txt` exists and is current (regenerate a scratch copy and diff;
-its first `Subject:` line matches `cover_letter.data.json.subject`).
+- **Compliance** — no `factual-bounds.md` rule violated (quote the rule + the
+  offending JSON string). No technology / employer / domain / **number** in either
+  JSON that appears **nowhere** in `{sourceDir}` (zero-basis — a `## Flag`).
+  Reframing real material to JD wording is not a violation.
+- **JD coverage** — for each numbered `## Essential` criterion, at least one résumé
+  bullet or skills-group entry supports it — list every uncovered one. A criterion
+  the `## Criteria → Evidence` table marks `gap` that the résumé nonetheless claims
+  is a compliance violation.
+- **Cover letter content** — between the `paragraphs[]`: total professional SDE
+  experience duration; the specific companies by name; the specific business
+  domains; the company-tied tech stacks (each tied to its employer, never blended)
+  (workflow-rules §9). Obeys every `factual-bounds.md` cover-letter rule.
+- **ATS & style** — section titles are conventional (not creative renames); every
+  bullet is verb-first; one tense throughout each `bullets[]` (past for finished
+  work, present only for an ongoing duty in a current role). Walk
+  `${CLAUDE_PLUGIN_ROOT}/reference/ats-checklist.md`.
+- **Length** — page count over the soft ceiling of 2 ⇒ `## Flag` with the count and
+  candidate trims. Never a `## Fix`.
 
 ### Safe auto-fixes
 The only `## Fix (applied)` items: (1) a past-role bullet in present tense where

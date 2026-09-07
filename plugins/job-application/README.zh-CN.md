@@ -53,7 +53,9 @@ claude plugin install job-application@job-application-marketplace
    `private/resume_sections/`。
 3. 填写 `private/resume_sections/profile.yml`（身份、规范的公司名称／职位／日期）和
    `private/resume_sections/factual-bounds.md`（约束每一份生成文档的“绝不声称”规则）。
-   若跳过了简历文件夹参数，可再带文件夹重跑 setup，或手动填写各个 section 文件。
+   若跳过了简历文件夹参数，可再带文件夹重跑 setup，或手动填写各个 section 文件
+   （`companies/<slug>.md` / `projects/<slug>.md` 可从
+   `templates/section-skeletons/` 下的骨架复制起步）。
 
 `jobapp.config.yml` 的键 —— `source_of_truth_dir`、`output_dir`、`interview_playbook`、
 `browser_path` —— 覆盖内置默认值（`resume_sections/`、`applications/{Company}/`、
@@ -124,6 +126,11 @@ claude plugin install job-application@job-application-marketplace
 | `education.md` | 教育经历。 |
 | `introduction.md` | 可复用的个人简介 / 定位陈述。 |
 | `skills.md` | 整合后的技能清单。 |
+
+`setup` 会搭建扁平文件（`profile.yml`、`factual-bounds.md`、`introduction.md`、
+`skills.md`、`education.md`），并让 `companies/` 和 `projects/` 保持为空。每个新的
+`companies/<slug>.md` / `projects/<slug>.md` 都从插件 `templates/section-skeletons/`
+下的骨架起步 —— `setup` 在 CV 摄取时复制它，你手工填写时也可以自行复制。
 
 ## 运行测试
 

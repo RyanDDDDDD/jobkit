@@ -1,13 +1,18 @@
 """Render an HTML template + JSON data file to a PDF via a headless Chromium
 (Playwright's own managed browser).
 
-CLI usage:
+CLI usage — one or many jobs (the three path flags are repeatable and zipped
+positionally):
   uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py \
-      --template-path t.html --data-path d.json --out-path o.pdf \
+      --template-path t1.html --data-path d1.json --out-path o1.pdf \
+      [--template-path t2.html --data-path d2.json --out-path o2.pdf ...] \
       [--keep-html]
 
-Note: with --keep-html the .rendered.html is written next to --data-path (not
---out-path), so it follows the data file into a tmp/ subdirectory.
+One browser launch renders every job. Exit 0 iff every job succeeded; 1 if any
+failed; 2 on a flag-count mismatch.
+
+Note: with --keep-html the .rendered.html is written next to that job's
+--data-path (not --out-path), so it follows the data file into a tmp/ subdirectory.
 """
 import argparse
 import sys
@@ -21,6 +26,13 @@ from lib.config import get_job_app_config
 
 
 @dataclass
+class RenderJob:
+    template_path: str
+    data_path: str
+    out_path: str
+
+
+@dataclass
 class RenderResult:
     pdf: str
     pages: int
@@ -29,18 +41,13 @@ class RenderResult:
     html: str | None
 
 
-def render_pdf(
-    template_path: str,
-    data_path: str,
-    out_path: str,
-    keep_html: bool = False,
-) -> RenderResult:
-    template_path = Path(template_path).resolve()
-    data_path = Path(data_path).resolve()
-    out_path = Path(out_path).resolve()
+def _prepare(job: RenderJob) -> tuple[str, Path, Path]:
+    """Resolve paths and splice the data into the template. Returns
+    (html, rendered_html_path, out_path). Raises on a missing template/data file."""
+    template_path = Path(job.template_path).resolve()
+    data_path = Path(job.data_path).resolve()
+    out_path = Path(job.out_path).resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
-
-    cfg = get_job_app_config()
 
     tpl = template_path.read_text(encoding="utf-8")
     json_text = data_path.read_text(encoding="utf-8")
@@ -61,33 +68,34 @@ def render_pdf(
     # data file, not the output PDF. `apply` keeps the data in {dir}/tmp/ while
     # the PDF lands flat in {dir}/, so derive the dir from data_path.
     rendered_html_path = data_path.parent / (out_path.stem + ".rendered.html")
+    return html, rendered_html_path, out_path
+
+
+def _render_one(browser, job: RenderJob, keep_html: bool) -> RenderResult:
+    try:
+        html, rendered_html_path, out_path = _prepare(job)
+    except Exception as exc:
+        return RenderResult(
+            pdf=str(Path(job.out_path).resolve()), pages=0, ok=False,
+            log=str(exc), html=None,
+        )
 
     ok = False
     pages = 0
     log = ""
     try:
         rendered_html_path.write_text(html, encoding="utf-8")
-
-        with sync_playwright() as p:
-            launch_kwargs = {"headless": True}
-            # Playwright always launches its own isolated browser instance/profile
-            # (unlike the old --user-data-dir workaround, it never hands off to a
-            # browser the user already has open), so no throwaway profile dir is
-            # needed here.
-            if cfg["browser_path"]:
-                launch_kwargs["executable_path"] = cfg["browser_path"]
-            browser = p.chromium.launch(**launch_kwargs)
-            try:
-                page = browser.new_page()
-                # timeout bounds page load/JS execution — the step that can hang.
-                page.goto(rendered_html_path.as_uri(), timeout=60000)
-                page.pdf(
-                    path=str(out_path),
-                    print_background=True,
-                    prefer_css_page_size=True,
-                )
-            finally:
-                browser.close()
+        page = browser.new_page()
+        try:
+            # timeout bounds page load/JS execution -- the step that can hang.
+            page.goto(rendered_html_path.as_uri(), timeout=60000)
+            page.pdf(
+                path=str(out_path),
+                print_background=True,
+                prefer_css_page_size=True,
+            )
+        finally:
+            page.close()
 
         ok = out_path.is_file() and out_path.stat().st_size > 0
         if ok:
@@ -112,23 +120,76 @@ def render_pdf(
     )
 
 
+def render_batch(jobs: list[RenderJob], keep_html: bool = False) -> list[RenderResult]:
+    """Render every job in a single Chromium session. One result per job, in
+    order. A job that fails does not stop the rest; a browser-launch failure
+    fails every not-yet-attempted job."""
+    cfg = get_job_app_config()
+    launch_kwargs = {"headless": True}
+    if cfg["browser_path"]:
+        launch_kwargs["executable_path"] = cfg["browser_path"]
+
+    results: list[RenderResult] = []
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(**launch_kwargs)
+            try:
+                for job in jobs:
+                    results.append(_render_one(browser, job, keep_html))
+            finally:
+                browser.close()
+    except Exception as exc:
+        for job in jobs[len(results):]:
+            results.append(RenderResult(
+                pdf=str(Path(job.out_path).resolve()), pages=0, ok=False,
+                log=f"browser launch failed: {exc}", html=None,
+            ))
+    return results
+
+
+def render_pdf(
+    template_path: str,
+    data_path: str,
+    out_path: str,
+    keep_html: bool = False,
+) -> RenderResult:
+    """Render a single template+data pair to a PDF (one-job wrapper over render_batch)."""
+    return render_batch(
+        [RenderJob(template_path, data_path, out_path)], keep_html=keep_html
+    )[0]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--template-path", required=True)
-    parser.add_argument("--data-path", required=True)
-    parser.add_argument("--out-path", required=True)
+    parser.add_argument("--template-path", action="append", required=True)
+    parser.add_argument("--data-path", action="append", required=True)
+    parser.add_argument("--out-path", action="append", required=True)
     parser.add_argument("--keep-html", action="store_true")
     args = parser.parse_args()
 
-    result = render_pdf(
-        args.template_path, args.data_path, args.out_path, args.keep_html
-    )
-    if result.ok:
-        suffix = "" if result.pages == 1 else "s"
-        print(f"OK: {result.pdf} ({result.pages} page{suffix})")
-    else:
-        print(f"Render failed:\n{result.log}", file=sys.stderr)
-        sys.exit(1)
+    if not (len(args.template_path) == len(args.data_path) == len(args.out_path)):
+        print(
+            "render_pdf: --template-path, --data-path and --out-path must each be "
+            "given the same number of times",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+    jobs = [
+        RenderJob(t, d, o)
+        for t, d, o in zip(args.template_path, args.data_path, args.out_path)
+    ]
+    results = render_batch(jobs, keep_html=args.keep_html)
+
+    any_failed = False
+    for r in results:
+        if r.ok:
+            suffix = "" if r.pages == 1 else "s"
+            print(f"OK: {r.pdf} ({r.pages} page{suffix})")
+        else:
+            any_failed = True
+            print(f"Render failed [{r.pdf}]:\n{r.log}", file=sys.stderr)
+    sys.exit(1 if any_failed else 0)
 
 
 if __name__ == "__main__":

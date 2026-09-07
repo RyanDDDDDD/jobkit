@@ -144,6 +144,12 @@ It contains:
 | `introduction.md` | Reusable personal summary / positioning statement. |
 | `skills.md` | Consolidated skills inventory. |
 
+`setup` scaffolds the flat files (`profile.yml`, `factual-bounds.md`,
+`introduction.md`, `skills.md`, `education.md`) and leaves `companies/` and
+`projects/` empty. Each new `companies/<slug>.md` / `projects/<slug>.md` starts from
+the skeleton in the plugin's `templates/section-skeletons/` — `setup` copies it during
+CV ingest, and you can copy it yourself when hand-filling.
+
 ## Running the tests
 
 From `plugins/job-application/`:

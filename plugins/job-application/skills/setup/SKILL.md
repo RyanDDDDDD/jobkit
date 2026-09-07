@@ -39,8 +39,11 @@ a directory with no `jobapp.config.yml`.
    `private/resume_sections/profile.yml` (identity, canonical company names /
    titles / dates) and `private/resume_sections/factual-bounds.md` (the "never
    claim" rules); then either re-run `/job-application:setup <folder of your old
-   CVs>` or hand-fill `introduction.md` / `skills.md` / `education.md` /
-   `companies/<employer>.md`; then `/job-application:apply`.
+   CVs>` or hand-fill `introduction.md` / `skills.md` / `education.md` and one
+   `companies/<slug>.md` per employer — copy the skeleton from
+   `${CLAUDE_PLUGIN_ROOT}/templates/section-skeletons/companies.md` (and
+   `projects.md` for any side projects) as a starting point; then
+   `/job-application:apply`.
 
 3. **If a CV folder was given** — continue with ingest:
 
@@ -83,8 +86,10 @@ a directory with no `jobapp.config.yml`.
       - `introduction.md` — the distilled summary points.
       - `skills.md` — the de-duplicated skill list.
 
-      Follow the existing file style (see
-      `${CLAUDE_PLUGIN_ROOT}/tests/fixtures/resume_sections/`):
+      Start each new `companies/<slug>.md` / `projects/<slug>.md` from the matching
+      skeleton in `${CLAUDE_PLUGIN_ROOT}/templates/section-skeletons/`
+      (`companies.md`, `projects.md`); follow that structure and the existing file
+      style (worked examples: `${CLAUDE_PLUGIN_ROOT}/tests/fixtures/resume_sections/`):
       - Company files have a `### Company Overview` block (Company Name, Role Titles,
         Business Domain, Integrated Tech Stack) then `### Unique Bullet Points` with
         `- ` bullets. Derive **Business Domain** only from how the CV text itself

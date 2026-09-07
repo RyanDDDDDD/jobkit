@@ -1,6 +1,6 @@
 {
   "name": "job-application",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "JD analysis, tailored resume + cover letter generation, and interview prep - operating on candidate data you keep in your own repo.",
   "author": { "name": "RyanDDDDDD" },
   "license": "MIT",

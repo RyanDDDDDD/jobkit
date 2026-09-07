@@ -83,28 +83,76 @@ flat in `{dir}`. Full tree: `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
    if they give a new true fact, tell them which source-of-truth file to add it to
    and have them re-run — do not write it in from the chat alone.
 
-8. **Render.** Emit each data object with `ConvertTo-Json` (see "## Building the
-   data files"). Render both via `render_pdf.py`
-   (`--template-path <resolved> --data-path {dir}/tmp/<name>.data.json --out-path
-   {dir}/<name>.pdf`). Apply the CLI contract + silent-failure guard from
-   `${CLAUDE_PLUGIN_ROOT}/reference/render-contract.md` to each. On success run
-   `compress_pdf.py --pdf-path {dir}/<name>.pdf` for each. Then
-   `cover_letter_to_txt.py --data-path {dir}/tmp/cover_letter.data.json --out-path
-   {dir}/cover_letter.txt`.
+8. **Render both PDFs in one call.** Emit each data object with `ConvertTo-Json`
+   (see "## Building the data files"). Then render the résumé and the cover letter
+   in a **single** `render_pdf.py` invocation — the three path flags are
+   repeatable and zipped positionally, so one Chromium launch produces both:
 
-9. **Self-check → `{dir}/review.md`.** Run the checks in "## Self-check" below.
-   Apply the safe auto-fixes inline (tense; `profile.yml` verbatim mismatch;
-   stale `cover_letter.txt`); if a fix edits `resume.data.json`, re-render +
-   recompress; if it edits `cover_letter.data.json`, regenerate `cover_letter.txt`.
-   If a re-render fails, revert that edit and move the item to `## Flag`. Write
-   `review.md` with `## Pass`, `## Flag`, `## Fix (applied)`. **One pass only** —
-   no second re-check loop.
+   ```
+   uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py \
+     --template-path <resume template>       --data-path {dir}/tmp/resume.data.json       --out-path {dir}/resume.pdf \
+     --template-path <cover_letter template> --data-path {dir}/tmp/cover_letter.data.json --out-path {dir}/cover_letter.pdf
+   ```
+
+   The command prints one `OK: <pdf> (N page[s])` line per document and exits 0
+   only if **both** rendered. On a non-zero exit, apply the
+   `${CLAUDE_PLUGIN_ROOT}/reference/render-contract.md` failure handling **per
+   failed document** (surface its `Render failed [<pdf>]:` text, keep that
+   `.data.json`, do not compress it, do not claim success); a document that
+   rendered is still usable. On success, compress both in one call —
+   `compress_pdf.py --pdf-path {dir}/resume.pdf --pdf-path {dir}/cover_letter.pdf`
+   — then `cover_letter_to_txt.py --data-path {dir}/tmp/cover_letter.data.json
+   --out-path {dir}/cover_letter.txt`.
+
+9. **Self-check → `{dir}/review.md`.**
+
+   a. **Deterministic checks.** Run
+      `verify_application.py --dir {dir} --source-dir {sourceDir} --json`. It
+      reports `{ "pass": [...], "fail": [{id, detail}], "warn": [{id, detail}] }`
+      and always exits 0 (exit 1 only means a required input file is missing —
+      treat that as a render failure). The checks: `profile-roles-verbatim`,
+      `profile-education-verbatim`, `resume-roundtrip`, `cover-roundtrip`,
+      `page-budget`, `cover-txt-fresh`, `date-format`, and the advisory
+      `bullet-dupes` (a `warn`).
+
+   b. **Act on the report.** For each `fail[]` entry that matches a **safe
+      auto-fix** (see "## Self-check → Safe auto-fixes"): a
+      `profile-roles-verbatim` / `profile-education-verbatim` /
+      `date-format` failure → rewrite the offending `.data.json` field to the
+      `profile.yml` value verbatim; a `cover-txt-fresh` "stale" failure →
+      regenerate `{dir}/cover_letter.txt`. After an edit to a `.data.json`,
+      re-render **only that document** with a single-job `render_pdf.py` call and
+      recompress it (and regenerate the `.txt` if it was the cover letter); if the
+      re-render fails, revert the edit and move the item to `## Flag`. Every other
+      `fail[]` entry, and every `warn[]` entry that is not obviously spurious, goes
+      to `## Flag`.
+
+   c. **Semantic checks (LLM).** Judge only what a script cannot:
+      - **Compliance** — no `factual-bounds.md` rule violated (quote the rule + the
+        offending JSON string).
+      - **Zero-basis** — no technology, employer, domain, **or number** in either
+        JSON that appears nowhere in `{sourceDir}` (`verify_application.py` does not
+        judge this). Reframing real material to JD wording is not a violation.
+      - **JD coverage** — each numbered `## Essential` criterion is supported by ≥1
+        résumé bullet or skills-group entry; list every uncovered one. A criterion
+        the `## Criteria → Evidence` table marks `gap` that the résumé nonetheless
+        claims is a compliance violation.
+      - **Cover letter content** — between the `paragraphs[]`: total professional
+        SDE experience duration; the specific companies by name; the specific
+        business domains; the company-tied tech stacks (each tied to its employer,
+        never blended). Obeys every `factual-bounds.md` cover-letter rule.
+      - **Style** — every bullet verb-first; section titles conventional (not
+        creative renames).
+
+   d. **Write `review.md`** with `## Pass`, `## Flag`, `## Fix (applied)`. **One
+      pass only** — no second re-check loop. If `render_pdf.py` failed for a
+      document, `review.md` must not claim the application passed.
 
 10. **Answers** (only with `--answers`) — `{dir}/answers.md`, one `##` per
     question, grounded in the retrieved material, each with a compact
     one-to-two-sentence variant. No new facts.
 
-11. **Clean up.** `render_pdf.py` removes its own `.rendered.html`. End state:
+11. **Clean up.** `render_pdf.py` removes each job's `.rendered.html`. End state:
     `{dir}/` has `jd.md`, `analysis.md`, `review.md`, `resume.pdf`,
     `cover_letter.pdf`, `cover_letter.txt`, optional `answers.md`; `{dir}/tmp/`
     has `resume.data.json`, `cover_letter.data.json`.

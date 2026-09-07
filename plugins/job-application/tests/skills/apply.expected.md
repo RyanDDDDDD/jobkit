@@ -135,3 +135,10 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     `applications/Testco/review.md` exists with `## Pass`, `## Flag`, and (if any
     fix applied) `## Fix (applied)` sections. It does not assert the application
     "passed" if the render failed.
+
+19. **The deterministic self-check ran and its `pass` checks are not re-flagged.**
+    `verify_application.py --dir applications/Testco --source-dir tests/fixtures/resume_sections --json`
+    exits 0. For the default fixture run it reports `fail == []` (the fixture
+    `profile.yml`, once rendered verbatim, matches; dates use ` – `; the fresh
+    `cover_letter.txt` is on disk). `review.md` contains no `## Fix (applied)`
+    item whose cause is a check `verify_application.py` reports under `pass`.

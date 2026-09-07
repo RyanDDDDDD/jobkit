@@ -62,3 +62,22 @@ def test_cli_reports_failure_for_missing_file(tmp_path):
     )
     assert result.returncode == 1
     assert "File not found" in result.stderr
+
+
+def test_cli_compresses_multiple_paths(tmp_path):
+    import pikepdf
+
+    paths = []
+    for name in ("a.pdf", "b.pdf"):
+        p = tmp_path / name
+        pdf = pikepdf.new()
+        pdf.add_blank_page()
+        pdf.save(p)
+        paths.append(str(p))
+    result = subprocess.run(
+        ["uv", "run", "--project", str(PROJECT), str(SCRIPT),
+         "--pdf-path", paths[0], "--pdf-path", paths[1]],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.count("\n") >= 2

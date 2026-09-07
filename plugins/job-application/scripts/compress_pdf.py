@@ -41,12 +41,16 @@ def compress_pdf(pdf_path: str) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pdf-path", required=True)
+    parser.add_argument("--pdf-path", action="append", required=True)
     args = parser.parse_args()
-    try:
-        print(compress_pdf(args.pdf_path))
-    except Exception as exc:
-        print(str(exc), file=sys.stderr)
+    failed = False
+    for path in args.pdf_path:
+        try:
+            print(compress_pdf(path))
+        except Exception as exc:
+            failed = True
+            print(str(exc), file=sys.stderr)
+    if failed:
         sys.exit(1)
 
 

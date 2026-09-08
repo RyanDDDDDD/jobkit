@@ -15,7 +15,7 @@ Note: with --keep-html the .rendered.html is written next to that job's
 from dataclasses import dataclass
 from pathlib import Path
 
-import fitz  # PyMuPDF, used only to count pages after rendering
+import pymupdf  # used only to count pages after rendering
 from playwright.sync_api import sync_playwright
 
 from jobkit.config import get_job_app_config
@@ -95,7 +95,7 @@ def _render_one(browser, job: RenderJob, keep_html: bool) -> RenderResult:
 
         ok = out_path.is_file() and out_path.stat().st_size > 0
         if ok:
-            doc = fitz.open(out_path)
+            doc = pymupdf.open(out_path)
             try:
                 pages = len(doc)
             finally:

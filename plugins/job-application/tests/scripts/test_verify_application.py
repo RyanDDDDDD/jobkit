@@ -98,7 +98,6 @@ def test_near_duplicate_bullets_warn():
     assert check_bullet_dupes(r, _cover()) != []
 
 
-@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_missing_input_exits_1(tmp_path):
     result = subprocess.run(
         [sys.executable, "-m", "jobkit", "verify",

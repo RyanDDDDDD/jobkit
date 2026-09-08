@@ -137,7 +137,6 @@ def test_explicit_target_arg_scaffolds_there_not_cwd(tmp_path):
     assert not (tmp_path / "jobapp.config.yml").exists()
 
 
-@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_json_output(tmp_path):
     result = subprocess.run(
         [sys.executable, "-m", "jobkit", "init", str(tmp_path), "--json"],
@@ -149,7 +148,6 @@ def test_cli_json_output(tmp_path):
     assert set(parsed["created"]) == EXPECTED_FILES
 
 
-@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_text_output_mentions_next_steps(tmp_path):
     result = subprocess.run(
         [sys.executable, "-m", "jobkit", "init", str(tmp_path)],

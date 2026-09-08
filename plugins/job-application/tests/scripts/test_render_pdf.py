@@ -1,6 +1,4 @@
 import inspect
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -10,7 +8,6 @@ from jobkit._assets import template_path
 from jobkit.extract_cv import extract_text
 from jobkit.render import RenderJob, render_batch, render_pdf
 
-REPO = Path(__file__).resolve().parents[2]
 TEMPLATE = template_path("resume")
 COVER_TEMPLATE = template_path("cover_letter")
 
@@ -18,7 +15,6 @@ COVER_TEMPLATE = template_path("cover_letter")
 _NO_CHROMIUM_TESTS = {
     "test_render_pdf_has_no_placeholder_param",
     "test_both_templates_use_the_shared_data_token",
-    "test_cli_exit_2_on_flag_count_mismatch",
 }
 
 
@@ -222,18 +218,3 @@ def test_render_pdf_wrapper_still_works(tmp_path):
     result = render_pdf(str(TEMPLATE), str(data), str(tmp_path / "s.pdf"))
     assert result.ok
     assert result.pages == 1
-
-
-@pytest.mark.skip(reason="moved to test_cli.py Task 6")
-def test_cli_repeatable_flags_render_both(tmp_path):
-    pass
-
-
-@pytest.mark.skip(reason="moved to test_cli.py Task 6")
-def test_cli_exit_1_when_one_job_fails(tmp_path):
-    pass
-
-
-@pytest.mark.skip(reason="moved to test_cli.py Task 6")
-def test_cli_exit_2_on_flag_count_mismatch(tmp_path):
-    pass

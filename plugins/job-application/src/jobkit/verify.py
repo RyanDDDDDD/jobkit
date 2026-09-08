@@ -16,7 +16,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-import fitz
+import pymupdf
 import yaml
 
 from jobkit.cover_txt import cover_letter_to_text
@@ -186,10 +186,10 @@ def check_cover_roundtrip(cover: dict, cover_pdf: Path) -> list[str]:
 
 def check_page_budget(resume_pdf: Path, cover_pdf: Path) -> list[str]:
     fails = []
-    with fitz.open(str(resume_pdf)) as d:
+    with pymupdf.open(str(resume_pdf)) as d:
         if len(d) > 2:
             fails.append(f"resume.pdf is {len(d)} pages (soft ceiling 2)")
-    with fitz.open(str(cover_pdf)) as d:
+    with pymupdf.open(str(cover_pdf)) as d:
         if len(d) != 1:
             fails.append(f"cover_letter.pdf is {len(d)} pages (expected 1)")
     return fails

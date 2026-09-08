@@ -49,7 +49,6 @@ def test_missing_file_raises(tmp_path):
         compress_pdf(str(missing))
 
 
-@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_reports_failure_for_missing_file(tmp_path):
     missing = tmp_path / "nope.pdf"
     result = subprocess.run(
@@ -61,7 +60,6 @@ def test_cli_reports_failure_for_missing_file(tmp_path):
     assert "File not found" in result.stderr
 
 
-@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_compresses_multiple_paths(tmp_path):
     import pikepdf
 

@@ -52,7 +52,6 @@ def test_extracts_docx_text(tmp_path):
     assert "Extracted docx marker text" in extract_text(str(p))
 
 
-@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_missing_path_exits_2():
     result = subprocess.run(
         [sys.executable, "-m", "jobkit", "extract-cv"],
@@ -62,7 +61,6 @@ def test_cli_missing_path_exits_2():
     assert result.returncode == 2
 
 
-@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_unsupported_extension_exits_2(tmp_path):
     p = tmp_path / "a.rtf"
     p.write_text("x", encoding="utf-8")

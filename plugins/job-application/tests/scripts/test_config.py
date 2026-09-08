@@ -62,7 +62,6 @@ def test_browser_path_is_read_and_env_expanded(tmp_path, monkeypatch):
     assert cfg["browser_path"] == "C:/does/not/exist/msedge.exe"
 
 
-@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_prints_valid_json(tmp_path):
     result = subprocess.run(
         [sys.executable, "-m", "jobkit", "config", "--json"],

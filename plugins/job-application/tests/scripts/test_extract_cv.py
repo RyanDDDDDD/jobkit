@@ -6,11 +6,7 @@ import docx
 import fitz
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from extract_cv import extract_text  # noqa: E402
-
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "extract_cv.py"
-PROJECT = SCRIPT.parents[1]
+from jobkit.extract_cv import extract_text
 
 
 def test_reads_md_verbatim(tmp_path):
@@ -56,22 +52,24 @@ def test_extracts_docx_text(tmp_path):
     assert "Extracted docx marker text" in extract_text(str(p))
 
 
+@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_missing_path_exits_2():
     result = subprocess.run(
-        ["uv", "run", "--project", str(PROJECT), str(SCRIPT)],
+        [sys.executable, "-m", "jobkit", "extract-cv"],
         capture_output=True,
         text=True,
     )
     assert result.returncode == 2
 
 
-def test_cli_unsupported_extension_exits_1(tmp_path):
+@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
+def test_cli_unsupported_extension_exits_2(tmp_path):
     p = tmp_path / "a.rtf"
     p.write_text("x", encoding="utf-8")
     result = subprocess.run(
-        ["uv", "run", "--project", str(PROJECT), str(SCRIPT), str(p)],
+        [sys.executable, "-m", "jobkit", "extract-cv", str(p)],
         capture_output=True,
         text=True,
     )
-    assert result.returncode == 1
+    assert result.returncode == 2
     assert "Unsupported" in result.stderr

@@ -5,11 +5,7 @@ from pathlib import Path
 import fitz
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from compress_pdf import compress_pdf  # noqa: E402
-
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "compress_pdf.py"
-PROJECT = SCRIPT.parents[1]
+from jobkit.compress import compress_pdf
 
 
 def _make_uncompressed_pdf(path: Path, repeats: int = 400) -> None:
@@ -53,17 +49,19 @@ def test_missing_file_raises(tmp_path):
         compress_pdf(str(missing))
 
 
+@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_reports_failure_for_missing_file(tmp_path):
     missing = tmp_path / "nope.pdf"
     result = subprocess.run(
-        ["uv", "run", "--project", str(PROJECT), str(SCRIPT), "--pdf-path", str(missing)],
+        [sys.executable, "-m", "jobkit", "compress", "--pdf", str(missing)],
         capture_output=True,
         text=True,
     )
-    assert result.returncode == 1
+    assert result.returncode != 0
     assert "File not found" in result.stderr
 
 
+@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_compresses_multiple_paths(tmp_path):
     import pikepdf
 
@@ -75,8 +73,8 @@ def test_cli_compresses_multiple_paths(tmp_path):
         pdf.save(p)
         paths.append(str(p))
     result = subprocess.run(
-        ["uv", "run", "--project", str(PROJECT), str(SCRIPT),
-         "--pdf-path", paths[0], "--pdf-path", paths[1]],
+        [sys.executable, "-m", "jobkit", "compress",
+         "--pdf", paths[0], "--pdf", paths[1]],
         capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stderr

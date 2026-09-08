@@ -1,7 +1,7 @@
 """Compress a PDF in place using pikepdf, keeping the original untouched if
 compression does not shrink it (or fails).
 
-CLI usage: `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/compress_pdf.py --pdf-path resume.pdf`
+CLI: jobkit compress --pdf resume.pdf [--pdf cover_letter.pdf ...]
 """
 import argparse
 import sys

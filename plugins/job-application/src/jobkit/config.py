@@ -1,7 +1,7 @@
 """Resolve jobapp.config.yml settings, walking up from the current directory
 for the file, merged over the plugin's defaults.
 
-CLI usage: `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.py`
+CLI: jobkit config [--json]
 prints the resolved config as JSON to stdout.
 """
 import json

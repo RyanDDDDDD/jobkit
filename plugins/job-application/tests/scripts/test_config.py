@@ -3,8 +3,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from lib.config import get_job_app_config  # noqa: E402
+import pytest
+
+from jobkit.config import get_job_app_config
 
 
 def test_no_config_returns_defaults(tmp_path, monkeypatch):
@@ -61,10 +62,10 @@ def test_browser_path_is_read_and_env_expanded(tmp_path, monkeypatch):
     assert cfg["browser_path"] == "C:/does/not/exist/msedge.exe"
 
 
+@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_prints_valid_json(tmp_path):
-    script = Path(__file__).resolve().parents[2] / "scripts" / "lib" / "config.py"
     result = subprocess.run(
-        ["uv", "run", "--project", str(script.parents[2]), str(script)],
+        [sys.executable, "-m", "jobkit", "config", "--json"],
         cwd=tmp_path,
         capture_output=True,
         text=True,

@@ -3,7 +3,7 @@
 The "Subject:" (or "主题：") line is hoisted to the first line so it can be
 copied straight into an email's subject field.
 
-CLI usage: `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/cover_letter_to_txt.py --data-path cover_letter.data.json [--out-path out.txt]`
+CLI: jobkit cover-txt --data cover_letter.data.json [--out out.txt]
 """
 import argparse
 import json

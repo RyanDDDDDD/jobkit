@@ -1,11 +1,9 @@
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from init_workspace import init_workspace  # noqa: E402
+from jobkit._assets import templates_dir
+from jobkit.init_workspace import init_workspace
 
-PLUGIN_ROOT = Path(__file__).resolve().parents[2]
-SKELETON_DIR = PLUGIN_ROOT / "templates" / "section-skeletons"
+SKELETON_DIR = templates_dir() / "section-skeletons"
 
 
 def test_company_skeleton_has_the_expected_structure():

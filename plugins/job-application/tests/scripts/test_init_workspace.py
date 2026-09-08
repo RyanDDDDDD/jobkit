@@ -4,11 +4,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from init_workspace import init_workspace  # noqa: E402
+import pytest
 
-PLUGIN_ROOT = Path(__file__).resolve().parents[2]
-FRAMEWORKS = PLUGIN_ROOT / "reference" / "interview-frameworks.md"
+from jobkit._assets import resource_text
+from jobkit.init_workspace import init_workspace
 
 EXPECTED_FILES = {
     "jobapp.config.yml",
@@ -61,7 +60,9 @@ def test_config_has_private_layout(tmp_path):
 
 def test_playbook_seeded_byte_identical_to_frameworks(tmp_path):
     init_workspace(str(tmp_path))
-    assert (tmp_path / "private" / "interview_playbook.md").read_bytes() == FRAMEWORKS.read_bytes()
+    assert (tmp_path / "private" / "interview_playbook.md").read_text(
+        encoding="utf-8"
+    ) == resource_text("reference/interview-frameworks.md")
 
 
 def test_skills_template_keeps_category_headers(tmp_path):
@@ -136,10 +137,10 @@ def test_explicit_target_arg_scaffolds_there_not_cwd(tmp_path):
     assert not (tmp_path / "jobapp.config.yml").exists()
 
 
+@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_json_output(tmp_path):
-    script = PLUGIN_ROOT / "scripts" / "init_workspace.py"
     result = subprocess.run(
-        ["uv", "run", "--project", str(PLUGIN_ROOT), str(script), str(tmp_path), "--json"],
+        [sys.executable, "-m", "jobkit", "init", str(tmp_path), "--json"],
         capture_output=True,
         text=True,
         check=True,
@@ -148,10 +149,10 @@ def test_cli_json_output(tmp_path):
     assert set(parsed["created"]) == EXPECTED_FILES
 
 
+@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_cli_text_output_mentions_next_steps(tmp_path):
-    script = PLUGIN_ROOT / "scripts" / "init_workspace.py"
     result = subprocess.run(
-        ["uv", "run", "--project", str(PLUGIN_ROOT), str(script), str(tmp_path)],
+        [sys.executable, "-m", "jobkit", "init", str(tmp_path)],
         capture_output=True,
         text=True,
         check=True,

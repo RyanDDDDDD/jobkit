@@ -1,28 +1,24 @@
 """Render an HTML template + JSON data file to a PDF via a headless Chromium
 (Playwright's own managed browser).
 
-CLI usage — one or many jobs (the three path flags are repeatable and zipped
+CLI usage — one or many jobs (--kind / --data / --out are repeatable, zipped
 positionally):
-  uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py \
-      --template-path t1.html --data-path d1.json --out-path o1.pdf \
-      [--template-path t2.html --data-path d2.json --out-path o2.pdf ...] \
-      [--keep-html]
+  jobkit render --kind resume --data d1.json --out o1.pdf \
+      [--kind cover_letter --data d2.json --out o2.pdf ...] [--keep-html]
 
 One browser launch renders every job. Exit 0 iff every job succeeded; 1 if any
 failed; 2 on a flag-count mismatch.
 
 Note: with --keep-html the .rendered.html is written next to that job's
---data-path (not --out-path), so it follows the data file into a tmp/ subdirectory.
+--data (not --out), so it follows the data file into a tmp/ subdirectory.
 """
-import argparse
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 import fitz  # PyMuPDF, used only to count pages after rendering
 from playwright.sync_api import sync_playwright
 
-from lib.config import get_job_app_config
+from jobkit.config import get_job_app_config
 
 
 @dataclass
@@ -157,40 +153,3 @@ def render_pdf(
     return render_batch(
         [RenderJob(template_path, data_path, out_path)], keep_html=keep_html
     )[0]
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--template-path", action="append", required=True)
-    parser.add_argument("--data-path", action="append", required=True)
-    parser.add_argument("--out-path", action="append", required=True)
-    parser.add_argument("--keep-html", action="store_true")
-    args = parser.parse_args()
-
-    if not (len(args.template_path) == len(args.data_path) == len(args.out_path)):
-        print(
-            "render_pdf: --template-path, --data-path and --out-path must each be "
-            "given the same number of times",
-            file=sys.stderr,
-        )
-        sys.exit(2)
-
-    jobs = [
-        RenderJob(t, d, o)
-        for t, d, o in zip(args.template_path, args.data_path, args.out_path)
-    ]
-    results = render_batch(jobs, keep_html=args.keep_html)
-
-    any_failed = False
-    for r in results:
-        if r.ok:
-            suffix = "" if r.pages == 1 else "s"
-            print(f"OK: {r.pdf} ({r.pages} page{suffix})")
-        else:
-            any_failed = True
-            print(f"Render failed [{r.pdf}]:\n{r.log}", file=sys.stderr)
-    sys.exit(1 if any_failed else 0)
-
-
-if __name__ == "__main__":
-    main()

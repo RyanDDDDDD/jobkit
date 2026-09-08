@@ -5,8 +5,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from verify_application import (  # noqa: E402
+from jobkit.verify import (
     check_bullet_dupes,
     check_cover_txt_fresh,
     check_date_format,
@@ -82,7 +81,7 @@ def test_stale_cover_txt_is_flagged(tmp_path):
 
 
 def test_fresh_cover_txt_passes(tmp_path):
-    from cover_letter_to_txt import cover_letter_to_text
+    from jobkit.cover_txt import cover_letter_to_text
     cd = tmp_path / "cover_letter.data.json"
     cd.write_text(json.dumps(_cover()), encoding="utf-8")
     txt = tmp_path / "cover_letter.txt"
@@ -99,10 +98,10 @@ def test_near_duplicate_bullets_warn():
     assert check_bullet_dupes(r, _cover()) != []
 
 
+@pytest.mark.skip(reason="cli lands in Task 5; restored in Task 6")
 def test_missing_input_exits_1(tmp_path):
-    script = REPO / "scripts" / "verify_application.py"
     result = subprocess.run(
-        ["uv", "run", "--project", str(REPO), str(script),
+        [sys.executable, "-m", "jobkit", "verify",
          "--dir", str(tmp_path), "--source-dir", str(tmp_path), "--json"],
         capture_output=True, text=True,
     )

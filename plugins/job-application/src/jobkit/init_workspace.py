@@ -5,7 +5,7 @@ templates + a seeded interview_playbook.md + questions_to_ask.md), and an empty
 applications/ directory. Strictly non-destructive: a file that already exists is
 never read, modified, or deleted.
 
-CLI usage: `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/init_workspace.py [target] [--json]`
+CLI usage: jobkit init [target] [--json]
 prints a created/skipped summary (default) or a JSON object with --json.
 """
 import argparse
@@ -14,9 +14,7 @@ import shutil
 import sys
 from pathlib import Path
 
-PLUGIN_ROOT = Path(__file__).resolve().parents[1]
-TEMPLATE_ROOT = PLUGIN_ROOT / "templates" / "workspace"
-FRAMEWORKS = PLUGIN_ROOT / "reference" / "interview-frameworks.md"
+from jobkit._assets import resource_text, templates_dir
 
 # Empty directories to ensure exist (mkdir -p); git does not track them.
 SCAFFOLD_DIRS = (
@@ -30,10 +28,9 @@ def init_workspace(target: str) -> dict:
     """Scaffold `target`. Return {"created": [...], "skipped": [...], "warnings": [...]}
     of paths relative to `target` (POSIX form, sorted). Never modifies an existing file."""
     root = Path(target).resolve()
-    if not TEMPLATE_ROOT.is_dir():
-        raise FileNotFoundError(f"template bundle missing: {TEMPLATE_ROOT}")
-    if not FRAMEWORKS.is_file():
-        raise FileNotFoundError(f"framework reference missing: {FRAMEWORKS}")
+    template_root = templates_dir() / "workspace"
+    if not template_root.is_dir():
+        raise FileNotFoundError(f"template bundle missing: {template_root}")
 
     config_existed = (root / "jobapp.config.yml").exists()
 
@@ -51,11 +48,19 @@ def init_workspace(target: str) -> dict:
         created.append(rel)
 
     # 1. Copy every template file, preserving the relative layout.
-    for src in sorted(p for p in TEMPLATE_ROOT.rglob("*") if p.is_file()):
-        place(root / src.relative_to(TEMPLATE_ROOT), src)
+    for src in sorted(p for p in template_root.rglob("*") if p.is_file()):
+        place(root / src.relative_to(template_root), src)
 
     # 2. Seed the interview playbook from the plugin's framework reference.
-    place(root / "private" / "interview_playbook.md", FRAMEWORKS)
+    playbook = root / "private" / "interview_playbook.md"
+    if playbook.exists():
+        skipped.append(playbook.relative_to(root).as_posix())
+    else:
+        playbook.parent.mkdir(parents=True, exist_ok=True)
+        playbook.write_text(
+            resource_text("reference/interview-frameworks.md"), encoding="utf-8"
+        )
+        created.append(playbook.relative_to(root).as_posix())
 
     # 3. Ensure the empty scaffold directories exist.
     for d in SCAFFOLD_DIRS:

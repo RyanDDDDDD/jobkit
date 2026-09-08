@@ -22,16 +22,27 @@ missing, tell the user to run `/job-application:setup` first and stop.
 
 ## Inputs and paths
 
-Resolve `{dir}` / `{sourceDir}` / template overrides per
-`${CLAUDE_PLUGIN_ROOT}/reference/config-resolution.md`. Machine artifacts
+Resolve paths with `jobkit config` (JSON: `root`, `source_of_truth_dir`,
+`output_dir`, `interview_playbook`, `browser_path`). `{sourceDir}` =
+`<root>/<source_of_truth_dir>` — if it does not exist, tell the user to
+run `/job-application:setup` first and stop. `{dir}` =
+`<root>/<output_dir>` with the literal `{Company}` token replaced by the
+application name. Create `{dir}` and `{dir}/tmp`. A repo-level
+`<root>/templates/<name>.html` override, if present, is picked up
+automatically by `jobkit render`. Machine artifacts
 (`resume.data.json`, `cover_letter.data.json`) live in `{dir}/tmp/`; `jd.md`,
 `analysis.md`, `review.md`, the PDFs, `cover_letter.txt`, and `answers.md` stay
-flat in `{dir}`. Full tree: `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
+flat in `{dir}`. Full tree: `jobkit doc output-layout`.
+
+Commands below are `jobkit <sub>` (the plugin installs the `jobkit` CLI —
+`pip install jobkit`). If `jobkit` is not on `PATH`, `python -m jobkit <sub>`
+is exactly equivalent.
 
 ## Steps
 
-1. **Resolve** `{Company}` (ask if unclear), `{dir}`, `{sourceDir}` per the
-   reference. Create `{dir}` and `{dir}/tmp`.
+1. **Resolve** `{Company}` (ask if unclear), then run `jobkit config` and
+   derive `{dir}` / `{sourceDir}` as in *Inputs and paths*. Create `{dir}`
+   and `{dir}/tmp`.
 
 2. **JD source.** If the user supplied JD text / a file this run, write it
    **verbatim** to `{dir}/jd.md` (overwrite). Else if `{dir}/jd.md` exists, reuse
@@ -85,29 +96,29 @@ flat in `{dir}`. Full tree: `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
 
 8. **Render both PDFs in one call.** Emit each data object with `ConvertTo-Json`
    (see "## Building the data files"). Then render the résumé and the cover letter
-   in a **single** `render_pdf.py` invocation — the three path flags are
+   in a **single** `jobkit render` invocation — `--kind` / `--data` / `--out` are
    repeatable and zipped positionally, so one Chromium launch produces both:
 
    ```
-   uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py \
-     --template-path <resume template>       --data-path {dir}/tmp/resume.data.json       --out-path {dir}/resume.pdf \
-     --template-path <cover_letter template> --data-path {dir}/tmp/cover_letter.data.json --out-path {dir}/cover_letter.pdf
+   jobkit render \
+     --kind resume       --data {dir}/tmp/resume.data.json       --out {dir}/resume.pdf \
+     --kind cover_letter --data {dir}/tmp/cover_letter.data.json --out {dir}/cover_letter.pdf
    ```
 
    The command prints one `OK: <pdf> (N page[s])` line per document and exits 0
    only if **both** rendered. On a non-zero exit, apply the
-   `${CLAUDE_PLUGIN_ROOT}/reference/render-contract.md` failure handling **per
+   `jobkit doc render-contract` failure handling **per
    failed document** (surface its `Render failed [<pdf>]:` text, keep that
    `.data.json`, do not compress it, do not claim success); a document that
    rendered is still usable. On success, compress both in one call —
-   `compress_pdf.py --pdf-path {dir}/resume.pdf --pdf-path {dir}/cover_letter.pdf`
-   — then `cover_letter_to_txt.py --data-path {dir}/tmp/cover_letter.data.json
-   --out-path {dir}/cover_letter.txt`.
+   `jobkit compress --pdf {dir}/resume.pdf --pdf {dir}/cover_letter.pdf`
+   — then `jobkit cover-txt --data {dir}/tmp/cover_letter.data.json
+   --out {dir}/cover_letter.txt`.
 
 9. **Self-check → `{dir}/review.md`.**
 
    a. **Deterministic checks.** Run
-      `verify_application.py --dir {dir} --source-dir {sourceDir} --json`. It
+      `jobkit verify --dir {dir} --source-dir {sourceDir} --json`. It
       reports `{ "pass": [...], "fail": [{id, detail}], "warn": [{id, detail}] }`
       and always exits 0 (exit 1 only means a required input file is missing —
       treat that as a render failure). The checks: `profile-roles-verbatim`,
@@ -121,7 +132,7 @@ flat in `{dir}`. Full tree: `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
       `date-format` failure → rewrite the offending `.data.json` field to the
       `profile.yml` value verbatim; a `cover-txt-fresh` "stale" failure →
       regenerate `{dir}/cover_letter.txt`. After an edit to a `.data.json`,
-      re-render **only that document** with a single-job `render_pdf.py` call and
+      re-render **only that document** with a single-job `jobkit render` call and
       recompress it (and regenerate the `.txt` if it was the cover letter); if the
       re-render fails, revert the edit and move the item to `## Flag`. Every other
       `fail[]` entry, and every `warn[]` entry that is not obviously spurious, goes
@@ -131,7 +142,7 @@ flat in `{dir}`. Full tree: `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
       - **Compliance** — no `factual-bounds.md` rule violated (quote the rule + the
         offending JSON string).
       - **Zero-basis** — no technology, employer, domain, **or number** in either
-        JSON that appears nowhere in `{sourceDir}` (`verify_application.py` does not
+        JSON that appears nowhere in `{sourceDir}` (`jobkit verify` does not
         judge this). Reframing real material to JD wording is not a violation.
       - **JD coverage** — each numbered `## Essential` criterion is supported by ≥1
         résumé bullet or skills-group entry; list every uncovered one. A criterion
@@ -145,14 +156,14 @@ flat in `{dir}`. Full tree: `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
         creative renames).
 
    d. **Write `review.md`** with `## Pass`, `## Flag`, `## Fix (applied)`. **One
-      pass only** — no second re-check loop. If `render_pdf.py` failed for a
+      pass only** — no second re-check loop. If `jobkit render` failed for a
       document, `review.md` must not claim the application passed.
 
 10. **Answers** (only with `--answers`) — `{dir}/answers.md`, one `##` per
     question, grounded in the retrieved material, each with a compact
     one-to-two-sentence variant. No new facts.
 
-11. **Clean up.** `render_pdf.py` removes each job's `.rendered.html`. End state:
+11. **Clean up.** `jobkit render` removes each job's `.rendered.html`. End state:
     `{dir}/` has `jd.md`, `analysis.md`, `review.md`, `resume.pdf`,
     `cover_letter.pdf`, `cover_letter.txt`, optional `answers.md`; `{dir}/tmp/`
     has `resume.data.json`, `cover_letter.data.json`.
@@ -270,10 +281,10 @@ When `--lang zh`:
 
 ## Self-check
 
-Step 9 runs this in two halves: `verify_application.py` (step 9a) covers every
+Step 9 runs this in two halves: `jobkit verify` (step 9a) covers every
 mechanical check; the LLM (step 9c) judges only what a script cannot.
 
-### Mechanical — `verify_application.py` (step 9a)
+### Mechanical — `jobkit verify` (step 9a)
 
 These are the script's check ids, not a separate manual pass:
 
@@ -282,7 +293,7 @@ These are the script's check ids, not a separate manual pass:
   `type: "education"` item matches `profile.yml` `conventions.*` **verbatim**
   (`dates` == `"<start> – <end>"`, space–en-dash–space).
 - `date-format` — every `dates` string uses ` – ` (space, U+2013, space).
-- `resume-roundtrip` / `cover-roundtrip` — the render/`extract_cv.py` silent-failure
+- `resume-roundtrip` / `cover-roundtrip` — the render/`jobkit extract-cv` silent-failure
   guard against the PDFs already on disk: no `Invalid resume JSON` /
   `Invalid cover letter JSON`; candidate `name` and a company name (résumé) or the
   `subject` (cover letter) appear in the extracted text.
@@ -309,7 +320,7 @@ These are the script's check ids, not a separate manual pass:
 - **ATS & style** — section titles are conventional (not creative renames); every
   bullet is verb-first; one tense throughout each `bullets[]` (past for finished
   work, present only for an ongoing duty in a current role). Walk
-  `${CLAUDE_PLUGIN_ROOT}/reference/ats-checklist.md`.
+  `jobkit doc ats-checklist`.
 - **Length** — page count over the soft ceiling of 2 ⇒ `## Flag` with the count and
   candidate trims. Never a `## Fix`.
 
@@ -320,7 +331,7 @@ education field that differs from `profile.yml` — rewrite to match `profile.ym
 verbatim; (3) a stale / missing `cover_letter.txt` — regenerate. Anything touching
 the substance of a claim, evidence selection, or argument wording is a `## Flag`.
 
-If `render_pdf.py` fails, surface the failure under `## Flag` and do not claim the
+If `jobkit render` fails, surface the failure under `## Flag` and do not claim the
 application passed.
 
 ## Guardrails
@@ -331,5 +342,4 @@ application passed.
 - English by default; `--lang zh` faithfully translated.
 - Machine artifacts in `{dir}/tmp/`, deliverables flat.
 - `jd.md` stays (workflow-rules §7).
-- `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` and
-  `${CLAUDE_PLUGIN_ROOT}/reference/render-contract.md`.
+- `jobkit doc workflow-rules` and `jobkit doc render-contract`.

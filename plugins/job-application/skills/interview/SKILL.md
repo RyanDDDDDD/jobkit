@@ -33,28 +33,26 @@ the user wants. All three operate on one company's per-application directory.
 
 ## Inputs and paths
 
-- **Plugin-internal paths use `${CLAUDE_PLUGIN_ROOT}`**: the research agent
-  (`${CLAUDE_PLUGIN_ROOT}/agents/company-researcher.md`), and the generic frameworks
-  (`${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md`).
-- Resolve `{dir}` and `{sourceDir}` per
-  `${CLAUDE_PLUGIN_ROOT}/reference/config-resolution.md`. `{dir}` must already
-  contain `jd.md`, `analysis.md`, and `tmp/resume.data.json` — if not, tell the user
-  to run `/job-application:apply` first and stop. This skill writes under
-  `{dir}/interview/` (create it, `mkdir -p` semantics); layout:
-  `${CLAUDE_PLUGIN_ROOT}/reference/output-layout.md`.
+- Commands are `jobkit <sub>` (`python -m jobkit <sub>` if not on PATH).
+- Resolve `{dir}` / `{sourceDir}` with `jobkit config` (see the `apply`
+  skill's *Inputs and paths* for the derivation). `{dir}` must already
+  contain `jd.md`, `analysis.md`, `tmp/resume.data.json` — else tell the
+  user to run `/job-application:apply` first and stop.
+  This skill writes under `{dir}/interview/` (create it, `mkdir -p` semantics);
+  layout: `jobkit doc output-layout`.
 - **`tmp/resume.data.json`** follows the shape in the `apply` skill's *Building the
   data files* section (`name`, `contact`, `intro[]`, `sections[]` with `type` ∈
   `entries` | `education` | `skills` | `list`). All strings are plain text — the
   résumé's claims live in `intro[]`, the `sections[].items[].bullets[]`, and the
   `skills` groups' `value` strings.
 - **`{playbook}` (the interview playbook):** `<root>/<interview_playbook>` where
-  `<root>` is `config.py`'s `root` key (the directory containing `jobapp.config.yml`
+  `<root>` is `jobkit config`'s `root` key (the directory containing `jobapp.config.yml`
   found by walking up from the current working directory, or the current directory
-  if there is none) and `<interview_playbook>` is `config.py`'s `interview_playbook`
+  if there is none) and `<interview_playbook>` is `jobkit config`'s `interview_playbook`
   key (default `interview_playbook.md`, override with `interview_playbook` in
   `jobapp.config.yml` — e.g. `private/interview_playbook.md`). It is **not** a plugin
-  file and **never** lives under `${CLAUDE_PLUGIN_ROOT}`. If it does not exist yet,
-  seed it by copying `${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md` to
+  file. If it does not exist yet,
+  seed it by writing the output of `jobkit doc interview-frameworks` to
   `{playbook}` (creating parent directories as needed), then tell the user it was
   created and that it is theirs to extend.
 
@@ -65,8 +63,7 @@ the user wants. All three operate on one company's per-application directory.
    `{dir}/analysis.md` (treat `analysis.md` as prose — read `## Criteria → Evidence`,
    `## Fit`, `## Framing`, use the `gap` / `partial` rows for gap questions; tolerate
    formatting variation), `{dir}/tmp/resume.data.json`. Create `{dir}/interview/`.
-2. Dispatch the `company-researcher` agent
-   (`${CLAUDE_PLUGIN_ROOT}/agents/company-researcher.md`) with
+2. Dispatch the `company-researcher` subagent with
    `{ company: <name>, role: <title from jd.md>, jd: <text of {dir}/jd.md>, dir: <{dir}>, lang: <resolved --lang> }`.
 3. Save its report **verbatim** to `{dir}/interview/company_research.md`. Print a short summary
    (2–4 lines) and the source count.
@@ -122,8 +119,7 @@ so an aborted mock writes nothing.
    for gap questions; tolerate formatting variation),
    `{dir}/interview/company_research.md` (if present), and
    `{playbook}` (seed it first if absent). A `technical` mock
-   also resolves `{sourceDir}` per
-   `${CLAUDE_PLUGIN_ROOT}/reference/config-resolution.md` and reads
+   also resolves `{sourceDir}` with `jobkit config` and reads
    `{sourceDir}/factual-bounds.md` and, for the projects fallback,
    `{sourceDir}/projects/*.md`.
 2. Ask questions **one at a time**, strictly answerable from `tmp/resume.data.json`
@@ -176,7 +172,7 @@ does not support), and "tell me about a time…" prompts answerable from
    measured; its boundaries; what breaks at 10×; the candidate's personal
    contribution vs the team's. This is the pressure test that replaces
    generation-time citation gating
-   (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §5).
+   (`jobkit doc workflow-rules` §5).
 
 ### Session record
 
@@ -217,16 +213,16 @@ the run, in the resolved `--lang`, with this structure:
 
 Every fact in a **Stronger answer** traces to `tmp/resume.data.json` / the source of
 truth — it may reframe and sharpen, never invent (see
-`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`).
+`jobkit doc workflow-rules`).
 
 ## Guardrails
 
 - Mock questions and prep answers never assume experience absent from
   `tmp/resume.data.json` / the source of truth.
 - Feedback is specific and balanced — never generic praise, never purely positive
-  (`${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md` §11).
+  (`jobkit doc workflow-rules` §11).
 - `{playbook}` is the user's file: additive edits only, no deletions, no
-  duplicate entries, and it stays at `{playbook}` (outside `${CLAUDE_PLUGIN_ROOT}`)
+  duplicate entries, and it stays at `{playbook}`
   — never copied into the plugin.
 - `research` writes only `{dir}/interview/company_research.md`; `prep` writes only
   `{dir}/interview/self_intro.md` and `{dir}/interview/hr_questions_prep.md`; `mock`

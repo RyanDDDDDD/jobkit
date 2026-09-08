@@ -36,8 +36,8 @@ Run `python -m pytest` (in a venv: `python -m venv .venv && pip install -e ".[de
 before opening a PR. Render checks skip cleanly (not fail) if
 `jobkit install-browser` hasn't been run yet.
 
-Skills call `jobkit <sub>`; reference docs are `jobkit doc <name>`; there are no
-`${CLAUDE_PLUGIN_ROOT}` paths in `skills/` or `agents/` (enforced by
+Skills call `jobkit <sub>`; reference docs are `jobkit doc <name>`; skills and
+agents contain no host-specific path variables (enforced by
 `tests/test_portability_lint.py`).
 
 ## Using the plugin (not from this repo)

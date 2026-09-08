@@ -17,33 +17,40 @@ mistaken for a second copy of the plugin.
 | `.claude-plugin/plugin.json` | plugin manifest | plugin format |
 | `skills/` | the three skills — `setup`, `apply`, `interview` | plugin format |
 | `agents/` | subagents the skills dispatch — `sot-retriever`, `company-researcher` | plugin format |
-| `scripts/` | Python helpers, run via `uv run` — `render_pdf.py` (one or many jobs per launch), `compress_pdf.py`, `cover_letter_to_txt.py`, `verify_application.py`, `extract_cv.py`, `init_workspace.py`, `lib/config.py` | ours |
-| `pyproject.toml`, `uv.lock` | `uv`-managed dependencies (`playwright`, `pikepdf`, `pymupdf`, `python-docx`, `pyyaml`) | ours |
-| `templates/` | HTML résumé / cover-letter templates + bundled fonts (OFL) | ours |
-| `templates/workspace/` | files `/job-application:setup` scaffolds into a new working directory | ours |
-| `templates/section-skeletons/` | per-entry section skeletons (`companies.md`, `projects.md`) `setup` copies to start a new `companies/<slug>.md` / `projects/<slug>.md`; kept out of `templates/workspace/` so `init_workspace.py` never places them in the workspace | ours |
-| `reference/` | prose shared across skills — `workflow-rules.md`, `config-resolution.md`, `render-contract.md`, `output-layout.md`, `ats-checklist.md`, `interview-frameworks.md` | ours |
+| `src/jobkit/` | the installable `jobkit` package — `config`, `render`, `compress`, `cover_txt`, `verify`, `extract_cv`, `init_workspace`, `docs`, `cli`; templates + reference ship as package data | ours |
+| `pyproject.toml` | `pip` / `hatchling` packaging (`playwright`, `pikepdf`, `pymupdf`, `python-docx`, `pyyaml`; no `uv`) | ours |
 | `tests/` | `pytest` script tests under `tests/scripts/`, `skills/*.expected.md`, `fixtures/` (synthetic candidate) | ours |
 | `example/` | four rendered sample PDFs (résumé + cover letter, EN + ZH) | ours |
+
+Reference docs live at `src/jobkit/reference/` and are printed by `jobkit doc <name>`.
+Templates live at `src/jobkit/templates/` (HTML résumé / cover-letter templates +
+bundled fonts, workspace scaffold, section skeletons).
 
 There is no `commands/` directory; Claude Code lists plugin skills directly in the `/`
 picker as `/job-application:<skill>`.
 
 ## Working on the plugin
 
-Follow `reference/workflow-rules.md`. Specs and plans go in `docs/` (git-ignored).
-Run `uv run pytest` before opening a PR. Render checks skip cleanly (not fail) if
-`uv run playwright install chromium` hasn't been run yet.
+Follow `jobkit doc workflow-rules`. Specs and plans go in `docs/` (git-ignored).
+Run `python -m pytest` (in a venv: `python -m venv .venv && pip install -e ".[dev]"`)
+before opening a PR. Render checks skip cleanly (not fail) if
+`jobkit install-browser` hasn't been run yet.
+
+Skills call `jobkit <sub>`; reference docs are `jobkit doc <name>`; there are no
+`${CLAUDE_PLUGIN_ROOT}` paths in `skills/` or `agents/` (enforced by
+`tests/test_portability_lint.py`).
 
 ## Using the plugin (not from this repo)
 
-Install it, then run Claude Code from a **separate private folder**. Run
-`/job-application:setup` once there to scaffold `jobapp.config.yml`, `CLAUDE.md`, the
-`private/` source-of-truth templates, and `applications/`. `config.py`
-resolves the source-of-truth directory (default `resume_sections/`, `private/resume_sections/`
-after `setup`) and the per-application output directory from that working
-directory (walking up for `jobapp.config.yml`). Flow: `setup` → `apply` → `interview`.
-The structure inside each `applications/{Company}/` directory (flat deliverables, `tmp/`
-for machine artifacts, `interview/` for prep) is fixed — see `reference/output-layout.md`.
-Everything under `${CLAUDE_PLUGIN_ROOT}` is read-only; nothing is ever written back into
-the plugin. See `README.md` § Setup.
+Install it, then run Claude Code from a **separate private folder**. Install the
+engine with `pip install jobkit` (or `pip install -e .` from a checkout) then
+`jobkit install-browser`. Run `/job-application:setup` once there to scaffold
+`jobapp.config.yml`, `CLAUDE.md`, the `private/` source-of-truth templates, and
+`applications/`. `jobkit config` resolves the source-of-truth directory (default
+`resume_sections/`, `private/resume_sections/` after `setup`) and the per-application
+output directory from that working directory (walking up for `jobapp.config.yml`).
+Flow: `setup` → `apply` → `interview`. The structure inside each
+`applications/{Company}/` directory (flat deliverables, `tmp/` for machine artifacts,
+`interview/` for prep) is fixed — see `jobkit doc output-layout`. Everything under
+the plugin install is read-only; nothing is ever written back into the plugin. See
+`README.md` § Setup.

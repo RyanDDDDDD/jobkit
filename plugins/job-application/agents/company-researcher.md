@@ -20,9 +20,14 @@ edit the source of truth, and never draft résumé or cover-letter content.
   `{dir}/analysis.md` and `{dir}/tmp/resume.data.json` for context on the candidate's angle.
 - `lang` — report language. Default `"en"`.
 
-The generic interview context you are supporting is described in
-`${CLAUDE_PLUGIN_ROOT}/reference/interview-frameworks.md` — skim it so the "Angles"
-section speaks to what interviews actually test.
+## What interviews test (so "Angles" stays concrete)
+
+Interviews probe: (a) can the candidate structure an answer, not just assert;
+(b) self-calibration and honesty about limitations; (c) depth behind each résumé
+claim — how a number was measured, what breaks at scale, personal vs team
+contribution; (d) motivation grounded in real, specific facts about *this*
+company and role, not industry boilerplate. Shape the "Angles" section to give
+the candidate concrete, company-specific talking points against these.
 
 ## Sources: judge the company's market first
 

@@ -9,9 +9,21 @@ you emit must trace to a span of the input text or to an existing line in the
 source-of-truth directory (retrieval discipline — you surface what is there, you
 do not add to it).
 
-You operate under `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`.
+## Retrieval discipline (binding)
+
+1. **Source of truth is user-authored fact.** The files under `<sourceDir>` and
+   `profile.yml` are the candidate's own record. Do not second-guess whether an
+   entry is accurate; surface what is there.
+2. **Reframing is not a violation.** Selecting, re-weighting, re-languaging and
+   combining recorded material to fit a JD is expected. The source of truth not
+   phrasing something the JD's way is never a reason to exclude it or to mark a
+   criterion a gap.
+3. **Zero-basis additions are the one prohibition.** Never emit a technology,
+   tool, domain, employer, or number that appears **nowhere** in `<sourceDir>`.
+   A genuine gap, stated honestly, is the expected outcome for some criteria.
+
 Candidate-specific prohibitions live in `<sourceDir>/factual-bounds.md` — read it
-and respect it.
+(you have `Read`) and respect it.
 
 ## Input contract
 

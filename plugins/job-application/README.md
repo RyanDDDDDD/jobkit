@@ -41,6 +41,18 @@ claude plugin marketplace add /path/to/jobkit
 claude plugin install job-application@job-application-marketplace
 ```
 
+### Cursor
+
+The same repository is also a Cursor marketplace. In Cursor:
+
+```
+Cursor → Settings → Plugins → Add marketplace → RyanDDDDDD/jobkit
+```
+
+then install **job-application**. The skills appear as `/job-application:<skill>`
+and the `jobkit` engine is installed the same way (`pip install jobkit` +
+`jobkit install-browser`).
+
 ## Setup
 
 The plugin holds no candidate data. It reads its assets from the installed
@@ -125,6 +137,25 @@ regenerable; interview-prep files sit under `interview/` (with mock-interview
 records at `interview/mock/<behavioural|technical>/<date>.md`). Full tree:
 `jobkit doc output-layout`. Override the directory location with `output_dir` in
 `jobapp.config.yml`.
+
+## Optional: Tavily-enhanced research
+
+`/job-application:interview research` fetches company culture, reviews, and
+interview reports from the web. Sites like Glassdoor and Reddit frequently block
+a plain fetch. Configuring a [Tavily](https://tavily.com) API key lets the
+research subagent use Tavily's search and extraction instead, which gets through
+far more often. It is entirely optional — without a key the research runs on
+plain web search, exactly as before.
+
+1. Get a key at tavily.com (free tier available); it looks like `tvly-…`.
+2. Install Node (the Tavily MCP server runs via `npx`).
+3. **Claude Code:** set `TAVILY_API_KEY` in your shell environment (or your
+   Claude Code MCP env config) before starting Claude Code.
+   **Cursor:** Settings → Plugins → job-application → Configure → set
+   `TAVILY_API_KEY`.
+
+Domestic-China research (牛客网 / 脉脉 / 看准网 …) always uses plain web search —
+Tavily does not help there.
 
 ## The `resume_sections/` contract
 

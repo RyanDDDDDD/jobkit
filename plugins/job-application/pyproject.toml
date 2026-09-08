@@ -1,6 +1,11 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "job-application-plugin"
-version = "0.1.0"
+name = "jobkit"
+version = "0.6.0"
+description = "Job-application engine: JD analysis, tailored resume + cover letter generation, interview prep."
 requires-python = ">=3.10"
 dependencies = [
     "playwright>=1.40",
@@ -10,8 +15,15 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = ["pytest>=8.0"]
 
-[tool.uv]
-package = false
+[project.scripts]
+jobkit = "jobkit.cli:main"
+
+[tool.hatch.version]
+path = "src/jobkit/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jobkit"]
+artifacts = ["src/jobkit/templates/**/*", "src/jobkit/reference/**/*"]

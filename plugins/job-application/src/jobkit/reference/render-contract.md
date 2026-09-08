@@ -1,18 +1,20 @@
 # Render contract + silent-failure guard (generic)
 
-`render_pdf.py` renders an HTML template + a JSON data file to a PDF. The template
+`jobkit render` renders an HTML template + a JSON data file to a PDF. The template
 splices the data at the single token `{{DATA_JSON}}` (both bundled templates use it;
 there is no `--placeholder` argument).
 
 Invocation:
 
-    uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/render_pdf.py \
-        --template-path <resolved template> --data-path <dir>/tmp/<name>.data.json \
-        --out-path <dir>/<name>.pdf \
-        [--template-path … --data-path … --out-path …]
+    jobkit render \
+        --kind <resume|cover_letter> --data <dir>/tmp/<name>.data.json --out <dir>/<name>.pdf \
+        [--kind … --data … --out …]
 
-The three path flags are repeatable and zipped positionally; one browser launch
-renders every job.
+    (`--template <path>` per job overrides the bundled template; a repo-level
+    `<root>/templates/<name>.html` is picked up automatically.)
+
+The `--kind` / `--data` / `--out` flags are repeatable and zipped positionally; one
+browser launch renders every job.
 
 ## CLI contract
 
@@ -23,16 +25,16 @@ renders every job.
 - **Missing required argument:** exits 2.
 
 Non-zero exit ⇒ failure. Surface the `Render failed [<pdf>]:` text, keep the
-`.data.json`, do **not** run `compress_pdf.py`, do **not** claim success. Fix the
+`.data.json`, do **not** run `jobkit compress`, do **not** claim success. Fix the
 data (usually an invalid JSON string or a wrong shape) and re-render.
 
 ## Silent-failure guard
 
-`render_pdf.py` exits 0 even when the data is unusable — it draws a visible
+`jobkit render` exits 0 even when the data is unusable — it draws a visible
 "Invalid resume JSON: …" / "Invalid cover letter JSON: …" page for a JSON scalar or
 `null`, and a near-empty page for valid-JSON-but-wrong-shape (no `sections`).
 
-This guard is now `verify_application.py`'s `resume-roundtrip` / `cover-roundtrip`
+This guard is now `jobkit verify`'s `resume-roundtrip` / `cover-roundtrip`
 checks, run in step 9a against the PDFs already on disk — no re-render. A failure
 there is treated exactly like a render failure (surface it, keep the `.data.json`,
 do not compress, do not claim success).
@@ -45,5 +47,5 @@ the bundled fonts — do not assert on strings that contain them.
 The integer in the `OK: … (N page[s])` line. The résumé's soft ceiling is **2**. If
 it renders longer: WARN the user and list candidate trims (drop the lowest-ranked
 bullet per role, shorten the intro, drop a de-emphasized skill group). Never
-silently trim content to fit. `verify_application.py` also enforces this
+silently trim content to fit. `jobkit verify` also enforces this
 (`page-budget`: résumé ≤ 2, cover letter == 1).

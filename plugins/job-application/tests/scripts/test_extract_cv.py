@@ -3,14 +3,10 @@ import sys
 from pathlib import Path
 
 import docx
-import fitz
+import pymupdf
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from extract_cv import extract_text  # noqa: E402
-
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "extract_cv.py"
-PROJECT = SCRIPT.parents[1]
+from jobkit.extract_cv import extract_text
 
 
 def test_reads_md_verbatim(tmp_path):
@@ -40,7 +36,7 @@ def test_unsupported_extension_raises(tmp_path):
 
 def test_extracts_pdf_text(tmp_path):
     p = tmp_path / "a.pdf"
-    doc = fitz.open()
+    doc = pymupdf.open()
     page = doc.new_page()
     page.insert_text((72, 72), "Extracted PDF marker text")
     doc.save(str(p))
@@ -58,20 +54,20 @@ def test_extracts_docx_text(tmp_path):
 
 def test_cli_missing_path_exits_2():
     result = subprocess.run(
-        ["uv", "run", "--project", str(PROJECT), str(SCRIPT)],
+        [sys.executable, "-m", "jobkit", "extract-cv"],
         capture_output=True,
         text=True,
     )
     assert result.returncode == 2
 
 
-def test_cli_unsupported_extension_exits_1(tmp_path):
+def test_cli_unsupported_extension_exits_2(tmp_path):
     p = tmp_path / "a.rtf"
     p.write_text("x", encoding="utf-8")
     result = subprocess.run(
-        ["uv", "run", "--project", str(PROJECT), str(SCRIPT), str(p)],
+        [sys.executable, "-m", "jobkit", "extract-cv", str(p)],
         capture_output=True,
         text=True,
     )
-    assert result.returncode == 1
+    assert result.returncode == 2
     assert "Unsupported" in result.stderr

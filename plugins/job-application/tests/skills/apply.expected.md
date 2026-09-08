@@ -5,7 +5,7 @@ After running `/job-application:apply` for company `Testco` against
 `tests/fixtures/sample-jd.md` and default flags, the produced output must satisfy
 every assertion below.
 
-The fixture ships no `jobapp.config.yml`, so `config.py` returns the plugin
+The fixture ships no `jobapp.config.yml`, so `jobkit config` returns the plugin
 default `output_dir` of `applications/{Company}`; the resolved directory is
 `applications/Testco/`. Machine artifacts land in `applications/Testco/tmp/`;
 deliverables are flat in `applications/Testco/`. With no `--density` flag and
@@ -82,7 +82,7 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
      joined by a space-padded en-dash U+2013 (`Jan. 2024 – Present`,
      `Feb. 2022 – Dec. 2023`).
 
-8. **`resume.pdf` renders within the page budget.** `render_pdf.py` prints an
+8. **`resume.pdf` renders within the page budget.** `jobkit render` prints an
    `OK: <path> (N page…)` line (exit 0), the file exists and is non-empty, and the
    page count `N` satisfies `1 <= N <= 2`. A compact fixture résumé of this size
    *should* be 1 page — the skill's "Length discipline" guidance aims well below
@@ -97,7 +97,7 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     `tests/fixtures/resume_sections/factual-bounds.md` forbids claiming Rust and the
     JD does not ask for it.
 
-11. **`cover_letter.pdf` exists** and `render_pdf.py` reports it as 1 page.
+11. **`cover_letter.pdf` exists** and `jobkit render` reports it as 1 page.
 
 12. **`cover_letter.txt` leads with the subject.** The first non-empty line of
     `applications/Testco/cover_letter.txt` starts with `Subject:`.
@@ -137,8 +137,8 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     "passed" if the render failed.
 
 19. **The deterministic self-check ran and its `pass` checks are not re-flagged.**
-    `verify_application.py --dir applications/Testco --source-dir tests/fixtures/resume_sections --json`
+    `jobkit verify --dir applications/Testco --source-dir tests/fixtures/resume_sections --json`
     exits 0. For the default fixture run it reports `fail == []` (the fixture
     `profile.yml`, once rendered verbatim, matches; dates use ` – `; the fresh
     `cover_letter.txt` is on disk). `review.md` contains no `## Fix (applied)`
-    item whose cause is a check `verify_application.py` reports under `pass`.
+    item whose cause is a check `jobkit verify` reports under `pass`.

@@ -11,6 +11,10 @@ a directory with no `jobapp.config.yml`.
 
 ## Steps
 
+Commands are `jobkit <sub>` (the plugin installs the `jobkit` CLI —
+`pip install jobkit`). If `jobkit` is not on `PATH`, `python -m jobkit <sub>`
+is exactly equivalent.
+
 1. **Scaffold.** If the working directory already has a top-level `resume_sections/`
    or `interview_playbook.md` and no `jobapp.config.yml`, it is a v0.3.x flat-layout
    workspace. Tell the user that setup introduces the `private/` layout: after it
@@ -21,15 +25,15 @@ a directory with no `jobapp.config.yml`.
    Run, in the current working directory:
 
    ```
-   uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/init_workspace.py --json
+   jobkit init --json
    ```
 
    It creates any of these that are absent, and never touches one that exists:
    `jobapp.config.yml`, `CLAUDE.md`, `applications/`,
    `private/resume_sections/{profile.yml, factual-bounds.md, introduction.md,
    skills.md, education.md}`, `private/resume_sections/{companies,projects}/`,
-   `private/interview_playbook.md` (seeded from the plugin's
-   `reference/interview-frameworks.md`), and `private/questions_to_ask.md`.
+   `private/interview_playbook.md` (seeded from `jobkit doc interview-frameworks`),
+   and `private/questions_to_ask.md`.
 
    Parse `{"created": [...], "skipped": [...], "warnings": [...]}`; show a short
    created-vs-skipped list. If `warnings` is non-empty, show every warning
@@ -40,15 +44,16 @@ a directory with no `jobapp.config.yml`.
    titles / dates) and `private/resume_sections/factual-bounds.md` (the "never
    claim" rules); then either re-run `/job-application:setup <folder of your old
    CVs>` or hand-fill `introduction.md` / `skills.md` / `education.md` and one
-   `companies/<slug>.md` per employer — copy the skeleton from
-   `${CLAUDE_PLUGIN_ROOT}/templates/section-skeletons/companies.md` (and
-   `projects.md` for any side projects) as a starting point; then
+   `companies/<slug>.md` per employer — start from the bundled section skeletons:
+   a `### Company Overview` block (Company Name, Role Titles, Business Domain,
+   Integrated Tech Stack) then `### Unique Bullet Points` with `- ` bullets;
+   projects use `### Project Overview` + `### Unique Bullet Points`; then
    `/job-application:apply`.
 
 3. **If a CV folder was given** — continue with ingest:
 
-   1. **Resolve directories.** Path resolution for `{sourceDir}`:
-      `${CLAUDE_PLUGIN_ROOT}/reference/config-resolution.md`. Create `{sourceDir}`
+   1. **Resolve directories.** Resolve `{sourceDir}` with `jobkit config`
+      (`{sourceDir}` = `<root>/<source_of_truth_dir>`). Create `{sourceDir}`
       if absent. Input dir: the folder path the user supplied. It must be a
       directory containing past CVs. If the user gave a single file, use its parent
       and process only that file.
@@ -57,17 +62,16 @@ a directory with no `jobapp.config.yml`.
       the input folder, run:
 
       ```
-      uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/extract_cv.py <file>
+      jobkit extract-cv <file>
       ```
 
       Collect each file's text, labelled by filename (so contradictions can be
       cited as `sample-cv-a.md` vs `sample-cv-b.md`). `.pdf` and `.docx`
-      extraction has no external tool dependency (PyMuPDF / python-docx are part
-      of the plugin's own `uv` environment) — if a call still fails (a corrupt or
+      extraction has no external tool dependency (PyMuPDF / python-docx ship with
+      `jobkit`) — if a call still fails (a corrupt or
       encrypted file), tell the user and skip that file.
 
-   3. **Cluster.** Dispatch the `sot-retriever` subagent
-      (`${CLAUDE_PLUGIN_ROOT}/agents/sot-retriever.md`) in `cluster` mode with
+   3. **Cluster.** Dispatch the `sot-retriever` subagent in `cluster` mode with
       `{ mode: "cluster", text: <combined labelled text>, sourceDir: <resolved> }`.
       It returns a proposed mapping of employers / projects / education / skills /
       introduction points to destination files, with `[NEW]` vs `[DUP of file:line]`
@@ -87,9 +91,8 @@ a directory with no `jobapp.config.yml`.
       - `skills.md` — the de-duplicated skill list.
 
       Start each new `companies/<slug>.md` / `projects/<slug>.md` from the matching
-      skeleton in `${CLAUDE_PLUGIN_ROOT}/templates/section-skeletons/`
-      (`companies.md`, `projects.md`); follow that structure and the existing file
-      style (worked examples: `${CLAUDE_PLUGIN_ROOT}/tests/fixtures/resume_sections/`):
+      skeleton shape (companies: `### Company Overview` then `### Unique Bullet
+      Points`; projects: `### Project Overview` then `### Unique Bullet Points`):
       - Company files have a `### Company Overview` block (Company Name, Role Titles,
         Business Domain, Integrated Tech Stack) then `### Unique Bullet Points` with
         `- ` bullets. Derive **Business Domain** only from how the CV text itself
@@ -192,4 +195,4 @@ a directory with no `jobapp.config.yml`.
   skill the CVs do not support.
 - Do not touch anything outside the working directory. Do not run `apply` or render
   anything.
-- Full workflow rules: `${CLAUDE_PLUGIN_ROOT}/reference/workflow-rules.md`.
+- Full workflow rules: `jobkit doc workflow-rules`.

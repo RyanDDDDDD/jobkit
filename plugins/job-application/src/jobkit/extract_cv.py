@@ -4,14 +4,14 @@ Handles .md/.tex/.txt (verbatim read), .pdf (PyMuPDF), and .docx (python-docx).
 Reused both for ingesting past CVs and for verifying rendered resume/cover-letter
 PDFs (`apply` / `reference/render-contract.md` silent-failure guard).
 
-CLI usage: `uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/extract_cv.py <path>`
+CLI: jobkit extract-cv <path>
 prints the extracted text to stdout.
 """
 import sys
 from pathlib import Path
 
 import docx
-import fitz  # PyMuPDF's import name; the distributed package is "pymupdf"
+import pymupdf
 
 
 def extract_text(path: str) -> str:
@@ -20,7 +20,7 @@ def extract_text(path: str) -> str:
     if ext in (".md", ".tex", ".txt"):
         return p.read_text(encoding="utf-8")
     if ext == ".pdf":
-        doc = fitz.open(p)
+        doc = pymupdf.open(p)
         try:
             return "\n".join(page.get_text() for page in doc)
         finally:

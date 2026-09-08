@@ -16,15 +16,13 @@ data lives in your own repo and is never shipped with the plugin.
 ## Prerequisites
 
 - **Windows, macOS, or Linux** — the plugin has no OS-specific dependency.
-- [`uv`](https://docs.astral.sh/uv/) — manages the plugin's Python environment.
-  One-time install: see uv's own install instructions for your OS.
-- A one-time browser download: `uv run --project ${CLAUDE_PLUGIN_ROOT} playwright
-  install chromium` (downloads a Chromium binary Playwright manages itself — no
-  system browser install needed).
+- **Python ≥ 3.10** and `pip`. Install the engine: `pip install jobkit` (until PyPI:
+  `pip install "git+https://github.com/RyanDDDDDD/jobkit#subdirectory=plugins/job-application"`).
+  Then one-time `jobkit install-browser` (downloads the Playwright-managed Chromium).
 
 No Ghostscript, Poppler, or `pandoc` install is required — PDF compression and
 `.pdf`/`.docx` text extraction are pure-Python (`pikepdf`, `pymupdf`,
-`python-docx`), installed automatically the first time a script runs via `uv run`.
+`python-docx`), installed automatically with `jobkit`.
 
 ## Install
 
@@ -43,12 +41,24 @@ claude plugin marketplace add /path/to/jobkit
 claude plugin install job-application@job-application-marketplace
 ```
 
+### Cursor
+
+The same repository is also a Cursor marketplace. In Cursor:
+
+```
+Cursor → Settings → Plugins → Add marketplace → RyanDDDDDD/jobkit
+```
+
+then install **job-application**. The skills appear as `/job-application:<skill>`
+and the `jobkit` engine is installed the same way (`pip install jobkit` +
+`jobkit install-browser`).
+
 ## Setup
 
-The plugin holds no candidate data. It reads its assets from where it is installed
-(`${CLAUDE_PLUGIN_ROOT}`, read-only) and reads/writes **everything else — your source
+The plugin holds no candidate data. It reads its assets from the installed
+`jobkit` package (read-only) and reads/writes **everything else — your source
 of truth and every generated document — in the directory you run Claude Code from**,
-resolved by `config.py` walking up for `jobapp.config.yml`.
+resolved by `jobkit config` walking up for `jobapp.config.yml`.
 
 1. Make a private working folder (e.g. `~/job-hunt/`) and run Claude Code there. Keep
    it separate from this repo; nothing you generate belongs in the plugin.
@@ -113,8 +123,8 @@ One pass per job:
   gets `-2`, `-3`, …), and appends new recurring lessons to the interview playbook
   (`interview_playbook.md` at your working-directory root by default; override with
   `interview_playbook` in `jobapp.config.yml`, e.g. `private/interview_playbook.md`).
-  It is seeded on first use, always in English, from the plugin's
-  `interview-frameworks.md`. `mock technical` also takes `--focus "<role or
+  It is seeded on first use, always in English, from
+  `jobkit doc interview-frameworks`. `mock technical` also takes `--focus "<role or
   project>"`. `--lang en|zh` sets the language for everything this subcommand writes
   (research report, prep files, mock chat and record, new playbook entries); default
   is whatever `--lang` `apply` used for this application's résumé.
@@ -125,8 +135,27 @@ default. Deliverables and working notes sit flat (`jd.md`, `analysis.md`,
 artifacts (`resume.data.json`, `cover_letter.data.json`) sit under `tmp/` and are
 regenerable; interview-prep files sit under `interview/` (with mock-interview
 records at `interview/mock/<behavioural|technical>/<date>.md`). Full tree:
-`reference/output-layout.md`. Override the directory location with `output_dir` in
+`jobkit doc output-layout`. Override the directory location with `output_dir` in
 `jobapp.config.yml`.
+
+## Optional: Tavily-enhanced research
+
+`/job-application:interview research` fetches company culture, reviews, and
+interview reports from the web. Sites like Glassdoor and Reddit frequently block
+a plain fetch. Configuring a [Tavily](https://tavily.com) API key lets the
+research subagent use Tavily's search and extraction instead, which gets through
+far more often. It is entirely optional — without a key the research runs on
+plain web search, exactly as before.
+
+1. Get a key at tavily.com (free tier available); it looks like `tvly-…`.
+2. Install Node (the Tavily MCP server runs via `npx`).
+3. **Claude Code:** set `TAVILY_API_KEY` in your shell environment (or your
+   Claude Code MCP env config) before starting Claude Code.
+   **Cursor:** Settings → Plugins → job-application → Configure → set
+   `TAVILY_API_KEY`.
+
+Domestic-China research (牛客网 / 脉脉 / 看准网 …) always uses plain web search —
+Tavily does not help there.
 
 ## The `resume_sections/` contract
 
@@ -147,19 +176,18 @@ It contains:
 `setup` scaffolds the flat files (`profile.yml`, `factual-bounds.md`,
 `introduction.md`, `skills.md`, `education.md`) and leaves `companies/` and
 `projects/` empty. Each new `companies/<slug>.md` / `projects/<slug>.md` starts from
-the skeleton in the plugin's `templates/section-skeletons/` — `setup` copies it during
-CV ingest, and you can copy it yourself when hand-filling.
+the skeleton shape under the bundled `templates/section-skeletons/` — `setup` uses it during
+CV ingest, and you can mirror it yourself when hand-filling.
 
 ## Running the tests
 
 From `plugins/job-application/`:
 
 ```
-uv run pytest
+python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]" && python -m pytest
 ```
 
-Render checks skip cleanly (not fail) if `uv run playwright install chromium` hasn't
-been run yet.
+Render checks skip cleanly (not fail) if `jobkit install-browser` hasn't been run yet.
 
 The synthetic candidate fixture the skills' expected-output checklists
 (`tests/skills/*.expected.md` — `setup` / `apply` / `interview`) are written against

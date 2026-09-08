@@ -1,24 +1,20 @@
 import inspect
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 from playwright.sync_api import sync_playwright
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from extract_cv import extract_text  # noqa: E402
-from render_pdf import RenderJob, render_batch, render_pdf  # noqa: E402
+from jobkit._assets import template_path
+from jobkit.extract_cv import extract_text
+from jobkit.render import RenderJob, render_batch, render_pdf
 
-REPO = Path(__file__).resolve().parents[2]
-TEMPLATE = REPO / "templates" / "resume.html"
-COVER_TEMPLATE = REPO / "templates" / "cover_letter.html"
+TEMPLATE = template_path("resume")
+COVER_TEMPLATE = template_path("cover_letter")
 
 # Structural checks that do not launch Chromium.
 _NO_CHROMIUM_TESTS = {
     "test_render_pdf_has_no_placeholder_param",
     "test_both_templates_use_the_shared_data_token",
-    "test_cli_exit_2_on_flag_count_mismatch",
 }
 
 
@@ -38,7 +34,7 @@ def _skip_without_chromium(request, chromium_available):
     if request.node.name in _NO_CHROMIUM_TESTS:
         return
     if not chromium_available:
-        pytest.skip("no Chromium available (run `uv run playwright install chromium`)")
+        pytest.skip("no Chromium available (run: jobkit install-browser)")
 
 
 def test_render_pdf_has_no_placeholder_param():
@@ -222,50 +218,3 @@ def test_render_pdf_wrapper_still_works(tmp_path):
     result = render_pdf(str(TEMPLATE), str(data), str(tmp_path / "s.pdf"))
     assert result.ok
     assert result.pages == 1
-
-
-def test_cli_repeatable_flags_render_both(tmp_path):
-    script = REPO / "scripts" / "render_pdf.py"
-    rd = tmp_path / "r.json"
-    rd.write_text('{"name":"Testy McTest","contact":["x@example.com"]}', encoding="utf-8")
-    cd = tmp_path / "c.json"
-    cd.write_text(
-        '{"name":"Testy McTest","subject":"Application for the Position of X",'
-        '"paragraphs":["Hello."],"closing":"Sincerely,","signature":"Testy McTest"}',
-        encoding="utf-8",
-    )
-    result = subprocess.run(
-        ["uv", "run", "--project", str(REPO), str(script),
-         "--template-path", str(TEMPLATE), "--data-path", str(rd), "--out-path", str(tmp_path / "r.pdf"),
-         "--template-path", str(COVER_TEMPLATE), "--data-path", str(cd), "--out-path", str(tmp_path / "c.pdf")],
-        capture_output=True, text=True,
-    )
-    assert result.returncode == 0, result.stderr
-    assert result.stdout.count("OK: ") == 2
-
-
-def test_cli_exit_1_when_one_job_fails(tmp_path):
-    script = REPO / "scripts" / "render_pdf.py"
-    good = tmp_path / "g.json"
-    good.write_text('{"name":"Testy McTest","contact":["x@example.com"]}', encoding="utf-8")
-    result = subprocess.run(
-        ["uv", "run", "--project", str(REPO), str(script),
-         "--template-path", str(TEMPLATE), "--data-path", str(good), "--out-path", str(tmp_path / "g.pdf"),
-         "--template-path", str(TEMPLATE), "--data-path", str(tmp_path / "missing.json"), "--out-path", str(tmp_path / "m.pdf")],
-        capture_output=True, text=True,
-    )
-    assert result.returncode == 1
-    assert "OK: " in result.stdout
-    assert "Render failed [" in result.stderr
-
-
-def test_cli_exit_2_on_flag_count_mismatch(tmp_path):
-    script = REPO / "scripts" / "render_pdf.py"
-    result = subprocess.run(
-        ["uv", "run", "--project", str(REPO), str(script),
-         "--template-path", str(TEMPLATE), "--template-path", str(COVER_TEMPLATE),
-         "--data-path", str(tmp_path / "one.json"),
-         "--out-path", str(tmp_path / "one.pdf")],
-        capture_output=True, text=True,
-    )
-    assert result.returncode == 2

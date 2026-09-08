@@ -1,11 +1,9 @@
 import json
-import sys
 from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from cover_letter_to_txt import cover_letter_to_text  # noqa: E402
+from jobkit.cover_txt import cover_letter_to_text
 
 
 def _write(tmp_path, name, data):

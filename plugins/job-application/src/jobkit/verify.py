@@ -7,8 +7,7 @@ profile.yml; runs mechanical checks that need no LLM. Prints a human summary, or
 Exit 0 for any check outcome (the report is advisory, not a gate); exit 1 only
 on a missing required input.
 
-CLI: uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/verify_application.py \
-        --dir <appdir> --source-dir <sourceDir> [--json]
+CLI: jobkit verify --dir <appdir> --source-dir <sourceDir> [--json]
 """
 import argparse
 import difflib
@@ -17,12 +16,11 @@ import sys
 import tempfile
 from pathlib import Path
 
-import fitz
+import pymupdf
 import yaml
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from cover_letter_to_txt import cover_letter_to_text  # noqa: E402
-from extract_cv import extract_text  # noqa: E402
+from jobkit.cover_txt import cover_letter_to_text
+from jobkit.extract_cv import extract_text
 
 # Ligature clusters and a leading "+" do not survive text extraction on the
 # bundled fonts (see reference/render-contract.md) -- skip any assertion whose
@@ -188,10 +186,10 @@ def check_cover_roundtrip(cover: dict, cover_pdf: Path) -> list[str]:
 
 def check_page_budget(resume_pdf: Path, cover_pdf: Path) -> list[str]:
     fails = []
-    with fitz.open(str(resume_pdf)) as d:
+    with pymupdf.open(str(resume_pdf)) as d:
         if len(d) > 2:
             fails.append(f"resume.pdf is {len(d)} pages (soft ceiling 2)")
-    with fitz.open(str(cover_pdf)) as d:
+    with pymupdf.open(str(cover_pdf)) as d:
         if len(d) != 1:
             fails.append(f"cover_letter.pdf is {len(d)} pages (expected 1)")
     return fails

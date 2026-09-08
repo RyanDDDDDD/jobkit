@@ -43,7 +43,7 @@ Assertions are **structural** — file / directory existence and substring check
 ### flat-layout guard
 
 12. If `<ws>` contained a top-level `resume_sections/` directory and no
-    `jobapp.config.yml` before the run, the `init_workspace.py` JSON output's
+    `jobapp.config.yml` before the run, the `jobkit init` JSON output's
     `warnings` array is non-empty and names both `resume_sections` and `private/`.
 
 ## Part B — ingest

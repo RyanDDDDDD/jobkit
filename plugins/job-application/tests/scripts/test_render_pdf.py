@@ -10,9 +10,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 from extract_cv import extract_text  # noqa: E402
 from render_pdf import RenderJob, render_batch, render_pdf  # noqa: E402
 
+from jobkit._assets import template_path
+
 REPO = Path(__file__).resolve().parents[2]
-TEMPLATE = REPO / "templates" / "resume.html"
-COVER_TEMPLATE = REPO / "templates" / "cover_letter.html"
+TEMPLATE = template_path("resume")
+COVER_TEMPLATE = template_path("cover_letter")
 
 # Structural checks that do not launch Chromium.
 _NO_CHROMIUM_TESTS = {

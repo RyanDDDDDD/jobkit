@@ -14,7 +14,9 @@ mistaken for a second copy of the plugin.
 
 | Path | Purpose | Required by |
 |---|---|---|
-| `.claude-plugin/plugin.json` | plugin manifest | plugin format |
+| `.claude-plugin/plugin.json` / `.cursor-plugin/plugin.json` | plugin manifests — one per host | plugin format |
+| `../.claude-plugin/marketplace.json` / `../.cursor-plugin/marketplace.json` | marketplace entries — one per host, both `source: ./plugins/job-application` | marketplace |
+| `.mcp.json` / `mcp.json` | optional Tavily MCP server — Claude Code / Cursor | ours |
 | `skills/` | the three skills — `setup`, `apply`, `interview` | plugin format |
 | `agents/` | subagents the skills dispatch — `sot-retriever`, `company-researcher` | plugin format |
 | `src/jobkit/` | the installable `jobkit` package — `config`, `render`, `compress`, `cover_txt`, `verify`, `extract_cv`, `init_workspace`, `docs`, `cli`; templates + reference ship as package data | ours |
@@ -28,6 +30,12 @@ bundled fonts, workspace scaffold, section skeletons).
 
 There is no `commands/` directory; Claude Code lists plugin skills directly in the `/`
 picker as `/job-application:<skill>`.
+
+**Two hosts, one tree.** `skills/` and `agents/` are shared: Claude Code and
+Cursor each autodiscover them from the plugin root. The only per-host files
+are the two manifest dirs and the two MCP filenames (`.mcp.json` for Claude
+Code, `mcp.json` for Cursor). `tests/test_manifests.py` asserts the two
+manifests keep the same name and version.
 
 ## Working on the plugin
 

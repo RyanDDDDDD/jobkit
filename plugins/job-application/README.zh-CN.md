@@ -36,6 +36,17 @@ claude plugin marketplace add /path/to/jobkit
 claude plugin install job-application@job-application-marketplace
 ```
 
+### Cursor
+
+同一仓库也是 Cursor 插件市场。在 Cursor 中：
+
+```
+Cursor → Settings → Plugins → Add marketplace → RyanDDDDDD/jobkit
+```
+
+然后安装 **job-application**。技能以 `/job-application:<skill>` 出现，
+`jobkit` 引擎的安装方式相同（`pip install jobkit` + `jobkit install-browser`）。
+
 ## 初始设置
 
 插件本身不存放任何候选人数据。它只从已安装的 `jobkit` 包（只读）读取自身资源，
@@ -109,6 +120,22 @@ claude plugin install job-application@job-application-marketplace
 `cover_letter.data.json`）放在 `tmp/` 下，可随时重新生成；面试准备文件放在 `interview/` 下
 （模拟面试记录在 `interview/mock/<behavioural|technical>/<date>.md`）。完整目录树见
 `jobkit doc output-layout`。可通过 `jobapp.config.yml` 中的 `output_dir` 覆盖该位置。
+
+## 可选：Tavily 增强调研
+
+`/job-application:interview research` 会从网上抓取公司文化、评价和面试反馈。
+Glassdoor、Reddit 一类站点经常拦截普通抓取。配置 [Tavily](https://tavily.com)
+API 密钥后，调研子代理改用 Tavily 的搜索与正文提取，通过率高得多。这完全是可选的
+—— 没有密钥时调研仍走普通网页搜索，行为与以往完全一致。
+
+1. 在 tavily.com 申请密钥（有免费额度）；形如 `tvly-…`。
+2. 安装 Node（Tavily MCP 服务通过 `npx` 启动）。
+3. **Claude Code：** 在启动 Claude Code 之前，于 shell 环境（或 Claude Code 的
+   MCP 环境配置）中设置 `TAVILY_API_KEY`。
+   **Cursor：** Settings → Plugins → job-application → Configure → 设置
+   `TAVILY_API_KEY`。
+
+国内调研（牛客网 / 脉脉 / 看准网 …）始终使用普通网页搜索 —— Tavily 帮不上忙。
 
 ## `resume_sections/` 约定
 

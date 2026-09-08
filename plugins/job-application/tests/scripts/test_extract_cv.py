@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 import docx
-import fitz
+import pymupdf
 import pytest
 
 from jobkit.extract_cv import extract_text
@@ -36,7 +36,7 @@ def test_unsupported_extension_raises(tmp_path):
 
 def test_extracts_pdf_text(tmp_path):
     p = tmp_path / "a.pdf"
-    doc = fitz.open()
+    doc = pymupdf.open()
     page = doc.new_page()
     page.insert_text((72, 72), "Extracted PDF marker text")
     doc.save(str(p))

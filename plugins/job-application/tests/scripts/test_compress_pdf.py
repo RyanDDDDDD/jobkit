@@ -2,14 +2,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-import fitz
+import pymupdf
 import pytest
 
 from jobkit.compress import compress_pdf
 
 
 def _make_uncompressed_pdf(path: Path, repeats: int = 400) -> None:
-    doc = fitz.open()
+    doc = pymupdf.open()
     page = doc.new_page()
     text = "The quick brown fox jumps over the lazy dog. " * repeats
     # Wrap into a text box so PyMuPDF doesn't error on overflowing a single insert_text call.

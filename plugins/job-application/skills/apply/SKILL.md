@@ -76,14 +76,22 @@ is exactly equivalent.
    in chat that the role is a hard mismatch and recommend skipping it. Write
    nothing further — no `.data.json`, no PDF, no `answers.md`. Stop.
 
-6. **Build the data objects.** Assemble `{dir}/tmp/resume.data.json` and
-   `{dir}/tmp/cover_letter.data.json` per "## Building the data files" below.
-   Company / title / employment-date / location strings come from `profile.yml`
-   **verbatim, never re-derived**. Include a Selected Projects section **only**
-   when step 4 surfaced JD-relevant `projects/*.md` (else omit it). Experience
-   order is reverse-chronological unless `## Framing` calls for relevance order.
-   Read the `###` category headings in `{sourceDir}/skills.md` directly for the
-   Skills section.
+6. **Scaffold, then build the data objects.** Run `jobkit scaffold-data` (see
+   "## Building the data files" below) to write `{dir}/tmp/resume.data.json` and
+   `{dir}/tmp/cover_letter.data.json` with every `profile.yml`-derived field
+   already filled in verbatim — name, contact, lang, density, today's date, each
+   Experience item's `primary`/`dates`/`secondary`/`location`, and the whole
+   Education section. **Never edit those fields** — they are already correct.
+   Then `Edit` in the judgment content: `intro`, each Experience item's
+   `stack`/`bullets`, the Skills `groups` (read the `###` category headings in
+   `{sourceDir}/skills.md` directly), a Selected Projects section **only** when
+   step 4 surfaced JD-relevant `projects/*.md` (insert it between Experience and
+   Education; else omit it entirely), and the cover letter's
+   `recipient`/`subject`/`paragraphs` (and, for `--lang zh`,
+   `salutation`/`closing`). Experience order is reverse-chronological by default
+   (matching `profile.yml` `conventions.roles` file order); reorder the
+   scaffolded `items[]` array via `Edit` if `## Framing` calls for relevance
+   order instead.
 
 7. **Bounds check** (before writing files) — re-read every line you are about to
    place against `factual-bounds.md` and the `analysis.md` `gap` rows.
@@ -94,10 +102,10 @@ is exactly equivalent.
    if they give a new true fact, tell them which source-of-truth file to add it to
    and have them re-run — do not write it in from the chat alone.
 
-8. **Render both PDFs in one call.** Emit each data object with `ConvertTo-Json`
-   (see "## Building the data files"). Then render the résumé and the cover letter
-   in a **single** `jobkit render` invocation — `--kind` / `--data` / `--out` are
-   repeatable and zipped positionally, so one Chromium launch produces both:
+8. **Render both PDFs in one call.** Both `.data.json` files are already on disk
+   from step 6 (see "## Building the data files"). Render the résumé and the cover
+   letter in a **single** `jobkit render` invocation — `--kind` / `--data` / `--out`
+   are repeatable and zipped positionally, so one Chromium launch produces both:
 
    ```
    jobkit render \
@@ -176,69 +184,44 @@ is exactly equivalent.
 
 ## Building the data files
 
-Build each file as a PowerShell hashtable / array and emit it with `ConvertTo-Json`:
+Run the scaffolder, then edit in the judgment content:
 
-```powershell
-$data | ConvertTo-Json -Depth 12 | Set-Content -Encoding utf8NoBOM {dir}/tmp/resume.data.json
+```
+jobkit scaffold-data --dir {dir} --source-dir {sourceDir} --lang <en|zh> --density <compact|standard>
 ```
 
-(Use `utf8NoBOM` on PowerShell 7. If you need Windows PowerShell 5.1 compatibility,
-write with `[System.IO.File]::WriteAllText($path, $json)` instead — plain
-`-Encoding utf8` there emits a BOM, which some JSON parsers choke on.)
+This writes both `.data.json` files, already valid JSON, with every field
+`profile.yml` (plus `--lang`/`--density`) determines pre-filled:
 
-`ConvertTo-Json` guarantees valid JSON and correct string escaping (quotes,
-backslashes, newlines) — hand-writing nested JSON is error-prone. If you do hand-write
-a file, you **must** validate it afterwards with
-`Get-Content -Raw <path> | ConvertFrom-Json` and fix any parse error before
-rendering. Every string is text-escaped by the renderer, so the only escaping
-concern is producing valid JSON strings — which `ConvertTo-Json` handles.
+| Key | Value |
+|---|---|
+| `name` | `profile.yml` `name`, verbatim. |
+| `lang` | `"en"` or `"zh"` per `--lang`. |
+| `density` | `"compact"` or `"standard"` per `--density` (`profile.yml` `conventions.density` if the flag is omitted, else `"compact"`). |
+| `contact` (both files) | Array from `profile.yml`: `phone` as a plain string; `email` as `{ "text": "<email>", "href": "mailto:<email>" }`; and, only if `links.github` is set, `{ "text": "github.com/<handle>", "href": "https://github.com/<handle>" }`. |
+| `introTitle` | Only set (to `"简介"`) for `--lang zh`; omitted for `--lang en` (renderer default `"Introduction"`). |
+| Experience items | One per `profile.yml` `conventions.roles` entry, in file order: `primary` = role `title`, `dates` = `"<start> – <end>"` (en-dash, U+2013), `secondary` = role `company`, `location` = role `location` — all verbatim. `stack: ""` and `bullets: []` are left for you. |
+| Education section | Fully filled — one item per `conventions.education` entry: `institution`, `dates`, `credential`, `location`, all verbatim. No GPA / grades / distinctions (experienced-hire default). Nothing left to edit here. |
+| Skills section shell | `{ "title": "Skills", "type": "skills", "groups": [] }` — `groups` is left for you. |
+| Cover letter `date` | Today, long form, e.g. `"September 1, 2026"`. |
+| Cover letter `signature` | `profile.yml` `name`. |
+| Cover letter `salutation` / `closing` | `--lang en`: `"Dear Hiring Manager,"` / `"Sincerely,"`. `--lang zh`: left empty (translation is your job — see "`--lang zh`" below). |
 
-### `{dir}/tmp/resume.data.json`
+**Never edit the fields above** — they are already correct, verbatim from
+`profile.yml`. Everything else is left empty (`""` / `[]`) for you to fill in with
+`Edit`, one field at a time — the file stays valid JSON at every intermediate step,
+so there is no escaping step and no ad-hoc script to write.
+
+### `{dir}/tmp/resume.data.json` — fields you fill in
 
 | Key | Fill |
 |---|---|
-| `name` | `profile.yml` `name`, verbatim. |
-| `lang` | `"en"` or `"zh"` per `--lang` (default `"en"`). |
-| `density` | `"compact"` or `"standard"` per `--density` (see Flags for the default). |
-| `contact` | Array from `profile.yml`: `phone` as a plain string; `email` as `{ "text": "<email>", "href": "mailto:<email>" }`; and, only if `links.github` is set, `{ "text": "github.com/<handle>", "href": "https://github.com/<handle>" }`. Omit the GitHub entry entirely when `links.github` is absent. |
-| `introTitle` | Optional. Omit for the default `"Introduction"`; set it to `"简介"` for `--lang zh`. |
 | `intro` | Array of `{ "lead", "text" }` — 3–5 items distilled from retrieved `introduction.md` content. `lead` is the short topic phrase (the renderer bolds it and appends the trailing period — `.` for `lang: "en"`, `。` for `lang: "zh"`); `text` is the rest of the clause. |
-| `sections` | Array, in this order: Experience, [Selected Projects], Education, Skills, [extra source-of-truth sections]. |
-
-**Experience section** — `{ "title": "Industrial Experience", "type": "entries", "items": [...] }`.
-One item per role in `profile.yml` `conventions.roles`, reverse-chronological
-(most recent first) unless `## Framing` calls for relevance order. Each item:
-- `primary` = role `title` — **verbatim from `profile.yml`**.
-- `dates` = `"<start> – <end>"` — an en-dash (U+2013) with a space on each side;
-  `start` and `end` **verbatim from `profile.yml`** (e.g. `"Jan. 2024 – Present"`).
-- `secondary` = role `company` — **verbatim from `profile.yml`**.
-- `location` = role `location` — **verbatim from `profile.yml`**.
-- `stack` = the retrieved "Integrated Tech Stack" line for **that** company
-  (`companies/<slug>.md`); a JD-relevant subset is allowed, never blended with
-  another company's stack. `stackLabel` is optional (default `"Stack"`).
-- `bullets` = the retrieved bullets for that role, best-first, verb-first, past
-  tense (present only for an ongoing duty in a current role). Emit as many as the
-  role warrants (3–6; see "Length discipline" below).
-
-**Selected Projects section** (only when step 4 surfaced JD-relevant
-`projects/*.md`) — `{ "title": "Selected Projects", "type": "entries", "items": [...] }`.
-One item per JD-relevant project: `primary` = project name; `metaRight` = tech
-stack or `""` (use `metaRight`, **not** `dates`); `secondary` = the one-line
-project description; `bullets` = retrieved project bullets.
-
-**Education section** — `{ "title": "Education", "type": "education", "items": [...] }`.
-One item per `profile.yml` `conventions.education` entry: `institution`, `dates` =
-`"<start> – <end>"` (en-dash), `credential`, `location` — all verbatim. No GPA /
-grades / distinctions (experienced-hire default).
-
-**Skills section** — `{ "title": "Skills", "type": "skills", "groups": [...] }`.
-Each group is `{ "label", "value" }` with `value` a comma-separated list. Read the
-`###` category headings in `{sourceDir}/skills.md` **directly** for the grouping.
-Take a JD-relevant subset within each group and keep the source file's category
-structure.
-
-**Extra sections** — any additional section the source of truth supports
-(Publications, Certifications, Patents) → `{ "title", "type": "list", "items": [...] }`.
+| Experience items' `stack` | The retrieved "Integrated Tech Stack" line for **that** company (`companies/<slug>.md`); a JD-relevant subset is allowed, never blended with another company's stack. `stackLabel` is optional (default `"Stack"`). |
+| Experience items' `bullets` | The retrieved bullets for that role, best-first, verb-first, past tense (present only for an ongoing duty in a current role). Emit as many as the role warrants (3–6; see "Length discipline" below). |
+| `sections` — Selected Projects | Insert `{ "title": "Selected Projects", "type": "entries", "items": [...] }` between Experience and Education **only** when step 4 surfaced JD-relevant `projects/*.md` (else leave it out). One item per JD-relevant project: `primary` = project name; `metaRight` = tech stack or `""` (use `metaRight`, **not** `dates`); `secondary` = the one-line project description; `bullets` = retrieved project bullets. |
+| Skills `groups` | Each group is `{ "label", "value" }` with `value` a comma-separated list. Read the `###` category headings in `{sourceDir}/skills.md` **directly** for the grouping. Take a JD-relevant subset within each group and keep the source file's category structure. |
+| Extra sections | Any additional section the source of truth supports (Publications, Certifications, Patents) → `{ "title", "type": "list", "items": [...] }`. |
 
 **Length discipline.** The résumé soft ceiling is a fixed **2** pages. When density
 is `compact` and the goal is a 1-page résumé, aim well below the ceiling: ~3
@@ -246,20 +229,14 @@ bullets per role (the strongest, JD-relevant ones), a 3-item intro, and drop
 de-emphasized skill groups. Render, check the page count, and if over the soft
 ceiling WARN and list candidate trims — never silently trim content to fit.
 
-### `{dir}/tmp/cover_letter.data.json`
+### `{dir}/tmp/cover_letter.data.json` — fields you fill in
 
 | Key | Fill |
 |---|---|
-| `name` | `profile.yml` `name`. |
-| `lang` | Same as the résumé. |
-| `contact` | Same array shape as the résumé. |
-| `date` | Today's date, long form, e.g. `"September 1, 2026"`. |
 | `recipient` | Array of lines: `["Hiring Manager", "<Company> as the JD states it", "<City, Country>"]`. Use the named contact from the JD in place of `"Hiring Manager"` if it gives one. Drop the location line if the JD gives no location. Fall back to the `{Company}` argument if the JD names no company. |
 | `subject` | `"Application for the Position of <role title from the JD>"`. If the JD carries a requisition / reference ID, append it naturally (e.g. `" (Ref: <id>)"`); **if the JD has none, no `"Ref:"` dangle**. |
-| `salutation` | `"Dear Hiring Manager,"` (or `"Dear <contact name>,"`). |
 | `paragraphs` | Array of body paragraphs, any count (typically intro, body1, body2, outro). Between them they must: (1) state the total professional software-engineering experience duration; (2) name the specific companies; (3) name the specific business domains / sectors; (4) name the company-tied tech stacks, each tied to the company it was used at (workflow-rules §9). Draw only on retrieved material; no overclaiming of `gap` criteria. |
-| `closing` | `"Sincerely,"`. |
-| `signature` | `profile.yml` `name`. |
+| `salutation` (override) | Scaffolded to `"Dear Hiring Manager,"` for `--lang en` — override only if the JD names a contact (`"Dear <contact name>,"`). |
 
 `factual-bounds.md` still applies to the letter — e.g. "Do not mention the university
 in cover letters" means no `conventions.education` institution string appears anywhere
@@ -268,11 +245,14 @@ in `cover_letter.data.json`.
 ### `--lang zh`
 
 When `--lang zh`:
-- `lang: "zh"` in both JSON files.
-- Résumé section `title`s are the Chinese equivalents — e.g. 简介 / 工作经验 /
-  精选项目 / 教育背景 / 技能 — as are `introTitle` and any `stackLabel`.
+- Pass `--lang zh` to `jobkit scaffold-data` — it sets `lang: "zh"` in both JSON files
+  and fills in the Chinese section titles (工作经验 / 教育背景 / 技能) and
+  `introTitle` (简介) for you.
+- Résumé section `title`s you add yourself follow the same convention — e.g.
+  `"精选项目"` for Selected Projects — as does any `stackLabel` override.
 - Cover-letter `subject` / `salutation` / `closing` are Chinese (the script prefixes
-  the `主题：` / `日期：` labels itself).
+  the `主题：` / `日期：` labels itself); the scaffolder leaves `salutation` and
+  `closing` empty for `--lang zh` since translating them is your job.
 - Every body string (`intro` `lead`/`text`, `bullets`, `stack`, cover-letter
   `paragraphs`) is translated from the English source-of-truth content. **This is
   the only place in the whole workflow where translation happens.**

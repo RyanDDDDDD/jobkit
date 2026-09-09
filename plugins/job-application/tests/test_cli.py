@@ -78,6 +78,21 @@ def test_verify_missing_input_exits_1(tmp_path):
     assert r.returncode == 1
 
 
+def test_scaffold_data_writes_both_files(tmp_path):
+    source_dir = FIX / "resume_sections"
+    r = run("scaffold-data", "--dir", str(tmp_path), "--source-dir", str(source_dir))
+    assert r.returncode == 0
+    assert (tmp_path / "tmp" / "resume.data.json").is_file()
+    assert (tmp_path / "tmp" / "cover_letter.data.json").is_file()
+
+
+def test_scaffold_data_missing_profile_exits_1(tmp_path):
+    empty_source = tmp_path / "empty_source"
+    empty_source.mkdir()
+    r = run("scaffold-data", "--dir", str(tmp_path / "app"), "--source-dir", str(empty_source))
+    assert r.returncode == 1
+
+
 @pytest.mark.parametrize("kind", ["resume", "cover_letter"])
 def test_render_uses_bundled_template(tmp_path, kind, chromium_or_skip):
     data = {

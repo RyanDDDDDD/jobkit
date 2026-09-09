@@ -19,7 +19,7 @@ mistaken for a second copy of the plugin.
 | `.mcp.json` / `mcp.json` | optional Tavily MCP server — Claude Code / Cursor | ours |
 | `skills/` | the three skills — `setup`, `apply`, `interview` | plugin format |
 | `agents/` | subagents the skills dispatch — `sot-retriever`, `company-researcher` | plugin format |
-| `src/jobkit/` | the installable `jobkit` package — `config`, `render`, `compress`, `cover_txt`, `verify`, `extract_cv`, `init_workspace`, `docs`, `cli`; templates + reference ship as package data | ours |
+| `src/jobkit/` | the installable `jobkit` package — `config`, `render`, `compress`, `cover_txt`, `verify`, `extract_cv`, `init_workspace`, `scaffold` (pre-fills the `.data.json` files from `profile.yml`), `docs`, `cli`; templates + reference ship as package data | ours |
 | `pyproject.toml` | `pip` / `hatchling` packaging (`playwright`, `pikepdf`, `pymupdf`, `python-docx`, `pyyaml`; no `uv`) | ours |
 | `tests/` | `pytest` script tests under `tests/scripts/`, `skills/*.expected.md`, `fixtures/` (synthetic candidate) | ours |
 | `example/` | four rendered sample PDFs (résumé + cover letter, EN + ZH) | ours |

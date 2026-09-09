@@ -16,6 +16,7 @@ from jobkit.docs import DOC_NAMES, read_doc
 from jobkit.extract_cv import extract_text
 from jobkit.init_workspace import init_workspace
 from jobkit.render import RenderJob, render_batch
+from jobkit.scaffold import scaffold_data
 from jobkit.verify import verify
 from jobkit.verify import _format as _format_verify
 
@@ -68,6 +69,17 @@ def _cmd_verify(a) -> int:
         print(str(exc), file=sys.stderr)
         return 1
     print(json.dumps(result) if a.json else _format_verify(result))
+    return 0
+
+
+def _cmd_scaffold_data(a) -> int:
+    try:
+        result = scaffold_data(a.dir, a.source_dir, a.lang, a.density)
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    print(f"Wrote {result['resume']}")
+    print(f"Wrote {result['cover_letter']}")
     return 0
 
 
@@ -138,6 +150,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--dir", required=True); s.add_argument("--source-dir", required=True)
     s.add_argument("--json", action="store_true")
     s.set_defaults(fn=_cmd_verify)
+
+    s = sub.add_parser("scaffold-data")
+    s.add_argument("--dir", required=True); s.add_argument("--source-dir", required=True)
+    s.add_argument("--lang", default="en", choices=["en", "zh"])
+    s.add_argument("--density", choices=["compact", "standard"])
+    s.set_defaults(fn=_cmd_scaffold_data)
 
     s = sub.add_parser("extract-cv"); s.add_argument("path")
     s.set_defaults(fn=_cmd_extract_cv)

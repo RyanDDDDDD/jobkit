@@ -17,7 +17,7 @@ mistaken for a second copy of the plugin.
 | `.claude-plugin/plugin.json` | plugin manifest | plugin format |
 | `skills/` | the three skills — `setup`, `apply`, `interview` | plugin format |
 | `agents/` | subagents the skills dispatch — `sot-retriever`, `company-researcher` | plugin format |
-| `scripts/` | Python helpers, run via `uv run` — `render_pdf.py` (one or many jobs per launch), `compress_pdf.py`, `cover_letter_to_txt.py`, `verify_application.py`, `extract_cv.py`, `init_workspace.py`, `lib/config.py` | ours |
+| `scripts/` | Python helpers, run via `uv run` — `scaffold_data.py` (pre-fills the `.data.json` files from `profile.yml`), `render_pdf.py` (one or many jobs per launch), `compress_pdf.py`, `cover_letter_to_txt.py`, `verify_application.py`, `extract_cv.py`, `init_workspace.py`, `lib/config.py` | ours |
 | `pyproject.toml`, `uv.lock` | `uv`-managed dependencies (`playwright`, `pikepdf`, `pymupdf`, `python-docx`, `pyyaml`) | ours |
 | `templates/` | HTML résumé / cover-letter templates + bundled fonts (OFL) | ours |
 | `templates/workspace/` | files `/job-application:setup` scaffolds into a new working directory | ours |

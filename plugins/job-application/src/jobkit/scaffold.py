@@ -9,8 +9,7 @@ paragraphs) are left empty for the model to fill in afterwards with Edit.
 
 Always overwrites both files.
 
-CLI: uv run --project ${CLAUDE_PLUGIN_ROOT} ${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_data.py \
-        --dir <appdir> --source-dir <sourceDir> [--lang en|zh] [--density compact|standard]
+CLI: jobkit scaffold-data --dir <appdir> --source-dir <sourceDir> [--lang en|zh] [--density compact|standard]
 """
 import argparse
 import json

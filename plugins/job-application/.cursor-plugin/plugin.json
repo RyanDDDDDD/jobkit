@@ -1,0 +1,17 @@
+{
+  "name": "job-application",
+  "version": "0.7.0",
+  "description": "JD analysis, tailored resume + cover letter generation, and interview prep - operating on candidate data you keep in your own repo.",
+  "author": { "name": "RyanDDDDDD" },
+  "license": "MIT",
+  "keywords": ["resume", "cv", "cover-letter", "job-application", "interview", "ats"],
+  "variables": {
+    "type": "object",
+    "properties": {
+      "TAVILY_API_KEY": {
+        "type": "string",
+        "description": "Optional. A Tavily API key (tvly-…) enables Tavily-enhanced company research in the interview skill. Leave unset to use plain web search."
+      }
+    }
+  }
+}

@@ -3,8 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from scaffold_data import scaffold_data  # noqa: E402
+from jobkit.scaffold import scaffold_data
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_DIR = PLUGIN_ROOT / "tests" / "fixtures" / "resume_sections"
@@ -120,10 +119,9 @@ def test_rerun_overwrites(tmp_path):
 
 
 def test_cli_writes_both_files(tmp_path):
-    script = PLUGIN_ROOT / "scripts" / "scaffold_data.py"
     result = subprocess.run(
         [
-            "uv", "run", "--project", str(PLUGIN_ROOT), str(script),
+            sys.executable, "-m", "jobkit", "scaffold-data",
             "--dir", str(tmp_path), "--source-dir", str(SOURCE_DIR), "--lang", "en",
         ],
         capture_output=True,

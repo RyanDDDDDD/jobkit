@@ -1,4 +1,4 @@
-# jobkit — Claude Code plugin marketplace
+# jobkit — Claude Code / Cursor plugin marketplace
 
 A single-plugin marketplace. The plugin lives in
 [`plugins/job-application/`](plugins/job-application/) — see its
@@ -7,10 +7,15 @@ A single-plugin marketplace. The plugin lives in
 
 ## Install
 
+**Claude Code:**
+
 ```
 claude plugin marketplace add RyanDDDDDD/jobkit
 claude plugin install job-application@job-application-marketplace
 ```
 
-Then run Claude Code from a **separate private working folder** (not this repo) and use
+**Cursor:** Settings → Plugins → Add marketplace → `RyanDDDDDD/jobkit`, then
+install **job-application**.
+
+Then run Claude Code (or Cursor) from a **separate private working folder** (not this repo) and use
 `/setup` → `/apply` → `/interview`. Full setup in the plugin README.

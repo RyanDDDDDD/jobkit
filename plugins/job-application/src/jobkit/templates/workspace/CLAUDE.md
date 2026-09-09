@@ -1,7 +1,7 @@
 # Job-hunt workspace (private)
 
 This folder is the **working directory** for the `job-application` (jobkit) plugin.
-The plugin is installed separately (`~/.claude/plugins/…`, or a local marketplace).
+The plugin is installed separately (`claude plugin install`), and its engine via `pip install jobkit` + `jobkit install-browser`.
 Nothing here is part of the plugin — this is all personal data and generated output.
 
 ## Contents

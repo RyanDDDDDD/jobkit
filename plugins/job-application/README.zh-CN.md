@@ -13,14 +13,12 @@
 ## 前置条件
 
 - **Windows、macOS 或 Linux** —— 插件没有操作系统相关的依赖。
-- [`uv`](https://docs.astral.sh/uv/) —— 管理插件的 Python 环境。一次性安装：请参阅 uv
-  官方文档中针对你操作系统的说明。
-- 一次性浏览器下载：`uv run --project ${CLAUDE_PLUGIN_ROOT} playwright install chromium`
-  （下载由 Playwright 自行管理的 Chromium 二进制 —— 无需安装系统浏览器）。
+- **Python ≥ 3.10** 与 `pip`。安装引擎：`pip install jobkit`（在上架 PyPI 之前：
+  `pip install "git+https://github.com/RyanDDDDDD/jobkit#subdirectory=plugins/job-application"`）。
+  然后一次性运行 `jobkit install-browser`（下载由 Playwright 自行管理的 Chromium）。
 
 不需要安装 Ghostscript、Poppler 或 `pandoc` —— PDF 压缩以及 `.pdf` / `.docx` 文本提取
-均为纯 Python 实现（`pikepdf`、`pymupdf`、`python-docx`），首次通过 `uv run` 运行脚本时
-会自动安装。
+均为纯 Python 实现（`pikepdf`、`pymupdf`、`python-docx`），随 `jobkit` 一起安装。
 
 ## 安装
 
@@ -38,11 +36,22 @@ claude plugin marketplace add /path/to/jobkit
 claude plugin install job-application@job-application-marketplace
 ```
 
+### Cursor
+
+同一仓库也是 Cursor 插件市场。在 Cursor 中：
+
+```
+Cursor → Settings → Plugins → Add marketplace → RyanDDDDDD/jobkit
+```
+
+然后安装 **job-application**。技能以 `/job-application:<skill>` 出现，
+`jobkit` 引擎的安装方式相同（`pip install jobkit` + `jobkit install-browser`）。
+
 ## 初始设置
 
-插件本身不存放任何候选人数据。它只从安装位置（`${CLAUDE_PLUGIN_ROOT}`，只读）读取自身资源，
+插件本身不存放任何候选人数据。它只从已安装的 `jobkit` 包（只读）读取自身资源，
 **其余的一切 —— 你的事实来源和所有生成文档 —— 都在你运行 Claude Code 的那个目录里读写**，
-由 `config.py` 向上查找 `jobapp.config.yml` 来确定。
+由 `jobkit config` 向上查找 `jobapp.config.yml` 来确定。
 
 1. 新建一个私有工作文件夹（例如 `~/job-hunt/`），在里面开 Claude Code。它要和本仓库分开，
    你生成的任何东西都不属于插件。
@@ -99,8 +108,8 @@ claude plugin install job-application@job-application-marketplace
   记录写入 `{dir}/interview/mock/<mode>/<date>.md`（绝不覆盖——同一天再跑一次会得到
   `-2`、`-3`……），并把新出现的、反复出现的经验教训追加到面试 playbook（默认是工作目录
   根部的 `interview_playbook.md`；可用 `jobapp.config.yml` 中的 `interview_playbook`
-  覆盖，例如 `private/interview_playbook.md`）。它首次使用时始终以英文的插件
-  `interview-frameworks.md` 为种子。
+  覆盖，例如 `private/interview_playbook.md`）。它首次使用时始终以英文的
+  `jobkit doc interview-frameworks` 为种子。
   `mock technical` 还接受 `--focus "<岗位或项目>"`。`--lang en|zh` 设置这个子命令本次写出的
   一切内容的语言（研究报告、准备材料、模拟面试对话与记录、新增的 playbook 条目）；默认跟随
   这份申请 `apply` 时用的 `--lang`。
@@ -110,7 +119,23 @@ claude plugin install job-application@job-application-marketplace
 `cover_letter.pdf`、`cover_letter.txt`）；机器产物（`resume.data.json`、
 `cover_letter.data.json`）放在 `tmp/` 下，可随时重新生成；面试准备文件放在 `interview/` 下
 （模拟面试记录在 `interview/mock/<behavioural|technical>/<date>.md`）。完整目录树见
-`reference/output-layout.md`。可通过 `jobapp.config.yml` 中的 `output_dir` 覆盖该位置。
+`jobkit doc output-layout`。可通过 `jobapp.config.yml` 中的 `output_dir` 覆盖该位置。
+
+## 可选：Tavily 增强调研
+
+`/job-application:interview research` 会从网上抓取公司文化、评价和面试反馈。
+Glassdoor、Reddit 一类站点经常拦截普通抓取。配置 [Tavily](https://tavily.com)
+API 密钥后，调研子代理改用 Tavily 的搜索与正文提取，通过率高得多。这完全是可选的
+—— 没有密钥时调研仍走普通网页搜索，行为与以往完全一致。
+
+1. 在 tavily.com 申请密钥（有免费额度）；形如 `tvly-…`。
+2. 安装 Node（Tavily MCP 服务通过 `npx` 启动）。
+3. **Claude Code：** 在启动 Claude Code 之前，于 shell 环境（或 Claude Code 的
+   MCP 环境配置）中设置 `TAVILY_API_KEY`。
+   **Cursor：** Settings → Plugins → job-application → Configure → 设置
+   `TAVILY_API_KEY`。
+
+国内调研（牛客网 / 脉脉 / 看准网 …）始终使用普通网页搜索 —— Tavily 帮不上忙。
 
 ## `resume_sections/` 约定
 
@@ -137,10 +162,10 @@ claude plugin install job-application@job-application-marketplace
 在 `plugins/job-application/` 目录下：
 
 ```
-uv run pytest
+python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]" && python -m pytest
 ```
 
-若尚未运行 `uv run playwright install chromium`，渲染相关检查会干净地跳过（不会失败）。
+若尚未运行 `jobkit install-browser`，渲染相关检查会干净地跳过（不会失败）。
 
 skill 的预期输出清单（`tests/skills/*.expected.md` —— `setup` / `apply` / `interview`）
 所针对的合成候选人夹具位于 `tests/fixtures/`（`tests/fixtures/raw_cvs/`、

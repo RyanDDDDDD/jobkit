@@ -82,7 +82,9 @@
   li::marker { color: var(--mute); }
   ul.intro { list-style: none; padding: 0; margin: 0; }
   ul.intro li { margin-bottom: 3.5pt; }
-  ul.intro strong { font-weight: 600; color: var(--ink); }
+  ul.intro strong,
+  .entry ul strong,
+  .plainlist strong { font-weight: 600; color: var(--ink); }
 
   .entry { margin-bottom: 8pt; break-inside: avoid; }
   .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; }
@@ -186,7 +188,9 @@
   body.domestic-zh ul { margin: 2px 0 0; padding-left: 1.1em; }
   body.domestic-zh li { margin-bottom: 2px; text-align: justify; }
   body.domestic-zh ul.intro li { margin-bottom: 3px; text-align: justify; }
-  body.domestic-zh ul.intro strong { font-weight: 700; color: var(--ink); }
+  body.domestic-zh ul.intro strong,
+  body.domestic-zh .entry ul strong,
+  body.domestic-zh .plainlist strong { font-weight: 700; color: var(--ink); }
   body.domestic-zh .entry { margin-bottom: 8px; padding-bottom: 1px; }
   body.domestic-zh .primary { font-weight: 700; font-size: 9.7pt; }
   body.domestic-zh .meta-right { font-size: 8.1pt; color: var(--mute); }
@@ -255,6 +259,19 @@
     return n;
   }
   function frag(items, fn) { var f = document.createDocumentFragment(); (items || []).forEach(function (x) { f.appendChild(fn(x)); }); return f; }
+  /* Turn **bold** spans into <strong>; everything else stays text (no other markdown). */
+  function appendInlineMd(parent, text) {
+    var s = text == null ? "" : String(text);
+    var re = /\*\*([^*]+)\*\*/g;
+    var last = 0, m;
+    while ((m = re.exec(s))) {
+      if (m.index > last) parent.appendChild(document.createTextNode(s.slice(last, m.index)));
+      parent.appendChild(el("strong", null, m[1]));
+      last = m.index + m[0].length;
+    }
+    if (last < s.length) parent.appendChild(document.createTextNode(s.slice(last)));
+    if (!s) parent.appendChild(document.createTextNode(""));
+  }
 
   /* ---------- header ---------- */
   var header = el("header");
@@ -324,7 +341,11 @@
         }
         if (it.bullets && it.bullets.length) {
           var bul = el("ul");
-          bul.appendChild(frag(it.bullets, function (b) { return el("li", null, b); }));
+          bul.appendChild(frag(it.bullets, function (b) {
+            var li = el("li");
+            appendInlineMd(li, typeof b === "string" ? b : (b && b.text) || "");
+            return li;
+          }));
           e.appendChild(bul);
         }
         return e;
@@ -367,7 +388,11 @@
     },
     list: function (sec) {
       var list = el("ul", "plainlist");
-      list.appendChild(frag(sec.items, function (x) { return el("li", null, x); }));
+      list.appendChild(frag(sec.items, function (x) {
+        var li = el("li");
+        appendInlineMd(li, typeof x === "string" ? x : (x && x.text) || "");
+        return li;
+      }));
       return list;
     }
   };

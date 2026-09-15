@@ -218,10 +218,25 @@ so there is no escaping step and no ad-hoc script to write.
 |---|---|
 | `intro` | Array of `{ "lead", "text" }` — 3–5 items distilled from retrieved `introduction.md` content. `lead` is the short topic phrase (the renderer bolds it and appends the trailing period — `.` for `lang: "en"`, `。` for `lang: "zh"`); `text` is the rest of the clause. |
 | Experience items' `stack` | The retrieved "Integrated Tech Stack" line for **that** company (`companies/<slug>.md`); a JD-relevant subset is allowed, never blended with another company's stack. `stackLabel` is optional (default `"Stack"`). |
-| Experience items' `bullets` | The retrieved bullets for that role, best-first, verb-first, past tense (present only for an ongoing duty in a current role). Emit as many as the role warrants (3–6; see "Length discipline" below). |
+| Experience items' `bullets` | The retrieved bullets for that role, best-first, verb-first, past tense (present only for an ongoing duty in a current role). Emit as many as the role warrants (3–6; see "Length discipline" below). Follow the **bullet format rule** below. |
 | `sections` — Selected Projects | Insert `{ "title": "Selected Projects", "type": "entries", "items": [...] }` between Experience and Education **only** when step 4 surfaced JD-relevant `projects/*.md` (else leave it out). One item per JD-relevant project: `primary` = project name; `metaRight` = tech stack or `""` (use `metaRight`, **not** `dates`); `secondary` = the one-line project description; `bullets` = retrieved project bullets. |
 | Skills `groups` | Each group is `{ "label", "value" }` with `value` a comma-separated list. Read the `###` category headings in `{sourceDir}/skills.md` **directly** for the grouping. Take a JD-relevant subset within each group and keep the source file's category structure. |
 | Extra sections | Any additional section the source of truth supports (Publications, Certifications, Patents) → `{ "title", "type": "list", "items": [...] }`. |
+
+**Bullet format rule.** Every experience bullet must follow the pattern:
+
+```
+**Category keyword:** Action verb + technical detail + quantified result (where available).
+```
+
+- The **category keyword** is a short noun phrase (2–4 words) that labels what kind of work the bullet describes — e.g. `Performance Tuning`, `Architecture Refactoring`, `Service Integration`, `CI/CD Automation`. It is rendered bold.
+- The body starts with a **past-tense action verb** (e.g. *Profiled*, *Refactored*, *Engineered*, *Integrated*).
+- Include **specific technologies** and a **quantified result** wherever the source of truth provides one (e.g. "reducing memory footprint by 40%", "cutting startup time by 50%").
+- Do **not** start with "Responsible for", "Worked on", or other weak openers.
+- For `--lang zh` résumés the keyword is Chinese (e.g. `性能调优：`、`架构重构：`) and rendered bold via `<strong>` in the HTML template — the pattern is otherwise identical.
+
+Example (en): `**Performance Tuning:** Utilized perf and Valgrind for bottleneck analysis and memory profiling, ensuring zero-leak execution for industrial-grade components.`
+Example (zh): `**性能调优：** 使用 perf、Valgrind 进行瓶颈分析与内存剖析，确保工业级组件零泄漏运行。`
 
 **Length discipline.** The résumé soft ceiling is a fixed **2** pages. When density
 is `compact` and the goal is a 1-page résumé, aim well below the ceiling: ~3

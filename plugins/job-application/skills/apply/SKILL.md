@@ -11,9 +11,12 @@ missing, tell the user to run `/job-application:setup` first and stop.
 
 ## Flags
 
-- `--lang en|zh` — default `en`. `zh` ⇒ `lang: "zh"` in both JSON files, Chinese
-  section titles / salutation / closing, body strings translated from the English
-  source of truth (never invented). See "`--lang zh`" below.
+- `--lang en|zh` — default from `jobapp.config.yml` `lang` (set at setup). If the
+  flag is omitted, read `lang` from `jobkit config`. `zh` ⇒ `lang: "zh"` in both
+  JSON files, Chinese section titles / salutation / closing, body strings
+  translated from the English source of truth (never invented). See "`--lang zh`"
+  below. Override only when this one application must differ from the workspace
+  default.
 - `--density compact|standard` — résumé spacing. Default: `profile.yml`
   `conventions.density` if set, else `compact`. Sets `density` in
   `resume.data.json`; the template's `compact` class tightens spacing ~12%.
@@ -23,16 +26,18 @@ missing, tell the user to run `/job-application:setup` first and stop.
 ## Inputs and paths
 
 Resolve paths with `jobkit config` (JSON: `root`, `source_of_truth_dir`,
-`output_dir`, `interview_playbook`, `browser_path`). `{sourceDir}` =
-`<root>/<source_of_truth_dir>` — if it does not exist, tell the user to
-run `/job-application:setup` first and stop. `{dir}` =
+`output_dir`, `interview_playbook`, `browser_path`, `lang`, `resume_template`).
+`{sourceDir}` = `<root>/<source_of_truth_dir>` — if it does not exist, tell the
+user to run `/job-application:setup` first and stop. `{dir}` =
 `<root>/<output_dir>` with the literal `{Company}` token replaced by the
-application name. Create `{dir}` and `{dir}/tmp`. A repo-level
-`<root>/templates/<name>.html` override, if present, is picked up
-automatically by `jobkit render`. Machine artifacts
-(`resume.data.json`, `cover_letter.data.json`) live in `{dir}/tmp/`; `jd.md`,
-`analysis.md`, `review.md`, the PDFs, `cover_letter.txt`, and `answers.md` stay
-flat in `{dir}`. Full tree: `jobkit doc output-layout`.
+application name. Create `{dir}` and `{dir}/tmp`. The bundled theme is
+`resume_template` from config (`dossier` | `classic` | `modern-sans`);
+`jobkit render` picks `templates/<theme>/{resume,cover_letter}.html` automatically.
+A repo-level `<root>/templates/resume.html` / `cover_letter.html` override, if
+present, still wins. Machine artifacts (`resume.data.json`,
+`cover_letter.data.json`) live in `{dir}/tmp/`; `jd.md`, `analysis.md`,
+`review.md`, the PDFs, `cover_letter.txt`, and `answers.md` stay flat in `{dir}`.
+Full tree: `jobkit doc output-layout`.
 
 Commands below are `jobkit <sub>` (the plugin installs the `jobkit` CLI —
 `pip install jobkit`). If `jobkit` is not on `PATH`, `python -m jobkit <sub>`
@@ -191,7 +196,8 @@ jobkit scaffold-data --dir {dir} --source-dir {sourceDir} --lang <en|zh> --densi
 ```
 
 This writes both `.data.json` files, already valid JSON, with every field
-`profile.yml` (plus `--lang`/`--density`) determines pre-filled:
+`profile.yml` (plus `--lang`/`--density`) determines pre-filled. When `--lang`
+is omitted, `scaffold-data` uses workspace `jobapp.config.yml` `lang`:
 
 | Key | Value |
 |---|---|
@@ -334,7 +340,7 @@ application passed.
 - Company names / titles / dates / locations from `profile.yml` verbatim.
 - The one prohibition is zero-basis additions (workflow-rules §3).
 - `factual-bounds.md` is hard — on conflict stop and ask.
-- English by default; `--lang zh` faithfully translated.
+- Follows workspace `lang` (or `--lang` override); `zh` faithfully translated.
 - Machine artifacts in `{dir}/tmp/`, deliverables flat.
 - `jd.md` stays (workflow-rules §7).
 - `jobkit doc workflow-rules` and `jobkit doc render-contract`.

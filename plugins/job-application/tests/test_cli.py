@@ -16,7 +16,7 @@ def run(*args, cwd=None):
 
 
 def test_version():
-    assert run("--version").stdout.strip() == "jobkit 0.6.0"
+    assert run("--version").stdout.strip() == "jobkit 0.8.0"
 
 
 def test_config_prints_json(tmp_path):
@@ -52,12 +52,20 @@ def test_extract_cv_unsupported_type_exits_2(tmp_path):
 
 
 def test_init_scaffolds(tmp_path):
-    r = run("init", str(tmp_path), "--json")
+    r = run("init", str(tmp_path), "--lang", "en", "--template", "dossier", "--json")
     assert r.returncode == 0
     result = json.loads(r.stdout)
     assert "jobapp.config.yml" in result["created"]
     assert (tmp_path / "private/resume_sections/profile.yml").is_file()
     assert (tmp_path / "private/interview_playbook.md").is_file()
+    cfg = (tmp_path / "jobapp.config.yml").read_text(encoding="utf-8")
+    assert 'lang: "en"' in cfg
+    assert 'resume_template: "dossier"' in cfg
+
+
+def test_init_requires_lang_and_template(tmp_path):
+    r = run("init", str(tmp_path), "--json")
+    assert r.returncode == 2
 
 
 def test_doc_prints_markdown():

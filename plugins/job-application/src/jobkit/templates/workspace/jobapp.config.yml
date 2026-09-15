@@ -1,6 +1,12 @@
 # Working-directory config for the job-application (jobkit) plugin.
 # The plugin resolves these by walking up from the current directory (config.py).
-# All keys optional; uncomment browser_path only if auto-detect fails.
+# `jobkit init --lang … --template …` writes lang + resume_template for you.
+
+# Output language for apply / interview (en | zh).
+lang: "en"
+
+# Bundled résumé + cover-letter theme (dossier | classic | modern-sans).
+resume_template: "dossier"
 
 # browser_path: "%ProgramFiles(x86)%/Microsoft/Edge/Application/msedge.exe"
 source_of_truth_dir: "private/resume_sections"

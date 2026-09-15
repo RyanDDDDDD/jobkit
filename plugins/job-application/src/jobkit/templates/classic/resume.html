@@ -4,32 +4,34 @@
 <meta charset="utf-8">
 <title>Resume</title>
 <style>
-  /* render_pdf.py rewrites the two @font-face url()s below to absolute file:/// paths at
-     the template's own location before rendering (headless Chromium resolves relative URLs
-     against the rendered file, which lives elsewhere). It does a literal string replace on
-     url("fonts/Newsreader.woff2") and url("fonts/SourceSerif4.woff2") — keep both EXACTLY
-     in that form (double quotes, "fonts/" prefix, no "./", no whitespace). */
+  /* jobkit render rewrites url("fonts/...") to absolute file:/// paths under
+     templates/fonts/ (or a sibling fonts/ for workspace overrides). Keep the
+     "fonts/" prefix, double quotes, no "./". */
   @font-face { font-family: "Newsreader"; src: url("fonts/Newsreader.woff2") format("woff2");
     font-weight: 400 600; font-style: normal; font-display: swap; }
   @font-face { font-family: "Source Serif 4"; src: url("fonts/SourceSerif4.woff2") format("woff2");
     font-weight: 400 600; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Source Sans 3"; src: url("fonts/SourceSans3.woff2") format("woff2");
+    font-weight: 400 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Noto Sans SC"; src: url("fonts/NotoSansSC.woff2") format("woff2");
+    font-weight: 400 700; font-style: normal; font-display: swap; }
 
-  @page { size: Letter; margin: 13mm 15mm 12mm; }
+  @page { size: Letter; margin: 15mm 17mm 14mm; }
 
-  /* Engineering Dossier — cool graphite + one steel accent; print-first, no chrome. */
+  /* Classic — conservative ATS-friendly serif; minimal chrome. */
   :root {
-    --ink: #141820;
-    --soft: #3f4754;
-    --mute: #6b7380;
-    --hair: #c5cad3;
-    --rule: #141820;
-    --label: #1a4f7a;
-    --body: "Source Serif 4", Georgia, "Times New Roman", "Noto Serif CJK SC", "Songti SC", serif;
-    --display: "Newsreader", Georgia, "Noto Serif CJK SC", "Songti SC", serif;
+    --ink: #1a1a1a;
+    --soft: #4a4a4a;
+    --mute: #6e6e6e;
+    --hair: #c8c8c8;
+    --rule: #1a1a1a;
+    --label: #1a1a1a;
+    --body: "Source Serif 4", Georgia, "Times New Roman", "Noto Sans SC", "Songti SC", serif;
+    --display: "Newsreader", Georgia, "Noto Sans SC", "Songti SC", serif;
   }
   :lang(zh) {
-    --body: "Source Serif 4", "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "PingFang SC", "Microsoft YaHei", "SimSun", serif;
-    --display: "Newsreader", "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "PingFang SC", "Microsoft YaHei", "SimSun", serif;
+    --body: "Source Serif 4", "Noto Sans SC", "Source Han Serif SC", "Songti SC", "Microsoft YaHei", serif;
+    --display: "Newsreader", "Noto Sans SC", "Source Han Serif SC", "Songti SC", "Microsoft YaHei", serif;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -47,13 +49,13 @@
   body.compact .entry { margin-bottom: 7pt; }
   body.compact ul.intro li { margin-bottom: 3pt; }
 
-  header { text-align: center; margin-bottom: 11pt; padding-bottom: 8pt; border-bottom: 1.25pt solid var(--rule); }
+  header { text-align: center; margin-bottom: 12pt; padding-bottom: 6pt; border-bottom: 0.75pt solid var(--rule); }
   .name {
     font-family: var(--display);
-    font-weight: 600;
-    font-size: 24pt;
-    letter-spacing: 0.02em;
-    line-height: 1.08;
+    font-weight: 500;
+    font-size: 22pt;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
     margin: 0 0 5pt;
     color: var(--ink);
   }
@@ -117,16 +119,16 @@
   .plainlist li { break-inside: avoid; }
   p, li { orphans: 2; widows: 2; }
 
-  /* ---- Domestic Chinese: compact sans dossier on A4 ---- */
+  /* ---- Classic Chinese: A4, Noto Sans SC + system fallbacks ---- */
   body.domestic-zh {
-    --ink: #141820;
-    --soft: #3f4754;
-    --mute: #6b7380;
-    --hair: #c5cad3;
-    --rule: #141820;
-    --label: #1a4f7a;
-    --body: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", "Segoe UI", sans-serif;
-    --display: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", "Segoe UI", sans-serif;
+    --ink: #1a1a1a;
+    --soft: #4a4a4a;
+    --mute: #6e6e6e;
+    --hair: #c8c8c8;
+    --rule: #1a1a1a;
+    --label: #1a1a1a;
+    --body: "Noto Sans SC", "Source Serif 4", "Microsoft YaHei", "PingFang SC", "Songti SC", sans-serif;
+    --display: "Noto Sans SC", "Newsreader", "Microsoft YaHei", "PingFang SC", "Songti SC", sans-serif;
     font-family: var(--body);
     font-size: 9.15pt;
     line-height: 1.3;
@@ -147,11 +149,11 @@
   body.domestic-zh .name {
     font-family: var(--display);
     font-weight: 700;
-    font-size: 20pt;
-    letter-spacing: 0.22em;
+    font-size: 18pt;
+    letter-spacing: 0.12em;
     line-height: 1.15;
     margin: 0 0 6px;
-    text-indent: 0.22em; /* optical center with letter-spacing */
+    text-indent: 0.12em;
   }
   body.domestic-zh .contact {
     text-align: center;
@@ -176,7 +178,7 @@
     font-size: 10.75pt;
     font-variant-caps: normal;
     letter-spacing: 0.08em;
-    border-bottom: 1.75pt solid var(--rule);
+    border-bottom: 0.75pt solid var(--rule);
     border-left: none;
     padding: 0 0 4px 0;
     margin: 0 0 6px;

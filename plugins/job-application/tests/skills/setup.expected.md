@@ -3,15 +3,18 @@
 ## Part A — scaffold
 
 After running `/job-application:setup` in an empty directory `<ws>` (no
-`jobapp.config.yml`, no `private/`), the result must satisfy every assertion below.
+`jobapp.config.yml`, no `private/`), having declared `--lang` and `--template`,
+the result must satisfy every assertion below.
 Assertions are **structural** — file / directory existence and substring checks.
 
 ### fresh workspace
 
-1. `<ws>/jobapp.config.yml` exists and contains all three of
+1. `<ws>/jobapp.config.yml` exists and contains all of
    `source_of_truth_dir: "private/resume_sections"`,
-   `output_dir: "applications/{Company}"`, and
-   `interview_playbook: "private/interview_playbook.md"`.
+   `output_dir: "applications/{Company}"`,
+   `interview_playbook: "private/interview_playbook.md"`,
+   a `lang: "en"` or `lang: "zh"` line matching what setup asked for, and a
+   `resume_template:` of `dossier`, `classic`, or `modern-sans`.
 2. `<ws>/CLAUDE.md` exists.
 3. `<ws>/private/resume_sections/` contains `profile.yml`, `factual-bounds.md`,
    `introduction.md`, `skills.md`, and `education.md`.

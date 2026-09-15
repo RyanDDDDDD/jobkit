@@ -50,12 +50,14 @@ contribution vs the team's. That is where a weak claim surfaces.
 
 ## 6. Output language
 
-All generated application content (résumé PDF, cover letter, plain-text and
-form-answer variants) is English by default, regardless of conversation language.
-`apply --lang zh` is the one sanctioned exception: a Chinese résumé and cover letter
-produced by faithfully translating the English source-of-truth content — never
-inventing detail to smooth a sentence. A skill's own report / prep text stays
-English even under `--lang zh`.
+Workspace `jobapp.config.yml` `lang` (`en` | `zh`) is set at setup and is the
+default for every generated application document (résumé PDF, cover letter,
+plain-text and form-answer variants) and for interview prep. `apply --lang` /
+`interview --lang` override that default for a single run. `zh` means a Chinese
+résumé and cover letter produced by faithfully translating the English
+source-of-truth content — never inventing detail to smooth a sentence. A skill's
+own report / prep text follows the resolved `--lang` (except the initial English
+interview-playbook seed).
 
 ## 7. Save the job description
 

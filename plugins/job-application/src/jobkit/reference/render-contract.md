@@ -10,8 +10,11 @@ Invocation:
         --kind <resume|cover_letter> --data <dir>/tmp/<name>.data.json --out <dir>/<name>.pdf \
         [--kind … --data … --out …]
 
-    (`--template <path>` per job overrides the bundled template; a repo-level
-    `<root>/templates/<name>.html` is picked up automatically.)
+    (`--template <path>` per job overrides the theme; otherwise the workspace
+    `resume_template` from `jobapp.config.yml` selects
+    `templates/<theme>/{resume,cover_letter}.html`. A repo-level
+    `<root>/templates/resume.html` / `cover_letter.html` is picked up
+    automatically and wins over the bundled theme.)
 
 The `--kind` / `--data` / `--out` flags are repeatable and zipped positionally; one
 browser launch renders every job.

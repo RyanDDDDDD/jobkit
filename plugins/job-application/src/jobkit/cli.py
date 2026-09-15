@@ -8,7 +8,11 @@ import subprocess
 import sys
 
 from jobkit import __version__
-from jobkit._assets import template_path
+from jobkit._assets import (
+    LANGS,
+    RESUME_TEMPLATES,
+    resolve_template_path,
+)
 from jobkit.compress import compress_pdf
 from jobkit.config import get_job_app_config
 from jobkit.cover_txt import cover_letter_to_text
@@ -32,11 +36,15 @@ def _cmd_render(a) -> int:
         print("jobkit render: --kind, --data and --out must each be given the "
               "same number of times", file=sys.stderr)
         return 2
+    cfg = get_job_app_config()
+    theme = cfg.get("resume_template")
     templates = a.template or []
     templates += [None] * (n - len(templates))
     jobs = []
     for kind, data, out, tpl in zip(a.kind, a.data, a.out, templates):
-        tp = tpl if tpl else str(template_path(kind))
+        tp = str(resolve_template_path(
+            kind, theme=theme, explicit=tpl, root=cfg["root"],
+        ))
         jobs.append(RenderJob(tp, data, out))
     results = render_batch(jobs, keep_html=a.keep_html)
     any_failed = False
@@ -73,8 +81,11 @@ def _cmd_verify(a) -> int:
 
 
 def _cmd_scaffold_data(a) -> int:
+    lang = a.lang
+    if lang is None:
+        lang = get_job_app_config().get("lang", "en")
     try:
-        result = scaffold_data(a.dir, a.source_dir, a.lang, a.density)
+        result = scaffold_data(a.dir, a.source_dir, lang, a.density)
     except FileNotFoundError as exc:
         print(str(exc), file=sys.stderr)
         return 1
@@ -94,7 +105,7 @@ def _cmd_extract_cv(a) -> int:
 
 def _cmd_init(a) -> int:
     try:
-        result = init_workspace(a.target)
+        result = init_workspace(a.target, a.lang, a.resume_template)
     except Exception as exc:
         print(str(exc), file=sys.stderr)
         return 1
@@ -153,7 +164,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("scaffold-data")
     s.add_argument("--dir", required=True); s.add_argument("--source-dir", required=True)
-    s.add_argument("--lang", default="en", choices=["en", "zh"])
+    s.add_argument("--lang", default=None, choices=list(LANGS),
+                   help="default: jobapp.config.yml lang, else en")
     s.add_argument("--density", choices=["compact", "standard"])
     s.set_defaults(fn=_cmd_scaffold_data)
 
@@ -161,7 +173,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.set_defaults(fn=_cmd_extract_cv)
 
     s = sub.add_parser("init")
-    s.add_argument("target", nargs="?", default="."); s.add_argument("--json", action="store_true")
+    s.add_argument("target", nargs="?", default=".")
+    s.add_argument("--lang", required=True, choices=list(LANGS),
+                   help="workspace output language (en|zh)")
+    s.add_argument("--template", required=True, choices=list(RESUME_TEMPLATES),
+                   dest="resume_template",
+                   help="bundled résumé theme (dossier|classic|modern-sans)")
+    s.add_argument("--json", action="store_true")
     s.set_defaults(fn=_cmd_init)
 
     s = sub.add_parser("doc"); s.add_argument("name")

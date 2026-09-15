@@ -1,10 +1,18 @@
 Newsreader — Production Type — https://github.com/productiontype/Newsreader
 Source Serif 4 — Adobe — https://github.com/adobe-fonts/source-serif
-Both licensed under the SIL Open Font License, Version 1.1.
+Source Sans 3 — Adobe — https://github.com/adobe-fonts/source-sans
+Noto Sans SC — Google / Adobe — https://github.com/notofonts/noto-cjk
+All licensed under the SIL Open Font License, Version 1.1.
 
-The WOFF2 files in this directory (Newsreader.woff2, SourceSerif4.woff2) are the
-Latin-subset variable webfonts distributed by Google Fonts (fonts.gstatic.com),
-which are the same OFL-licensed fonts above.
+The WOFF2 files in this directory are OFL-licensed webfonts distributed via
+Google Fonts (fonts.gstatic.com):
+
+  Newsreader.woff2      — Latin display (variable 400–600)
+  SourceSerif4.woff2    — Latin body serif (variable 400–600)
+  SourceSans3.woff2     — Latin body sans (variable 400–700)
+  NotoSansSC.woff2      — Simplified Chinese subset for résumé use (~resume
+                          vocabulary + high-frequency characters). Glyphs
+                          outside the subset fall back to system CJK faces.
 
 Upstream copyright statements (OFL 1.1 requires these to travel with the fonts):
 
@@ -13,6 +21,11 @@ Upstream copyright statements (OFL 1.1 requires these to travel with the fonts):
 
   Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name "Source Serif".
   Source is a trademark of Adobe in the United States and/or other countries.
+
+  Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name "Source".
+  Source is a trademark of Adobe in the United States and/or other countries.
+
+  Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)
 
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007

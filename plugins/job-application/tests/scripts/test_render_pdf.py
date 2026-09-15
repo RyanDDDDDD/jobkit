@@ -148,7 +148,7 @@ def test_keep_html_rewrites_font_urls_to_absolute(tmp_path):
     result = render_pdf(str(TEMPLATE), str(data), str(tmp_path / "k.pdf"), keep_html=True)
     rendered = Path(result.html).read_text(encoding="utf-8")
     assert 'url("fonts/' not in rendered
-    assert rendered.count('src: url("file://') == 2
+    assert rendered.count('src: url("file://') == 4
 
 
 def test_keep_html_lands_next_to_data_path(tmp_path):

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cover Letter</title>
+<style>
+  /* jobkit render rewrites url("fonts/...") to absolute file:/// paths under
+     templates/fonts/ (or a sibling fonts/ for workspace overrides). Keep the
+     "fonts/" prefix, double quotes, no "./". */
+  @font-face { font-family: "Newsreader"; src: url("fonts/Newsreader.woff2") format("woff2");
+    font-weight: 400 600; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Source Serif 4"; src: url("fonts/SourceSerif4.woff2") format("woff2");
+    font-weight: 400 600; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Source Sans 3"; src: url("fonts/SourceSans3.woff2") format("woff2");
+    font-weight: 400 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Noto Sans SC"; src: url("fonts/NotoSansSC.woff2") format("woff2");
+    font-weight: 400 700; font-style: normal; font-display: swap; }
+
+  @page { size: A4; margin: 16mm 16mm; }
+
+  :root {
+    --ink: #12141a;
+    --soft: #3a4150;
+    --hair: #c5cad3;
+    --body: "Source Sans 3", "Noto Sans SC", "Segoe UI", sans-serif;
+    --display: "Source Sans 3", "Noto Sans SC", "Segoe UI", sans-serif;
+  }
+  /* Font fallback is per-glyph: the bundled Latin serif comes first so Latin/digits stay
+     in Source Serif 4 / Newsreader, and only CJK codepoints fall through to a system CJK
+     face (Noto Serif CJK / Source Han Serif / Songti / PingFang / YaHei). */
+  :lang(zh) {
+    --body: "Noto Sans SC", "Source Sans 3", "Microsoft YaHei", "PingFang SC", sans-serif;
+    --display: "Noto Sans SC", "Source Sans 3", "Microsoft YaHei", "PingFang SC", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.5;
+    color: var(--ink);
+    font-feature-settings: "onum" 1, "kern" 1;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  header { text-align: center; margin-bottom: 20pt; }
+  .name {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 24pt;
+    letter-spacing: 0.3px;
+    line-height: 1.1;
+    margin: 0 0 5pt;
+  }
+  .contact { font-size: 9pt; color: var(--soft); letter-spacing: 0.2px; }
+  .contact a { color: inherit; text-decoration: none; }
+  .contact .sep { margin: 0 7px; color: var(--hair); }
+
+  .meta { margin-bottom: 16pt; font-size: 10.5pt; }
+  .meta .date { margin-bottom: 10pt; }
+  .meta .recipient div { line-height: 1.4; }
+
+  .subject { font-weight: 600; margin-bottom: 16pt; }
+
+  .salutation { margin-bottom: 12pt; }
+
+  .body p { margin: 0 0 10pt; }
+
+  .closing { margin-top: 18pt; }
+  .signature { margin-top: 30pt; }
+</style>
+</head>
+<body>
+<main id="letter"></main>
+
+<script type="application/json" id="cover-letter-data">
+{{DATA_JSON}}
+</script>
+
+<script>
+(function () {
+  "use strict";
+  var data;
+  try {
+    data = JSON.parse(document.getElementById("cover-letter-data").textContent);
+    if (!data || typeof data !== "object") throw new Error("expected a JSON object");
+  } catch (e) {
+    document.getElementById("letter").textContent = "Invalid cover letter JSON: " + e.message;
+    return;
+  }
+
+  var root = document.getElementById("letter");
+  if (data.lang) document.documentElement.setAttribute("lang", data.lang);
+  var isZh = data.lang === "zh";
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  /* ---------- header ---------- */
+  var header = el("header");
+  header.appendChild(el("div", "name", data.name || ""));
+  var contact = el("div", "contact");
+  (data.contact || []).forEach(function (c, i) {
+    if (i) { var s = el("span", "sep"); s.textContent = isZh ? "｜" : "·"; contact.appendChild(s); }
+    if (c && c.href) { var a = el("a"); a.href = c.href; a.textContent = c.text || c.href; contact.appendChild(a); }
+    else { contact.appendChild(document.createTextNode(typeof c === "string" ? c : ((c && c.text) || ""))); }
+  });
+  header.appendChild(contact);
+  root.appendChild(header);
+
+  /* ---------- date + recipient ---------- */
+  var meta = el("div", "meta");
+  if (data.date) meta.appendChild(el("div", "date", (isZh ? "日期：" : "Date: ") + data.date));
+  var recip = el("div", "recipient");
+  (data.recipient || []).forEach(function (line) { recip.appendChild(el("div", null, line)); });
+  meta.appendChild(recip);
+  root.appendChild(meta);
+
+  /* ---------- subject ---------- */
+  if (data.subject) {
+    root.appendChild(el("div", "subject", (isZh ? "主题：" : "Subject: ") + data.subject));
+  }
+
+  /* ---------- salutation ---------- */
+  if (data.salutation) root.appendChild(el("div", "salutation", data.salutation));
+
+  /* ---------- body ---------- */
+  var body = el("div", "body");
+  (data.paragraphs || []).forEach(function (p) { body.appendChild(el("p", null, p)); });
+  root.appendChild(body);
+
+  /* ---------- closing + signature ---------- */
+  if (data.closing) root.appendChild(el("div", "closing", data.closing));
+  if (data.signature) root.appendChild(el("div", "signature", data.signature));
+})();
+</script>
+</body>
+</html>

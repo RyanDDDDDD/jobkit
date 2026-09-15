@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Resume</title>
+<style>
+  /* jobkit render rewrites url("fonts/...") to absolute file:/// paths under
+     templates/fonts/ (or a sibling fonts/ for workspace overrides). Keep the
+     "fonts/" prefix, double quotes, no "./". */
+  @font-face { font-family: "Newsreader"; src: url("fonts/Newsreader.woff2") format("woff2");
+    font-weight: 400 600; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Source Serif 4"; src: url("fonts/SourceSerif4.woff2") format("woff2");
+    font-weight: 400 600; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Source Sans 3"; src: url("fonts/SourceSans3.woff2") format("woff2");
+    font-weight: 400 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Noto Sans SC"; src: url("fonts/NotoSansSC.woff2") format("woff2");
+    font-weight: 400 700; font-style: normal; font-display: swap; }
+
+  @page { size: Letter; margin: 13mm 15mm 12mm; }
+
+  /* Engineering Dossier — cool graphite + one steel accent; print-first, no chrome. */
+  :root {
+    --ink: #141820;
+    --soft: #3f4754;
+    --mute: #6b7380;
+    --hair: #c5cad3;
+    --rule: #141820;
+    --label: #1a4f7a;
+    --body: "Source Serif 4", Georgia, "Times New Roman", "Noto Serif CJK SC", "Songti SC", serif;
+    --display: "Newsreader", Georgia, "Noto Serif CJK SC", "Songti SC", serif;
+  }
+  :lang(zh) {
+    --body: "Source Serif 4", "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "PingFang SC", "Microsoft YaHei", "SimSun", serif;
+    --display: "Newsreader", "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "PingFang SC", "Microsoft YaHei", "SimSun", serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--body);
+    font-size: 10pt;
+    line-height: 1.4;
+    color: var(--ink);
+    font-feature-settings: "onum" 1, "kern" 1;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  body.compact { font-size: 9.35pt; line-height: 1.32; }
+  body.compact section { margin-bottom: 8pt; }
+  body.compact .entry { margin-bottom: 7pt; }
+  body.compact ul.intro li { margin-bottom: 3pt; }
+
+  header { text-align: center; margin-bottom: 11pt; padding-bottom: 8pt; border-bottom: 1.25pt solid var(--rule); }
+  .name {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 24pt;
+    letter-spacing: 0.02em;
+    line-height: 1.08;
+    margin: 0 0 5pt;
+    color: var(--ink);
+  }
+  .contact { font-size: 8.6pt; color: var(--soft); letter-spacing: 0.015em; }
+  .contact a { color: inherit; text-decoration: none; }
+  .contact .sep { margin: 0 6px; color: var(--hair); }
+
+  section { margin-bottom: 10pt; }
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 11.5pt;
+    font-variant-caps: small-caps;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    border-bottom: 1pt solid var(--rule);
+    padding-bottom: 3pt;
+    margin: 0 0 6pt;
+    break-after: avoid;
+  }
+
+  ul { margin: 3pt 0 0; padding-left: 13pt; }
+  li { margin-bottom: 2.5pt; }
+  li::marker { color: var(--mute); }
+  ul.intro { list-style: none; padding: 0; margin: 0; }
+  ul.intro li { margin-bottom: 3.5pt; }
+  ul.intro strong { font-weight: 600; color: var(--ink); }
+
+  .entry { margin-bottom: 8pt; break-inside: avoid; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; }
+  .primary { font-weight: 600; font-size: 10.4pt; color: var(--ink); }
+  .meta-right { font-size: 8.75pt; color: var(--mute); font-feature-settings: "tnum" 1; white-space: nowrap; }
+  .secondary { color: var(--soft); font-size: 9.35pt; }
+  .stack { margin: 3pt 0 1pt; font-size: 8.85pt; color: var(--soft); }
+  .stack .lbl,
+  .summary .lbl,
+  .skills .lbl {
+    font-family: var(--display);
+    font-weight: 600;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.03em;
+    font-size: 8.75pt;
+    color: var(--label);
+    margin-right: 5px;
+  }
+  .summary {
+    margin: 1pt 0 2.5pt;
+    font-size: 9.15pt;
+    color: var(--soft);
+    line-height: 1.36;
+    text-align: justify;
+  }
+
+  .edu-item { break-inside: avoid; margin-bottom: 4pt; }
+  .edu-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; margin-bottom: 2pt; }
+  .edu-row .primary { font-weight: 600; font-size: 10pt; }
+  .edu-note { font-weight: 400; font-size: 8.35pt; color: var(--mute); margin-left: 4px; }
+
+  .skills p { margin: 2.5pt 0; }
+  .plainlist { margin: 4pt 0 0; padding-left: 13pt; }
+  .plainlist li { break-inside: avoid; }
+  p, li { orphans: 2; widows: 2; }
+
+  /* ---- Domestic Chinese: compact sans dossier on A4 ---- */
+  body.domestic-zh {
+    --ink: #141820;
+    --soft: #3f4754;
+    --mute: #6b7380;
+    --hair: #c5cad3;
+    --rule: #141820;
+    --label: #1a4f7a;
+    --body: "Noto Sans SC", "Source Sans 3", "Microsoft YaHei", "PingFang SC", "Source Han Sans SC", "Segoe UI", sans-serif;
+    --display: "Noto Sans SC", "Source Sans 3", "Microsoft YaHei", "PingFang SC", "Source Han Sans SC", "Segoe UI", sans-serif;
+    font-family: var(--body);
+    font-size: 9.15pt;
+    line-height: 1.3;
+    font-feature-settings: normal;
+  }
+  body.domestic-zh.compact { font-size: 9pt; line-height: 1.28; }
+  body.domestic-zh.compact section { margin-bottom: 8px; }
+  body.domestic-zh.compact .entry { margin-bottom: 7px; }
+  body.domestic-zh.compact ul.intro li { margin-bottom: 3px; }
+
+  body.domestic-zh header {
+    display: block;
+    text-align: center;
+    padding-bottom: 4px;
+    border-bottom: none;
+    margin-bottom: 8px;
+  }
+  body.domestic-zh .name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 20pt;
+    letter-spacing: 0.22em;
+    line-height: 1.15;
+    margin: 0 0 6px;
+    text-indent: 0.22em; /* optical center with letter-spacing */
+  }
+  body.domestic-zh .contact {
+    text-align: center;
+    font-size: 8.5pt;
+    color: var(--soft);
+    letter-spacing: 0;
+    line-height: 1.35;
+  }
+  body.domestic-zh .contact .sep {
+    display: inline;
+    margin: 0 7px;
+    color: var(--hair);
+  }
+  body.domestic-zh .contact .c-line { display: inline; }
+  body.domestic-zh .contact a { color: inherit; text-decoration: none; }
+  body.domestic-zh .contact a:hover { color: var(--label); }
+
+  body.domestic-zh section { margin-bottom: 9px; }
+  body.domestic-zh h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 10.75pt;
+    font-variant-caps: normal;
+    letter-spacing: 0.08em;
+    border-bottom: 1.75pt solid var(--rule);
+    border-left: none;
+    padding: 0 0 4px 0;
+    margin: 0 0 6px;
+  }
+  body.domestic-zh ul { margin: 2px 0 0; padding-left: 1.1em; }
+  body.domestic-zh li { margin-bottom: 2px; text-align: justify; }
+  body.domestic-zh ul.intro li { margin-bottom: 3px; text-align: justify; }
+  body.domestic-zh ul.intro strong { font-weight: 700; color: var(--ink); }
+  body.domestic-zh .entry { margin-bottom: 8px; padding-bottom: 1px; }
+  body.domestic-zh .primary { font-weight: 700; font-size: 9.7pt; }
+  body.domestic-zh .meta-right { font-size: 8.1pt; color: var(--mute); }
+  body.domestic-zh .secondary { font-size: 8.6pt; color: var(--soft); }
+  body.domestic-zh .stack { margin: 3px 0 1px; font-size: 8.1pt; color: var(--soft); }
+  body.domestic-zh .stack .lbl,
+  body.domestic-zh .summary .lbl,
+  body.domestic-zh .skills .lbl {
+    font-family: var(--display);
+    font-weight: 700;
+    font-variant-caps: normal;
+    letter-spacing: 0;
+    font-size: 8.1pt;
+    color: var(--label);
+    margin-right: 5px;
+    display: inline-block;
+    min-width: 3.6em;
+  }
+  body.domestic-zh .summary {
+    margin: 2px 0 3px;
+    font-size: 8.35pt;
+    color: var(--soft);
+    line-height: 1.34;
+    text-align: justify;
+  }
+  body.domestic-zh .edu-item { margin-bottom: 4px; }
+  body.domestic-zh .edu-row .primary { font-size: 9.6pt; }
+  body.domestic-zh .edu-note { font-size: 8pt; color: var(--mute); }
+  body.domestic-zh .skills p { margin: 0 0 3px; text-align: justify; }
+</style>
+</head>
+<body>
+<main id="resume"></main>
+
+<script type="application/json" id="resume-data">
+{{DATA_JSON}}
+</script>
+
+<script>
+(function () {
+  "use strict";
+  var data;
+  try {
+    data = JSON.parse(document.getElementById("resume-data").textContent);
+    if (!data || typeof data !== "object") throw new Error("expected a JSON object");
+  } catch (e) {
+    document.getElementById("resume").textContent = "Invalid resume JSON: " + e.message;
+    return;
+  }
+
+  var root = document.getElementById("resume");
+  var isZh = data.lang === "zh";
+  if (data.density === "compact") document.body.classList.add("compact");
+  if (data.lang) document.documentElement.setAttribute("lang", data.lang);
+  if (isZh) {
+    document.body.classList.add("domestic-zh");
+    var pageStyle = document.createElement("style");
+    pageStyle.textContent = "@page { size: A4; margin: 10mm 11mm 10mm; }";
+    document.head.appendChild(pageStyle);
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function frag(items, fn) { var f = document.createDocumentFragment(); (items || []).forEach(function (x) { f.appendChild(fn(x)); }); return f; }
+
+  /* ---------- header ---------- */
+  var header = el("header");
+  header.appendChild(el("div", "name", data.name || ""));
+  var contact = el("div", "contact");
+  (data.contact || []).forEach(function (c, i) {
+    if (i) {
+      var s = el("span", "sep");
+      s.textContent = isZh ? "｜" : "·";
+      contact.appendChild(s);
+    }
+    if (c && c.href) {
+      var a = el("a"); a.href = c.href; a.textContent = c.text || c.href; contact.appendChild(a);
+    } else {
+      contact.appendChild(document.createTextNode(typeof c === "string" ? c : ((c && c.text) || "")));
+    }
+  });
+  header.appendChild(contact);
+  root.appendChild(header);
+
+  /* ---------- introduction (optional) ---------- */
+  if (data.intro && data.intro.length) {
+    var s = el("section");
+    s.appendChild(el("h2", null, data.introTitle || (isZh ? "简介" : "Introduction")));
+    var ul = el("ul", "intro");
+    ul.appendChild(frag(data.intro, function (b) {
+      var li = el("li");
+      if (b.lead) {
+        var strong = el("strong", null, b.lead.replace(/[.:。．：]\s*$/, "") + (isZh ? "。" : "."));
+        li.appendChild(strong);
+        li.appendChild(document.createTextNode((isZh ? "" : " ") + (b.text || "")));
+      }
+      else { li.textContent = typeof b === "string" ? b : (b.text || ""); }
+      return li;
+    }));
+    s.appendChild(ul);
+    root.appendChild(s);
+  }
+
+  /* ---------- sections ---------- */
+  var renderers = {
+    entries: function (sec) {
+      return frag(sec.items, function (it) {
+        var e = el("div", "entry");
+        var r1 = el("div", "row");
+        r1.appendChild(el("span", "primary", it.primary || it.role || it.name || ""));
+        if (it.dates || it.metaRight) r1.appendChild(el("span", "meta-right", it.dates || it.metaRight));
+        e.appendChild(r1);
+        if (it.secondary || it.org || it.location) {
+          var r2 = el("div", "row");
+          r2.appendChild(el("span", "secondary", it.secondary || it.org || ""));
+          if (it.location) r2.appendChild(el("span", "meta-right", it.location));
+          e.appendChild(r2);
+        }
+        if (it.stack) {
+          var p = el("p", "stack");
+          p.appendChild(el("span", "lbl", it.stackLabel || (isZh ? "技术栈：" : "Stack")));
+          p.appendChild(document.createTextNode(it.stack || ""));
+          e.appendChild(p);
+        }
+        var summaryText = it.summary || it.overview || it.description || "";
+        if (summaryText) {
+          var sum = el("p", "summary");
+          sum.appendChild(el("span", "lbl", it.summaryLabel || (isZh ? "介绍：" : "Summary")));
+          sum.appendChild(document.createTextNode(summaryText));
+          e.appendChild(sum);
+        }
+        if (it.bullets && it.bullets.length) {
+          var bul = el("ul");
+          bul.appendChild(frag(it.bullets, function (b) { return el("li", null, b); }));
+          e.appendChild(bul);
+        }
+        return e;
+      });
+    },
+    education: function (sec) {
+      return frag(sec.items, function (it) {
+        var f = el("div", "edu-item");
+        var r1 = el("div", "edu-row");
+        var inst = el("span", "primary");
+        inst.appendChild(document.createTextNode(it.institution || ""));
+        if (it.note || it.qs) {
+          var note = el("span", "edu-note", "（" + (it.note || it.qs) + "）");
+          inst.appendChild(note);
+        }
+        r1.appendChild(inst);
+        if (it.dates) r1.appendChild(el("span", "meta-right", it.dates));
+        f.appendChild(r1);
+        if (it.credential || it.gpa || it.location) {
+          var r2 = el("div", "edu-row");
+          var credBits = [];
+          if (it.credential) credBits.push(it.credential);
+          if (it.gpa) credBits.push(it.gpa);
+          r2.appendChild(el("span", "secondary", credBits.join(" · ")));
+          if (it.location) r2.appendChild(el("span", "meta-right", it.location));
+          f.appendChild(r2);
+        }
+        return f;
+      });
+    },
+    skills: function (sec) {
+      return frag(sec.groups, function (g) {
+        var p = el("p");
+        var label = g.label || "";
+        if (isZh && label && label.slice(-1) !== "：" && label.slice(-1) !== ":") label = label + "：";
+        p.appendChild(el("span", "lbl", label));
+        p.appendChild(document.createTextNode(g.value || ""));
+        return p;
+      });
+    },
+    list: function (sec) {
+      var list = el("ul", "plainlist");
+      list.appendChild(frag(sec.items, function (x) { return el("li", null, x); }));
+      return list;
+    }
+  };
+
+  (data.sections || []).forEach(function (sec) {
+    var secEl = el("section");
+    if (sec.type === "skills") secEl.classList.add("skills");
+    secEl.appendChild(el("h2", null, sec.title));
+    var fn = renderers[sec.type] || renderers.entries;
+    secEl.appendChild(fn(sec));
+    root.appendChild(secEl);
+  });
+})();
+</script>
+</body>
+</html>

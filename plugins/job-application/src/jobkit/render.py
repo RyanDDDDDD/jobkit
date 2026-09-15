@@ -21,6 +21,21 @@ from playwright.sync_api import sync_playwright
 from jobkit.config import get_job_app_config
 
 
+def _resolve_font_dir(template_path: Path) -> Path:
+    """Locate the fonts/ directory for a template HTML file.
+
+    Precedence: sibling ``fonts/`` (workspace override or flat layout), then
+    parent ``fonts/`` (bundled ``templates/<theme>/*.html`` → ``templates/fonts``).
+    """
+    sibling = template_path.parent / "fonts"
+    if sibling.is_dir():
+        return sibling
+    parent_fonts = template_path.parent.parent / "fonts"
+    if parent_fonts.is_dir():
+        return parent_fonts
+    return sibling
+
+
 @dataclass
 class RenderJob:
     template_path: str
@@ -55,9 +70,12 @@ def _prepare(job: RenderJob) -> tuple[str, Path, Path]:
     html = tpl.replace("{{DATA_JSON}}", json_text)
 
     # Chromium resolves relative url() against the page's URL. Rewrite the
-    # bundled-font url("fonts/...") strings to absolute file:/// paths at the
-    # template's own fonts/ dir so the woff2 faces load instead of falling back.
-    font_dir_url = (template_path.parent / "fonts").as_uri() + "/"
+    # bundled-font url("fonts/...") strings to absolute file:/// paths so the
+    # woff2 faces load instead of falling back. Themes live under
+    # templates/<theme>/; shared fonts live under templates/fonts/. A workspace
+    # override may keep fonts next to the HTML instead.
+    font_dir = _resolve_font_dir(template_path)
+    font_dir_url = font_dir.as_uri() + "/"
     html = html.replace('url("fonts/', f'url("{font_dir_url}')
 
     # The .rendered.html is the data spliced into the template -- a sibling of the

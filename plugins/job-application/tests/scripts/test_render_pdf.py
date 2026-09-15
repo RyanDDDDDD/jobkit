@@ -42,11 +42,17 @@ def test_render_pdf_has_no_placeholder_param():
 
 
 def test_both_templates_use_the_shared_data_token():
-    for tpl in (TEMPLATE, COVER_TEMPLATE):
-        text = tpl.read_text(encoding="utf-8")
-        assert "{{DATA_JSON}}" in text
-        assert "{{RESUME_JSON}}" not in text
-        assert "{{COVER_LETTER_JSON}}" not in text
+    from jobkit._assets import RESUME_TEMPLATES
+    for theme in RESUME_TEMPLATES:
+        for kind in ("resume", "cover_letter"):
+            tpl = template_path(kind, theme)
+            text = tpl.read_text(encoding="utf-8")
+            assert "{{DATA_JSON}}" in text
+            assert "{{RESUME_JSON}}" not in text
+            assert "{{COVER_LETTER_JSON}}" not in text
+            if kind == "resume":
+                assert "appendInlineMd" in text
+                assert ".entry ul strong" in text
 
 
 def test_cover_letter_renders_with_shared_token(tmp_path):
@@ -142,13 +148,36 @@ def test_output_path_with_space_renders_ok(tmp_path):
     assert Path(result.pdf).is_file()
 
 
-def test_keep_html_rewrites_font_urls_to_absolute(tmp_path):
+def test_experience_bold_markdown_becomes_strong(tmp_path):
+    """Issue #32: **Category:** body must render as <strong>, not literal asterisks."""
+    data = tmp_path / "bold.json"
+    data.write_text(
+        '{"name":"Testy McTest","contact":["x@example.com"],"sections":['
+        '{"title":"Experience","type":"entries","items":[{"primary":"Engineer",'
+        '"secondary":"Co","dates":"2024-Present","bullets":['
+        '"**Performance Tuning:** Profiled with perf and cut latency.",'
+        '"**跨平台 Qt 界面：** 交付了多平台客户端."'
+        ']}]}]}',
+        encoding="utf-8",
+    )
+    result = render_pdf(str(TEMPLATE), str(data), str(tmp_path / "bold.pdf"), keep_html=True)
+    assert result.ok, result.log
+    html = Path(result.html).read_text(encoding="utf-8")
+    # After Chromium executes the template script, keep_html is the *pre*-JS
+    # spliced source. Assert the template contains the helper and the PDF
+    # does not show literal ** markers.
+    assert "appendInlineMd" in TEMPLATE.read_text(encoding="utf-8")
+    text = extract_text(result.pdf)
+    assert "**" not in text
+    assert "Performance Tuning" in text
+    assert "Profiled with perf" in text
+    assert "跨平台 Qt 界面" in text
     data = tmp_path / "s.json"
     data.write_text('{"name":"Testy McTest","contact":["x@example.com"]}', encoding="utf-8")
     result = render_pdf(str(TEMPLATE), str(data), str(tmp_path / "k.pdf"), keep_html=True)
     rendered = Path(result.html).read_text(encoding="utf-8")
     assert 'url("fonts/' not in rendered
-    assert rendered.count('src: url("file://') == 2
+    assert rendered.count('src: url("file://') == 4
 
 
 def test_keep_html_lands_next_to_data_path(tmp_path):

@@ -20,12 +20,11 @@ the user wants. All three operate on one company's per-application directory.
 - `--lang en|zh` — language for every artifact this skill writes this session:
   `interview/company_research.md`, `interview/self_intro.md`,
   `interview/hr_questions_prep.md`, the mock chat and its session record, and any
-  `{playbook}` entries appended this run. Default:
-  `{dir}/tmp/resume.data.json`'s `lang` field — the decision `apply` already made for
-  this application. Override with `--lang` when the interview will happen in a
-  different language than the résumé was generated in (e.g. an English résumé
-  screened for a role interviewed in Chinese). This does **not** affect the initial
-  `{playbook}` seed copy (see Inputs and paths), which always stays
+  `{playbook}` entries appended this run. Default, in order: (1) explicit `--lang`;
+  (2) `{dir}/tmp/resume.data.json`'s `lang` if present; (3) workspace
+  `jobapp.config.yml` `lang`. Override when the interview language differs from the
+  résumé (e.g. English résumé, Chinese interview). This does **not** affect the
+  initial `{playbook}` seed copy (see Inputs and paths), which always stays
   English.
 - `--focus "<role or project name>"` — `mock technical` only: restrict the deep-dive
   to the single matching grill target (one role or one project). Ignored by

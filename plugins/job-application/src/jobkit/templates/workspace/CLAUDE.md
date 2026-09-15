@@ -21,8 +21,9 @@ Nothing here is part of the plugin — this is all personal data and generated o
 - `applications/` — one folder per application (`jd.md`, `analysis.md`, `resume.*`,
   `cover_letter.*`, optional `answers.md`, `interview/`). Location set by `output_dir`
   in `jobapp.config.yml`.
-- `jobapp.config.yml` — resolves `source_of_truth_dir`, `output_dir`, and
-  `interview_playbook`.
+- `jobapp.config.yml` — resolves `source_of_truth_dir`, `output_dir`,
+  `interview_playbook`, plus workspace `lang` (`en`|`zh`) and `resume_template`
+  (`dossier`|`classic`|`modern-sans`) chosen at setup.
 
 ## Workflow
 
@@ -40,7 +41,9 @@ Then one pass per job:
 
 ## Preferences
 
-Résumé density (`compact` | `standard`) and whether to include a Selected Projects
-section live in `private/resume_sections/profile.yml` (`conventions.density` /
+Workspace language and résumé theme are set once at setup (`lang`,
+`resume_template` in `jobapp.config.yml`). Résumé density (`compact` | `standard`)
+and whether to include a Selected Projects section live in
+`private/resume_sections/profile.yml` (`conventions.density` /
 `conventions.include_projects`). Per-application "never claim" rules live in
 `private/resume_sections/factual-bounds.md`.

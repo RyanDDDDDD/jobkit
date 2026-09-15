@@ -16,6 +16,18 @@ def test_no_config_returns_defaults(tmp_path, monkeypatch):
     assert cfg["interview_playbook"] == "interview_playbook.md"
     assert cfg["root"] == str(tmp_path)
     assert cfg["browser_path"] is None
+    assert cfg["lang"] == "en"
+    assert cfg["resume_template"] == "dossier"
+
+
+def test_lang_and_template_override_wins(tmp_path, monkeypatch):
+    (tmp_path / "jobapp.config.yml").write_text(
+        'lang: "zh"\nresume_template: "classic"\n', encoding="utf-8"
+    )
+    monkeypatch.chdir(tmp_path)
+    cfg = get_job_app_config()
+    assert cfg["lang"] == "zh"
+    assert cfg["resume_template"] == "classic"
 
 
 def test_output_dir_override_wins(tmp_path, monkeypatch):

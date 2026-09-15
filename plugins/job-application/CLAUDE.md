@@ -25,8 +25,9 @@ mistaken for a second copy of the plugin.
 | `example/` | four rendered sample PDFs (résumé + cover letter, EN + ZH) | ours |
 
 Reference docs live at `src/jobkit/reference/` and are printed by `jobkit doc <name>`.
-Templates live at `src/jobkit/templates/` (HTML résumé / cover-letter templates +
-bundled fonts, workspace scaffold, section skeletons).
+Templates live at `src/jobkit/templates/` — shared `fonts/` (CN/EN pack), three
+theme packs (`dossier` / `classic` / `modern-sans` with résumé + cover letter),
+workspace scaffold, and section skeletons.
 
 There is no `commands/` directory; Claude Code lists plugin skills directly in the `/`
 picker as `/job-application:<skill>`.

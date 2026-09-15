@@ -15,21 +15,30 @@ Commands are `jobkit <sub>` (the plugin installs the `jobkit` CLI —
 `pip install jobkit`). If `jobkit` is not on `PATH`, `python -m jobkit <sub>`
 is exactly equivalent.
 
-1. **Scaffold.** If the working directory already has a top-level `resume_sections/`
+1. **Declare language + theme, then scaffold.** Ask the user (if not already
+   stated) for two workspace-level choices — do not guess:
+
+   - **Output language** `en` or `zh` — every apply / interview artifact defaults
+     to this language (resume, cover letter, optional answers, interview prep).
+   - **Resume template** `dossier` (default Engineering Dossier), `classic`
+     (conservative ATS serif), or `modern-sans` (all-sans, A4-friendly).
+
+   If the working directory already has a top-level `resume_sections/`
    or `interview_playbook.md` and no `jobapp.config.yml`, it is a v0.3.x flat-layout
    workspace. Tell the user that setup introduces the `private/` layout: after it
    runs they must move that existing content under `private/` (or hand-write
    `jobapp.config.yml` with the flat paths and skip scaffolding). Get their
    go-ahead before continuing.
 
-   Run, in the current working directory:
+   Run, in the current working directory (substitute the chosen values):
 
    ```
-   jobkit init --json
+   jobkit init --lang <en|zh> --template <dossier|classic|modern-sans> --json
    ```
 
-   It creates any of these that are absent, and never touches one that exists:
-   `jobapp.config.yml`, `CLAUDE.md`, `applications/`,
+   Both `--lang` and `--template` are **required**. The command writes them into
+   `jobapp.config.yml` and creates any of these that are absent (never touches one
+   that exists): `jobapp.config.yml`, `CLAUDE.md`, `applications/`,
    `private/resume_sections/{profile.yml, factual-bounds.md, introduction.md,
    skills.md, education.md}`, `private/resume_sections/{companies,projects}/`,
    `private/interview_playbook.md` (seeded from `jobkit doc interview-frameworks`),

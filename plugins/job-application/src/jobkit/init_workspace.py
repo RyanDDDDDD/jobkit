@@ -5,7 +5,7 @@ templates + a seeded interview_playbook.md + questions_to_ask.md), and an empty
 applications/ directory. Strictly non-destructive: a file that already exists is
 never read, modified, or deleted.
 
-CLI usage: jobkit init [target] [--json]
+CLI usage: jobkit init --lang en|zh --template dossier|classic|modern-sans [target] [--json]
 prints a created/skipped summary (default) or a JSON object with --json.
 """
 import argparse
@@ -14,7 +14,14 @@ import shutil
 import sys
 from pathlib import Path
 
-from jobkit._assets import resource_text, templates_dir
+from jobkit._assets import (
+    DEFAULT_LANG,
+    DEFAULT_RESUME_TEMPLATE,
+    LANGS,
+    RESUME_TEMPLATES,
+    resource_text,
+    templates_dir,
+)
 
 # Empty directories to ensure exist (mkdir -p); git does not track them.
 SCAFFOLD_DIRS = (
@@ -23,10 +30,39 @@ SCAFFOLD_DIRS = (
     "private/resume_sections/projects",
 )
 
+_CONFIG_TEMPLATE = """\
+# Working-directory config for the job-application (jobkit) plugin.
+# The plugin resolves these by walking up from the current directory (config.py).
 
-def init_workspace(target: str) -> dict:
+# Output language for apply / interview (en | zh). Required at setup.
+lang: "{lang}"
+
+# Bundled résumé + cover-letter theme (dossier | classic | modern-sans).
+resume_template: "{resume_template}"
+
+# browser_path: "%ProgramFiles(x86)%/Microsoft/Edge/Application/msedge.exe"
+source_of_truth_dir: "private/resume_sections"
+output_dir: "applications/{{Company}}"
+interview_playbook: "private/interview_playbook.md"
+"""
+
+
+def init_workspace(
+    target: str,
+    lang: str = DEFAULT_LANG,
+    resume_template: str = DEFAULT_RESUME_TEMPLATE,
+) -> dict:
     """Scaffold `target`. Return {"created": [...], "skipped": [...], "warnings": [...]}
     of paths relative to `target` (POSIX form, sorted). Never modifies an existing file."""
+    lang = lang.strip().lower()
+    if lang not in LANGS:
+        raise ValueError(f"lang must be one of {', '.join(LANGS)}; got {lang!r}")
+    if resume_template not in RESUME_TEMPLATES:
+        raise ValueError(
+            f"resume_template must be one of {', '.join(RESUME_TEMPLATES)}; "
+            f"got {resume_template!r}"
+        )
+
     root = Path(target).resolve()
     template_root = templates_dir() / "workspace"
     if not template_root.is_dir():
@@ -47,11 +83,26 @@ def init_workspace(target: str) -> dict:
         shutil.copyfile(src, dest)
         created.append(rel)
 
-    # 1. Copy every template file, preserving the relative layout.
+    # 1. Copy every template file except jobapp.config.yml (written below with
+    #    the chosen lang / resume_template).
     for src in sorted(p for p in template_root.rglob("*") if p.is_file()):
-        place(root / src.relative_to(template_root), src)
+        rel = src.relative_to(template_root)
+        if rel.as_posix() == "jobapp.config.yml":
+            continue
+        place(root / rel, src)
 
-    # 2. Seed the interview playbook from the plugin's framework reference.
+    # 2. Write jobapp.config.yml with the declared language + theme.
+    config_dest = root / "jobapp.config.yml"
+    if config_dest.exists():
+        skipped.append("jobapp.config.yml")
+    else:
+        config_dest.write_text(
+            _CONFIG_TEMPLATE.format(lang=lang, resume_template=resume_template),
+            encoding="utf-8",
+        )
+        created.append("jobapp.config.yml")
+
+    # 3. Seed the interview playbook from the plugin's framework reference.
     playbook = root / "private" / "interview_playbook.md"
     if playbook.exists():
         skipped.append(playbook.relative_to(root).as_posix())
@@ -62,7 +113,7 @@ def init_workspace(target: str) -> dict:
         )
         created.append(playbook.relative_to(root).as_posix())
 
-    # 3. Ensure the empty scaffold directories exist.
+    # 4. Ensure the empty scaffold directories exist.
     for d in SCAFFOLD_DIRS:
         (root / d).mkdir(parents=True, exist_ok=True)
 
@@ -107,10 +158,17 @@ def _format_summary(result: dict, target: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("target", nargs="?", default=".")
+    parser.add_argument("--lang", required=True, choices=list(LANGS))
+    parser.add_argument(
+        "--template",
+        required=True,
+        choices=list(RESUME_TEMPLATES),
+        dest="resume_template",
+    )
     parser.add_argument("--json", action="store_true", help="emit JSON instead of text")
     args = parser.parse_args()
     try:
-        result = init_workspace(args.target)
+        result = init_workspace(args.target, args.lang, args.resume_template)
     except Exception as exc:
         print(str(exc), file=sys.stderr)
         sys.exit(1)

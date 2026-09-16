@@ -95,7 +95,11 @@ is exactly equivalent.
 6. **Render both PDFs in one call.** Both `.data.json` files are already on disk
    from step 5 (see "## Building the data files"). Render the résumé and the cover
    letter in a **single** `jobkit render` invocation — `--kind` / `--data` / `--out`
-   are repeatable and zipped positionally, so one Chromium launch produces both:
+   are repeatable and zipped positionally, so one Chromium launch produces both,
+   and the call itself compresses each successfully-rendered PDF, writes
+   `{dir}/cover_letter.txt` for the `cover_letter` job, cleans up its own
+   `.rendered.html` temp files, and prints a `Report:` block — there is nothing
+   left to run after it:
 
    ```
    jobkit render \
@@ -105,23 +109,24 @@ is exactly equivalent.
 
    The command prints one `OK: <pdf> (N page[s])` line per document and exits 0
    only if **both** rendered. On a non-zero exit, apply the
-   `jobkit doc render-contract` failure handling **per
-   failed document** (surface its `Render failed [<pdf>]:` text, keep that
-   `.data.json`, do not compress it, do not claim success); a document that
-   rendered is still usable. On success, compress both in one call —
-   `jobkit compress --pdf {dir}/resume.pdf --pdf {dir}/cover_letter.pdf`
-   — then `jobkit cover-txt --data {dir}/tmp/cover_letter.data.json
-   --out {dir}/cover_letter.txt`.
+   `jobkit doc render-contract` failure handling **per failed document**
+   (surface its `Render failed [<pdf>]:` text, keep that `.data.json`, do not
+   claim success); a document that rendered is still usable — it is compressed
+   and (if it's the cover letter) converted to `.txt` regardless of whether its
+   sibling job failed. A `WARN: compress failed …` or `WARN: cover-txt failed …`
+   line does not mean the render failed — the PDF itself is still a valid
+   deliverable, just not compressed (or, for the cover letter, missing its
+   `.txt`).
 
-7. **Clean up.** `jobkit render` removes each job's `.rendered.html`. End state:
-    `{dir}/` has `jd.md`, `analysis.md`, `resume.pdf`, `cover_letter.pdf`,
-    `cover_letter.txt`; `{dir}/tmp/` has `resume.data.json`,
-    `cover_letter.data.json`.
+   End state: `{dir}/` has `jd.md`, `analysis.md`, `resume.pdf`,
+   `cover_letter.pdf`, `cover_letter.txt`; `{dir}/tmp/` has `resume.data.json`,
+   `cover_letter.data.json`.
 
-8. **Report.** Files written; résumé page count (from the `OK:` line) and cover
-    letter page count; any `analysis.md` `gap` the documents honestly do not
-    cover (expected — state it); the `--density` / `--lang` applied and whether
-    Selected Projects was included; the experience ordering used.
+7. **Report.** Relay the `Report:` block `jobkit render` already printed to the
+   user — page counts, `--density`/`--lang`, whether Selected Projects was
+   included, the experience ordering used, and any `analysis.md` gap the
+   documents honestly do not cover (expected — state it, do not paper over it).
+   Reformatting for chat is fine; inventing or omitting a line is not.
 
 ## Building the data files
 

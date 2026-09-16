@@ -131,3 +131,12 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
 
 18. **No `review.md` is written.** `apply` no longer runs a self-check step, so
     `applications/Testco/review.md` does not exist.
+
+19. **`jobkit render`'s Report block was printed and reflects the real gap.**
+    The `jobkit render` invocation from step 6 prints a `Report:` block to
+    stdout containing a `Selected Projects included:` line and an
+    `analysis.md gaps not covered:` line whose text includes the healthcare
+    interoperability (HL7 v2 / FHIR) criterion from `analysis.md`
+    `## Criteria → Evidence` (assertion 3a) — the same gap `## Fit` (assertion
+    4) already accounts for. Nothing in the transcript claims a separate
+    `compress` or `cover-txt` command was run.

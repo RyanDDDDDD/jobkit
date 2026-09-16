@@ -112,3 +112,10 @@ def test_render_uses_bundled_template(tmp_path, kind, chromium_or_skip):
     assert r.returncode == 0, r.stderr
     assert r.stdout.startswith("OK:")
     assert out.is_file()
+    assert "Report:" in r.stdout
+    txt = out.with_suffix(".txt")
+    if kind == "cover_letter":
+        assert txt.is_file()
+        assert txt.read_text(encoding="utf-8").startswith("Subject:")
+    else:
+        assert not txt.is_file()

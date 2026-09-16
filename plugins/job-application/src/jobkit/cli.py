@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 import subprocess
 import sys
 
@@ -20,6 +21,7 @@ from jobkit.docs import DOC_NAMES, read_doc
 from jobkit.extract_cv import extract_text
 from jobkit.init_workspace import init_workspace
 from jobkit.render import RenderJob, render_batch
+from jobkit.report import build_report
 from jobkit.scaffold import scaffold_data
 
 
@@ -45,14 +47,28 @@ def _cmd_render(a) -> int:
         ))
         jobs.append(RenderJob(tp, data, out))
     results = render_batch(jobs, keep_html=a.keep_html)
+
     any_failed = False
-    for r in results:
-        if r.ok:
-            suffix = "" if r.pages == 1 else "s"
-            print(f"OK: {r.pdf} ({r.pages} page{suffix})")
-        else:
+    for kind, job, r in zip(a.kind, jobs, results):
+        if not r.ok:
             any_failed = True
             print(f"Render failed [{r.pdf}]:\n{r.log}", file=sys.stderr)
+            continue
+        suffix = "" if r.pages == 1 else "s"
+        print(f"OK: {r.pdf} ({r.pages} page{suffix})")
+        try:
+            compress_pdf(r.pdf)
+        except Exception as exc:
+            print(f"WARN: compress failed for {r.pdf}: {exc}", file=sys.stderr)
+        if kind == "cover_letter":
+            try:
+                cover_letter_to_text(job.data_path, str(Path(r.pdf).with_suffix(".txt")))
+            except Exception as exc:
+                print(f"WARN: cover-txt failed for {r.pdf}: {exc}", file=sys.stderr)
+
+    report = build_report(jobs, results)
+    if report:
+        print(report)
     return 1 if any_failed else 0
 
 

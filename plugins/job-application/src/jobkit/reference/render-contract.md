@@ -37,10 +37,11 @@ data (usually an invalid JSON string or a wrong shape) and re-render.
 "Invalid resume JSON: …" / "Invalid cover letter JSON: …" page for a JSON scalar or
 `null`, and a near-empty page for valid-JSON-but-wrong-shape (no `sections`).
 
-This guard is now `jobkit verify`'s `resume-roundtrip` / `cover-roundtrip`
-checks, run in step 9a against the PDFs already on disk — no re-render. A failure
-there is treated exactly like a render failure (surface it, keep the `.data.json`,
-do not compress, do not claim success).
+This guard is available via `jobkit verify`'s `resume-roundtrip` / `cover-roundtrip`
+checks against the PDFs already on disk — no re-render — for anyone who wants to
+double-check a rendered application by hand; `apply` does not run it automatically.
+A failure there is treated exactly like a render failure (surface it, keep the
+`.data.json`, do not compress, do not claim success).
 
 Ligature clusters (`ft`, `fi`) and a leading `+` do not survive text extraction on
 the bundled fonts — do not assert on strings that contain them.
@@ -50,5 +51,5 @@ the bundled fonts — do not assert on strings that contain them.
 The integer in the `OK: … (N page[s])` line. The résumé's soft ceiling is **2**. If
 it renders longer: WARN the user and list candidate trims (drop the lowest-ranked
 bullet per role, shorten the intro, drop a de-emphasized skill group). Never
-silently trim content to fit. `jobkit verify` also enforces this
+silently trim content to fit. `jobkit verify` can also check this by hand
 (`page-budget`: résumé ≤ 2, cover letter == 1).

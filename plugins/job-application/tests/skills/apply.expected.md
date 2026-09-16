@@ -129,16 +129,5 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     `tmp/resume.data.json` nor `tmp/cover_letter.data.json` claims HL7, FHIR,
     MuleSoft, Dell Boomi, or Workato experience.
 
-## Self-check
-
-18. **`review.md` exists with the expected sections.**
-    `applications/Testco/review.md` exists with `## Pass`, `## Flag`, and (if any
-    fix applied) `## Fix (applied)` sections. It does not assert the application
-    "passed" if the render failed.
-
-19. **The deterministic self-check ran and its `pass` checks are not re-flagged.**
-    `jobkit verify --dir applications/Testco --source-dir tests/fixtures/resume_sections --json`
-    exits 0. For the default fixture run it reports `fail == []` (the fixture
-    `profile.yml`, once rendered verbatim, matches; dates use ` – `; the fresh
-    `cover_letter.txt` is on disk). `review.md` contains no `## Fix (applied)`
-    item whose cause is a check `jobkit verify` reports under `pass`.
+18. **No `review.md` is written.** `apply` no longer runs a self-check step, so
+    `applications/Testco/review.md` does not exist.

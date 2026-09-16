@@ -89,16 +89,15 @@ Cursor → Settings → Plugins → Add marketplace → RyanDDDDDD/jobkit
 
 ```
 /job-application:setup [<folder>]     # once: scaffold + build the source of truth
-/job-application:apply [--density compact|standard] [--lang en|zh] [--answers "Q1; Q2"]
+/job-application:apply [--density compact|standard] [--lang en|zh]
 /job-application:interview research|prep|mock [behavioural|technical] [--lang en|zh]
 ```
 
-- `/job-application:apply` 在一轮内完成分析 → 生成 → 自检，写出 `jd.md`、`analysis.md`、
-  `review.md` 以及成品（`resume.pdf`、`cover_letter.pdf` / `cover_letter.txt`、可选的
-  `answers.md`）。参数：`--density compact|standard` 设置简历行距密度（默认取自
+- `/job-application:apply` 在一轮内完成分析 → 生成，写出 `jd.md`、`analysis.md`
+  以及成品（`resume.pdf`、`cover_letter.pdf` / `cover_letter.txt`）。参数：
+  `--density compact|standard` 设置简历行距密度（默认取自
   `profile.yml` `conventions.density`）；`--lang zh` 生成中文简历和求职信（正文由你的
-  英文事实来源翻译而来）；`--answers "Q1; Q2"` 会额外写出 `answers.md`。当 JD 使项目
-  相关时，Selected Projects 会自动加入。
+  英文事实来源翻译而来）。当 JD 使项目相关时，Selected Projects 会自动加入。
 - `/job-application:interview` 子命令：`research` 调度 `company-researcher` 子代理——它
   会先判断目标公司主要在国内还是海外招聘（或两者都有），据此选择搜索源（海外用
   Glassdoor/Seek/Indeed/LinkedIn；国内用 牛客网/脉脉/看准网/知乎/BOSS直聘）——写入
@@ -115,7 +114,7 @@ Cursor → Settings → Plugins → Add marketplace → RyanDDDDDD/jobkit
   这份申请 `apply` 时用的 `--lang`。
 
 每个申请的文件都落在同一个目录里 —— 默认是 `applications/{Company}/`。可交给他人查看或
-投递的成品与工作笔记平铺在根目录（`jd.md`、`analysis.md`、`review.md`、`resume.pdf`、
+投递的成品与工作笔记平铺在根目录（`jd.md`、`analysis.md`、`resume.pdf`、
 `cover_letter.pdf`、`cover_letter.txt`）；机器产物（`resume.data.json`、
 `cover_letter.data.json`）放在 `tmp/` 下，可随时重新生成；面试准备文件放在 `interview/` 下
 （模拟面试记录在 `interview/mock/<behavioural|technical>/<date>.md`）。完整目录树见

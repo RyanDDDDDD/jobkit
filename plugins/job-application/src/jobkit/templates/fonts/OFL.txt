@@ -2,6 +2,8 @@ Newsreader — Production Type — https://github.com/productiontype/Newsreader
 Source Serif 4 — Adobe — https://github.com/adobe-fonts/source-serif
 Source Sans 3 — Adobe — https://github.com/adobe-fonts/source-sans
 Noto Sans SC — Google / Adobe — https://github.com/notofonts/noto-cjk
+Space Grotesk — Florian Karsten — https://github.com/floriankarsten/space-grotesk
+DM Sans — Google Fonts — https://github.com/googlefonts/dm-fonts
 All licensed under the SIL Open Font License, Version 1.1.
 
 The WOFF2 files in this directory are OFL-licensed webfonts distributed via
@@ -13,6 +15,10 @@ Google Fonts (fonts.gstatic.com):
   NotoSansSC.woff2      — Simplified Chinese subset for résumé use (~resume
                           vocabulary + high-frequency characters). Glyphs
                           outside the subset fall back to system CJK faces.
+  SpaceGrotesk.woff2    — Latin display (variable 300–700), used by the
+                          "signal" theme's headings.
+  DMSans.woff2          — Latin body sans (variable 400–700), used by the
+                          "signal" and "aperture" themes' body text.
 
 Upstream copyright statements (OFL 1.1 requires these to travel with the fonts):
 
@@ -26,6 +32,11 @@ Upstream copyright statements (OFL 1.1 requires these to travel with the fonts):
   Source is a trademark of Adobe in the United States and/or other countries.
 
   Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)
+
+  Copyright 2020 The Space Grotesk Project Authors
+  (https://github.com/floriankarsten/space-grotesk).
+
+  Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts).
 
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007

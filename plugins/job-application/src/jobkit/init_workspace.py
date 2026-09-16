@@ -5,7 +5,7 @@ templates + a seeded interview_playbook.md + questions_to_ask.md), and an empty
 applications/ directory. Strictly non-destructive: a file that already exists is
 never read, modified, or deleted.
 
-CLI usage: jobkit init --lang en|zh --template dossier|classic|modern-sans [target] [--json]
+CLI usage: jobkit init --lang en|zh --template dossier|classic|modern-sans|signal|slate [target] [--json]
 prints a created/skipped summary (default) or a JSON object with --json.
 """
 import argparse
@@ -37,7 +37,7 @@ _CONFIG_TEMPLATE = """\
 # Output language for apply / interview (en | zh). Required at setup.
 lang: "{lang}"
 
-# Bundled résumé + cover-letter theme (dossier | classic | modern-sans).
+# Bundled résumé + cover-letter theme (dossier | classic | modern-sans | signal | slate).
 resume_template: "{resume_template}"
 
 # browser_path: "%ProgramFiles(x86)%/Microsoft/Edge/Application/msedge.exe"

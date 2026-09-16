@@ -34,6 +34,8 @@ def test_templates_dir_has_workspace_and_fonts():
         "SourceSerif4.woff2",
         "SourceSans3.woff2",
         "NotoSansSC.woff2",
+        "SpaceGrotesk.woff2",
+        "DMSans.woff2",
         "OFL.txt",
     ):
         assert (d / "fonts" / name).is_file(), name

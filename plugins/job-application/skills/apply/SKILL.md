@@ -29,7 +29,7 @@ Resolve paths with `jobkit config` (JSON: `root`, `source_of_truth_dir`,
 user to run `/job-application:setup` first and stop. `{dir}` =
 `<root>/<output_dir>` with the literal `{Company}` token replaced by the
 application name. Create `{dir}` and `{dir}/tmp`. The bundled theme is
-`resume_template` from config (`dossier` | `classic` | `modern-sans`);
+`resume_template` from config (`dossier` | `classic` | `modern-sans` | `signal` | `slate`);
 `jobkit render` picks `templates/<theme>/{resume,cover_letter}.html` automatically.
 A repo-level `<root>/templates/resume.html` / `cover_letter.html` override, if
 present, still wins. Machine artifacts (`resume.data.json`,

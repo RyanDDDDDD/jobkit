@@ -21,7 +21,9 @@ is exactly equivalent.
    - **Output language** `en` or `zh` — every apply / interview artifact defaults
      to this language (resume, cover letter, interview prep).
    - **Resume template** `dossier` (default Engineering Dossier), `classic`
-     (conservative ATS serif), or `modern-sans` (all-sans, A4-friendly).
+     (conservative ATS serif), `modern-sans` (all-sans, A4-friendly), `signal`
+     (Space Grotesk + DM Sans, cyan-to-purple accent), or `slate` (single-accent,
+     compact card-style layout).
 
    If the working directory already has a top-level `resume_sections/`
    or `interview_playbook.md` and no `jobapp.config.yml`, it is a v0.3.x flat-layout
@@ -33,7 +35,7 @@ is exactly equivalent.
    Run, in the current working directory (substitute the chosen values):
 
    ```
-   jobkit init --lang <en|zh> --template <dossier|classic|modern-sans> --json
+   jobkit init --lang <en|zh> --template <dossier|classic|modern-sans|signal|slate> --json
    ```
 
    Both `--lang` and `--template` are **required**. The command writes them into

@@ -81,11 +81,6 @@ def test_render_flag_count_mismatch_exits_2(tmp_path):
     assert "same number of times" in r.stderr
 
 
-def test_verify_missing_input_exits_1(tmp_path):
-    r = run("verify", "--dir", str(tmp_path), "--source-dir", str(tmp_path))
-    assert r.returncode == 1
-
-
 def test_scaffold_data_writes_both_files(tmp_path):
     source_dir = FIX / "resume_sections"
     r = run("scaffold-data", "--dir", str(tmp_path), "--source-dir", str(source_dir))

@@ -21,8 +21,6 @@ from jobkit.extract_cv import extract_text
 from jobkit.init_workspace import init_workspace
 from jobkit.render import RenderJob, render_batch
 from jobkit.scaffold import scaffold_data
-from jobkit.verify import verify
-from jobkit.verify import _format as _format_verify
 
 
 def _cmd_config(a) -> int:
@@ -67,16 +65,6 @@ def _cmd_compress(a) -> int:
 def _cmd_cover_txt(a) -> int:
     cover_letter_to_text(a.data, a.out)
     print(f"OK: {a.out}" if a.out else "OK: cover_letter.txt")
-    return 0
-
-
-def _cmd_verify(a) -> int:
-    try:
-        result = verify(a.dir, a.source_dir)
-    except FileNotFoundError as exc:
-        print(str(exc), file=sys.stderr)
-        return 1
-    print(json.dumps(result) if a.json else _format_verify(result))
     return 0
 
 
@@ -156,11 +144,6 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("cover-txt")
     s.add_argument("--data", required=True); s.add_argument("--out", default=None)
     s.set_defaults(fn=_cmd_cover_txt)
-
-    s = sub.add_parser("verify")
-    s.add_argument("--dir", required=True); s.add_argument("--source-dir", required=True)
-    s.add_argument("--json", action="store_true")
-    s.set_defaults(fn=_cmd_verify)
 
     s = sub.add_parser("scaffold-data")
     s.add_argument("--dir", required=True); s.add_argument("--source-dir", required=True)

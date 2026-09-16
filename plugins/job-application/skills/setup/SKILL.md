@@ -19,7 +19,7 @@ is exactly equivalent.
    stated) for two workspace-level choices — do not guess:
 
    - **Output language** `en` or `zh` — every apply / interview artifact defaults
-     to this language (resume, cover letter, optional answers, interview prep).
+     to this language (resume, cover letter, interview prep).
    - **Resume template** `dossier` (default Engineering Dossier), `classic`
      (conservative ATS serif), or `modern-sans` (all-sans, A4-friendly).
 

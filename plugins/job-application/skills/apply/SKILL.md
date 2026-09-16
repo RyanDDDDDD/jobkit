@@ -1,6 +1,6 @@
 ---
 name: apply
-description: Turn a job description into a tailored resume, cover letter, and optional form answers, then self-check the result. Analyzes the JD, retrieves evidence from the source of truth, renders and compresses the PDFs, and writes a QA report.
+description: Turn a job description into a tailored resume and cover letter. Analyzes the JD, retrieves evidence from the source of truth, and renders and compresses the PDFs.
 ---
 
 ## When to use
@@ -20,8 +20,6 @@ missing, tell the user to run `/job-application:setup` first and stop.
 - `--density compact|standard` — résumé spacing. Default: `profile.yml`
   `conventions.density` if set, else `compact`. Sets `density` in
   `resume.data.json`; the template's `compact` class tightens spacing ~12%.
-- `--answers "Q1; Q2; ..."` — also write `{dir}/answers.md`, one grounded answer
-  per `;`-separated question.
 
 ## Inputs and paths
 
@@ -36,7 +34,7 @@ application name. Create `{dir}` and `{dir}/tmp`. The bundled theme is
 A repo-level `<root>/templates/resume.html` / `cover_letter.html` override, if
 present, still wins. Machine artifacts (`resume.data.json`,
 `cover_letter.data.json`) live in `{dir}/tmp/`; `jd.md`, `analysis.md`,
-`review.md`, the PDFs, `cover_letter.txt`, and `answers.md` stay flat in `{dir}`.
+the PDFs, and `cover_letter.txt` stay flat in `{dir}`.
 Full tree: `jobkit doc output-layout`.
 
 Commands below are `jobkit <sub>` (the plugin installs the `jobkit` CLI —
@@ -77,11 +75,7 @@ is exactly equivalent.
    `met` / `partial` row cites a real `file:line`. Never soften a `gap` to
    `partial` without concrete evidence.
 
-5. **Hard-mismatch exit.** If `## Fit` is `hard-mismatch`: tell the user plainly
-   in chat that the role is a hard mismatch and recommend skipping it. Write
-   nothing further — no `.data.json`, no PDF, no `answers.md`. Stop.
-
-6. **Scaffold, then build the data objects.** Run `jobkit scaffold-data` (see
+5. **Scaffold, then build the data objects.** Run `jobkit scaffold-data` (see
    "## Building the data files" below) to write `{dir}/tmp/resume.data.json` and
    `{dir}/tmp/cover_letter.data.json` with every `profile.yml`-derived field
    already filled in verbatim — name, contact, lang, density, today's date, each
@@ -98,19 +92,14 @@ is exactly equivalent.
    scaffolded `items[]` array via `Edit` if `## Framing` calls for relevance
    order instead.
 
-7. **Bounds check** (before writing files) — re-read every line you are about to
-   place against `factual-bounds.md` and the `analysis.md` `gap` rows.
-   Reframing / re-weighting / combining real material is fine (workflow-rules §2).
-   Off-limits: `factual-bounds.md` violations and zero-basis claims — a
-   technology, employer, domain, or number that appears **nowhere** in
-   `{sourceDir}` (workflow-rules §3). On a conflict, **stop and ask the user**;
-   if they give a new true fact, tell them which source-of-truth file to add it to
-   and have them re-run — do not write it in from the chat alone.
-
-8. **Render both PDFs in one call.** Both `.data.json` files are already on disk
-   from step 6 (see "## Building the data files"). Render the résumé and the cover
+6. **Render both PDFs in one call.** Both `.data.json` files are already on disk
+   from step 5 (see "## Building the data files"). Render the résumé and the cover
    letter in a **single** `jobkit render` invocation — `--kind` / `--data` / `--out`
-   are repeatable and zipped positionally, so one Chromium launch produces both:
+   are repeatable and zipped positionally, so one Chromium launch produces both,
+   and the call itself compresses each successfully-rendered PDF, writes
+   `{dir}/cover_letter.txt` for the `cover_letter` job, cleans up its own
+   `.rendered.html` temp files, and prints a `Report:` block — there is nothing
+   left to run after it:
 
    ```
    jobkit render \
@@ -120,72 +109,24 @@ is exactly equivalent.
 
    The command prints one `OK: <pdf> (N page[s])` line per document and exits 0
    only if **both** rendered. On a non-zero exit, apply the
-   `jobkit doc render-contract` failure handling **per
-   failed document** (surface its `Render failed [<pdf>]:` text, keep that
-   `.data.json`, do not compress it, do not claim success); a document that
-   rendered is still usable. On success, compress both in one call —
-   `jobkit compress --pdf {dir}/resume.pdf --pdf {dir}/cover_letter.pdf`
-   — then `jobkit cover-txt --data {dir}/tmp/cover_letter.data.json
-   --out {dir}/cover_letter.txt`.
+   `jobkit doc render-contract` failure handling **per failed document**
+   (surface its `Render failed [<pdf>]:` text, keep that `.data.json`, do not
+   claim success); a document that rendered is still usable — it is compressed
+   and (if it's the cover letter) converted to `.txt` regardless of whether its
+   sibling job failed. A `WARN: compress failed …` or `WARN: cover-txt failed …`
+   line does not mean the render failed — the PDF itself is still a valid
+   deliverable, just not compressed (or, for the cover letter, missing its
+   `.txt`).
 
-9. **Self-check → `{dir}/review.md`.**
+   End state: `{dir}/` has `jd.md`, `analysis.md`, `resume.pdf`,
+   `cover_letter.pdf`, `cover_letter.txt`; `{dir}/tmp/` has `resume.data.json`,
+   `cover_letter.data.json`.
 
-   a. **Deterministic checks.** Run
-      `jobkit verify --dir {dir} --source-dir {sourceDir} --json`. It
-      reports `{ "pass": [...], "fail": [{id, detail}], "warn": [{id, detail}] }`
-      and always exits 0 (exit 1 only means a required input file is missing —
-      treat that as a render failure). The checks: `profile-roles-verbatim`,
-      `profile-education-verbatim`, `resume-roundtrip`, `cover-roundtrip`,
-      `page-budget`, `cover-txt-fresh`, `date-format`, and the advisory
-      `bullet-dupes` (a `warn`).
-
-   b. **Act on the report.** For each `fail[]` entry that matches a **safe
-      auto-fix** (see "## Self-check → Safe auto-fixes"): a
-      `profile-roles-verbatim` / `profile-education-verbatim` /
-      `date-format` failure → rewrite the offending `.data.json` field to the
-      `profile.yml` value verbatim; a `cover-txt-fresh` "stale" failure →
-      regenerate `{dir}/cover_letter.txt`. After an edit to a `.data.json`,
-      re-render **only that document** with a single-job `jobkit render` call and
-      recompress it (and regenerate the `.txt` if it was the cover letter); if the
-      re-render fails, revert the edit and move the item to `## Flag`. Every other
-      `fail[]` entry, and every `warn[]` entry that is not obviously spurious, goes
-      to `## Flag`.
-
-   c. **Semantic checks (LLM).** Judge only what a script cannot:
-      - **Compliance** — no `factual-bounds.md` rule violated (quote the rule + the
-        offending JSON string).
-      - **Zero-basis** — no technology, employer, domain, **or number** in either
-        JSON that appears nowhere in `{sourceDir}` (`jobkit verify` does not
-        judge this). Reframing real material to JD wording is not a violation.
-      - **JD coverage** — each numbered `## Essential` criterion is supported by ≥1
-        résumé bullet or skills-group entry; list every uncovered one. A criterion
-        the `## Criteria → Evidence` table marks `gap` that the résumé nonetheless
-        claims is a compliance violation.
-      - **Cover letter content** — between the `paragraphs[]`: total professional
-        SDE experience duration; the specific companies by name; the specific
-        business domains; the company-tied tech stacks (each tied to its employer,
-        never blended). Obeys every `factual-bounds.md` cover-letter rule.
-      - **Style** — every bullet verb-first; section titles conventional (not
-        creative renames).
-
-   d. **Write `review.md`** with `## Pass`, `## Flag`, `## Fix (applied)`. **One
-      pass only** — no second re-check loop. If `jobkit render` failed for a
-      document, `review.md` must not claim the application passed.
-
-10. **Answers** (only with `--answers`) — `{dir}/answers.md`, one `##` per
-    question, grounded in the retrieved material, each with a compact
-    one-to-two-sentence variant. No new facts.
-
-11. **Clean up.** `jobkit render` removes each job's `.rendered.html`. End state:
-    `{dir}/` has `jd.md`, `analysis.md`, `review.md`, `resume.pdf`,
-    `cover_letter.pdf`, `cover_letter.txt`, optional `answers.md`; `{dir}/tmp/`
-    has `resume.data.json`, `cover_letter.data.json`.
-
-12. **Report.** Files written; résumé page count (from the `OK:` line) and cover
-    letter page count; any `analysis.md` `gap` the documents honestly do not
-    cover (expected — state it); the `--density` / `--lang` applied and whether
-    Selected Projects was included; the experience ordering used; anything left in
-    `review.md` `## Flag`.
+7. **Report.** Relay the `Report:` block `jobkit render` already printed to the
+   user — page counts, `--density`/`--lang`, whether Selected Projects was
+   included, the experience ordering used, and any `analysis.md` gap the
+   documents honestly do not cover (expected — state it, do not paper over it).
+   Reformatting for chat is fine; inventing or omitting a line is not.
 
 ## Building the data files
 
@@ -279,61 +220,6 @@ When `--lang zh`:
   the only place in the whole workflow where translation happens.**
 - `factual-bounds.md` and the no-invention rules apply to the translated text exactly
   as they do to English — do not invent a detail to make a smoother Chinese sentence.
-
-## Self-check
-
-Step 9 runs this in two halves: `jobkit verify` (step 9a) covers every
-mechanical check; the LLM (step 9c) judges only what a script cannot.
-
-### Mechanical — `jobkit verify` (step 9a)
-
-These are the script's check ids, not a separate manual pass:
-
-- `profile-roles-verbatim` / `profile-education-verbatim` — every `type: "entries"`
-  role item (`primary` / `secondary` / `location` / `dates`) and every
-  `type: "education"` item matches `profile.yml` `conventions.*` **verbatim**
-  (`dates` == `"<start> – <end>"`, space–en-dash–space).
-- `date-format` — every `dates` string uses ` – ` (space, U+2013, space).
-- `resume-roundtrip` / `cover-roundtrip` — the render/`jobkit extract-cv` silent-failure
-  guard against the PDFs already on disk: no `Invalid resume JSON` /
-  `Invalid cover letter JSON`; candidate `name` and a company name (résumé) or the
-  `subject` (cover letter) appear in the extracted text.
-- `page-budget` — résumé ≤ 2 pages, cover letter == 1.
-- `cover-txt-fresh` — `{dir}/cover_letter.txt` exists, byte-matches a fresh
-  regeneration from `cover_letter.data.json`, and leads with its `Subject:` line.
-- `bullet-dupes` (`warn`) — no near-duplicate bullet within or across the two
-  documents (workflow-rules §10).
-
-### Semantic — LLM (step 9c)
-
-- **Compliance** — no `factual-bounds.md` rule violated (quote the rule + the
-  offending JSON string). No technology / employer / domain / **number** in either
-  JSON that appears **nowhere** in `{sourceDir}` (zero-basis — a `## Flag`).
-  Reframing real material to JD wording is not a violation.
-- **JD coverage** — for each numbered `## Essential` criterion, at least one résumé
-  bullet or skills-group entry supports it — list every uncovered one. A criterion
-  the `## Criteria → Evidence` table marks `gap` that the résumé nonetheless claims
-  is a compliance violation.
-- **Cover letter content** — between the `paragraphs[]`: total professional SDE
-  experience duration; the specific companies by name; the specific business
-  domains; the company-tied tech stacks (each tied to its employer, never blended)
-  (workflow-rules §9). Obeys every `factual-bounds.md` cover-letter rule.
-- **ATS & style** — section titles are conventional (not creative renames); every
-  bullet is verb-first; one tense throughout each `bullets[]` (past for finished
-  work, present only for an ongoing duty in a current role). Walk
-  `jobkit doc ats-checklist`.
-- **Length** — page count over the soft ceiling of 2 ⇒ `## Flag` with the count and
-  candidate trims. Never a `## Fix`.
-
-### Safe auto-fixes
-The only `## Fix (applied)` items: (1) a past-role bullet in present tense where
-every sibling is past; (2) a `.data.json` company / title / date / location /
-education field that differs from `profile.yml` — rewrite to match `profile.yml`
-verbatim; (3) a stale / missing `cover_letter.txt` — regenerate. Anything touching
-the substance of a claim, evidence selection, or argument wording is a `## Flag`.
-
-If `jobkit render` fails, surface the failure under `## Flag` and do not claim the
-application passed.
 
 ## Guardrails
 

@@ -16,7 +16,7 @@ def run(*args, cwd=None):
 
 
 def test_version():
-    assert run("--version").stdout.strip() == "jobkit 0.8.0"
+    assert run("--version").stdout.strip() == "jobkit 0.8.1"
 
 
 def test_config_prints_json(tmp_path):
@@ -81,11 +81,6 @@ def test_render_flag_count_mismatch_exits_2(tmp_path):
     assert "same number of times" in r.stderr
 
 
-def test_verify_missing_input_exits_1(tmp_path):
-    r = run("verify", "--dir", str(tmp_path), "--source-dir", str(tmp_path))
-    assert r.returncode == 1
-
-
 def test_scaffold_data_writes_both_files(tmp_path):
     source_dir = FIX / "resume_sections"
     r = run("scaffold-data", "--dir", str(tmp_path), "--source-dir", str(source_dir))
@@ -117,3 +112,10 @@ def test_render_uses_bundled_template(tmp_path, kind, chromium_or_skip):
     assert r.returncode == 0, r.stderr
     assert r.stdout.startswith("OK:")
     assert out.is_file()
+    assert "Report:" in r.stdout
+    txt = out.with_suffix(".txt")
+    if kind == "cover_letter":
+        assert txt.is_file()
+        assert txt.read_text(encoding="utf-8").startswith("Subject:")
+    else:
+        assert not txt.is_file()

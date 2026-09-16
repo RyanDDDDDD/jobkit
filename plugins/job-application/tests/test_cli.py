@@ -16,7 +16,7 @@ def run(*args, cwd=None):
 
 
 def test_version():
-    assert run("--version").stdout.strip() == "jobkit 0.8.0"
+    assert run("--version").stdout.strip() == "jobkit 0.8.1"
 
 
 def test_config_prints_json(tmp_path):

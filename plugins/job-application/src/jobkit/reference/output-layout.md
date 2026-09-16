@@ -10,11 +10,9 @@ later reads as prose — not a strictly-parsed contract.
     {dir}/
     ├── jd.md                       verbatim job description            (apply)
     ├── analysis.md                 criteria -> evidence, fit, framing  (apply)
-    ├── review.md                   QA report                          (apply)
     ├── resume.pdf                  deliverable                        (apply)
     ├── cover_letter.pdf            deliverable                        (apply)
     ├── cover_letter.txt            email-ready deliverable             (apply)
-    ├── answers.md                  optional, with --answers            (apply)
     ├── interview/
     │   ├── company_research.md                                        (interview research)
     │   ├── self_intro.md                                              (interview prep)
@@ -32,7 +30,7 @@ later reads as prose — not a strictly-parsed contract.
 
 | Location | Holds | Why |
 |---|---|---|
-| `{dir}/` (flat) | `jd.md`, `analysis.md`, `review.md`, the three PDFs/txt, `answers.md` | Read by a human or sent to an employer. |
+| `{dir}/` (flat) | `jd.md`, `analysis.md`, the three PDFs/txt | Read by a human or sent to an employer. |
 | `{dir}/interview/` | research report, self-intro, HR prep, `mock/` | Interview-stage collateral. |
 | `{dir}/interview/mock/<mode>/` | one `.md` per mock session | Separated by mode (`behavioural` / `technical`); one file per session so history is never lost. |
 | `{dir}/tmp/` | `*.data.json`, `*.rendered.html` | Machine artifacts. Every one is rebuilt by re-running `apply`. Never put anything here that cannot be regenerated. |

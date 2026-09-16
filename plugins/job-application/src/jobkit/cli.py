@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 import subprocess
 import sys
 
@@ -20,9 +21,8 @@ from jobkit.docs import DOC_NAMES, read_doc
 from jobkit.extract_cv import extract_text
 from jobkit.init_workspace import init_workspace
 from jobkit.render import RenderJob, render_batch
+from jobkit.report import build_report
 from jobkit.scaffold import scaffold_data
-from jobkit.verify import verify
-from jobkit.verify import _format as _format_verify
 
 
 def _cmd_config(a) -> int:
@@ -47,14 +47,28 @@ def _cmd_render(a) -> int:
         ))
         jobs.append(RenderJob(tp, data, out))
     results = render_batch(jobs, keep_html=a.keep_html)
+
     any_failed = False
-    for r in results:
-        if r.ok:
-            suffix = "" if r.pages == 1 else "s"
-            print(f"OK: {r.pdf} ({r.pages} page{suffix})")
-        else:
+    for kind, job, r in zip(a.kind, jobs, results):
+        if not r.ok:
             any_failed = True
             print(f"Render failed [{r.pdf}]:\n{r.log}", file=sys.stderr)
+            continue
+        suffix = "" if r.pages == 1 else "s"
+        print(f"OK: {r.pdf} ({r.pages} page{suffix})")
+        try:
+            compress_pdf(r.pdf)
+        except Exception as exc:
+            print(f"WARN: compress failed for {r.pdf}: {exc}", file=sys.stderr)
+        if kind == "cover_letter":
+            try:
+                cover_letter_to_text(job.data_path, str(Path(r.pdf).with_suffix(".txt")))
+            except Exception as exc:
+                print(f"WARN: cover-txt failed for {r.pdf}: {exc}", file=sys.stderr)
+
+    report = build_report(jobs, results)
+    if report:
+        print(report)
     return 1 if any_failed else 0
 
 
@@ -67,16 +81,6 @@ def _cmd_compress(a) -> int:
 def _cmd_cover_txt(a) -> int:
     cover_letter_to_text(a.data, a.out)
     print(f"OK: {a.out}" if a.out else "OK: cover_letter.txt")
-    return 0
-
-
-def _cmd_verify(a) -> int:
-    try:
-        result = verify(a.dir, a.source_dir)
-    except FileNotFoundError as exc:
-        print(str(exc), file=sys.stderr)
-        return 1
-    print(json.dumps(result) if a.json else _format_verify(result))
     return 0
 
 
@@ -156,11 +160,6 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("cover-txt")
     s.add_argument("--data", required=True); s.add_argument("--out", default=None)
     s.set_defaults(fn=_cmd_cover_txt)
-
-    s = sub.add_parser("verify")
-    s.add_argument("--dir", required=True); s.add_argument("--source-dir", required=True)
-    s.add_argument("--json", action="store_true")
-    s.set_defaults(fn=_cmd_verify)
 
     s = sub.add_parser("scaffold-data")
     s.add_argument("--dir", required=True); s.add_argument("--source-dir", required=True)

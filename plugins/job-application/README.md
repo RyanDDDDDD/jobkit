@@ -98,18 +98,17 @@ One pass per job:
 
 ```
 /job-application:setup [<folder>]     # once: scaffold + build the source of truth
-/job-application:apply [--density compact|standard] [--lang en|zh] [--answers "Q1; Q2"]
+/job-application:apply [--density compact|standard] [--lang en|zh]
 /job-application:interview research|prep|mock [behavioural|technical] [--lang en|zh]
 ```
 
-- `/job-application:apply` runs analysis → generate → self-check in one pass, writing
-  `jd.md`, `analysis.md`, `review.md`, and the deliverables (`resume.pdf`,
-  `cover_letter.pdf` / `cover_letter.txt`, optional `answers.md`). Flags:
+- `/job-application:apply` runs analysis → generate in one pass, writing
+  `jd.md`, `analysis.md`, and the deliverables (`resume.pdf`,
+  `cover_letter.pdf` / `cover_letter.txt`). Flags:
   `--density compact|standard` sets résumé spacing (default from `profile.yml`
   `conventions.density`); `--lang zh` produces a Chinese résumé and cover letter
-  (body text translated from your English source of truth); `--answers "Q1; Q2"`
-  also writes `answers.md`. Selected Projects is included automatically when the JD
-  makes projects relevant.
+  (body text translated from your English source of truth). Selected Projects is
+  included automatically when the JD makes projects relevant.
 - `/job-application:interview` subcommands: `research` dispatches the
   `company-researcher` subagent — it judges whether the company's hiring is
   domestic-China, overseas, or both, and searches accordingly (Glassdoor/Seek/
@@ -131,7 +130,7 @@ One pass per job:
 
 Every application's files land in one directory — `applications/{Company}/` by
 default. Deliverables and working notes sit flat (`jd.md`, `analysis.md`,
-`review.md`, `resume.pdf`, `cover_letter.pdf`, `cover_letter.txt`); machine
+`resume.pdf`, `cover_letter.pdf`, `cover_letter.txt`); machine
 artifacts (`resume.data.json`, `cover_letter.data.json`) sit under `tmp/` and are
 regenerable; interview-prep files sit under `interview/` (with mock-interview
 records at `interview/mock/<behavioural|technical>/<date>.md`). Full tree:

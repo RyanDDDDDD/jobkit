@@ -37,10 +37,9 @@ data (usually an invalid JSON string or a wrong shape) and re-render.
 "Invalid resume JSON: …" / "Invalid cover letter JSON: …" page for a JSON scalar or
 `null`, and a near-empty page for valid-JSON-but-wrong-shape (no `sections`).
 
-This guard is now `jobkit verify`'s `resume-roundtrip` / `cover-roundtrip`
-checks, run in step 9a against the PDFs already on disk — no re-render. A failure
-there is treated exactly like a render failure (surface it, keep the `.data.json`,
-do not compress, do not claim success).
+There is no separate roundtrip check anymore — a corrupted render still shows up
+as the visible error page inside the PDF itself; open the PDF (or run
+`jobkit extract-cv <pdf>`) to confirm.
 
 Ligature clusters (`ft`, `fi`) and a leading `+` do not survive text extraction on
 the bundled fonts — do not assert on strings that contain them.
@@ -50,5 +49,22 @@ the bundled fonts — do not assert on strings that contain them.
 The integer in the `OK: … (N page[s])` line. The résumé's soft ceiling is **2**. If
 it renders longer: WARN the user and list candidate trims (drop the lowest-ranked
 bullet per role, shorten the intro, drop a de-emphasized skill group). Never
-silently trim content to fit. `jobkit verify` also enforces this
-(`page-budget`: résumé ≤ 2, cover letter == 1).
+silently trim content to fit.
+
+## Compress + cover-txt + Report (automatic)
+
+A successfully-rendered job is compressed in place (`jobkit compress`'s
+algorithm, run internally — never touches a PDF that failed to render). A
+`cover_letter` job additionally gets a sibling `.txt` (same directory, same
+basename, `.txt` extension) written from its `.data.json`. Both are
+best-effort: a `WARN: compress failed for <pdf>: …` or `WARN: cover-txt failed
+for <pdf>: …` line on stderr does not change the job's `OK`/`Render failed`
+status or the command's exit code — the PDF is still a valid deliverable.
+
+After processing every job, `jobkit render` prints a plain-text `Report:`
+block to stdout: each job's status/page-count/lang/density, whether the
+résumé's `sections` include a "Selected Projects" title, the résumé's
+experience order, and any `## Criteria → Evidence` row in the sibling
+`analysis.md` (found by walking up from the `.data.json`'s directory) whose
+Status is `gap`. This replaces the deleted `jobkit verify` as the place a
+`page-budget`-style summary comes from — it is descriptive, not a gate.

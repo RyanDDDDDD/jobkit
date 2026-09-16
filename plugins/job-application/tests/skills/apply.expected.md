@@ -129,16 +129,14 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     `tmp/resume.data.json` nor `tmp/cover_letter.data.json` claims HL7, FHIR,
     MuleSoft, Dell Boomi, or Workato experience.
 
-## Self-check
+18. **No `review.md` is written.** `apply` no longer runs a self-check step, so
+    `applications/Testco/review.md` does not exist.
 
-18. **`review.md` exists with the expected sections.**
-    `applications/Testco/review.md` exists with `## Pass`, `## Flag`, and (if any
-    fix applied) `## Fix (applied)` sections. It does not assert the application
-    "passed" if the render failed.
-
-19. **The deterministic self-check ran and its `pass` checks are not re-flagged.**
-    `jobkit verify --dir applications/Testco --source-dir tests/fixtures/resume_sections --json`
-    exits 0. For the default fixture run it reports `fail == []` (the fixture
-    `profile.yml`, once rendered verbatim, matches; dates use ` – `; the fresh
-    `cover_letter.txt` is on disk). `review.md` contains no `## Fix (applied)`
-    item whose cause is a check `jobkit verify` reports under `pass`.
+19. **`jobkit render`'s Report block was printed and reflects the real gap.**
+    The `jobkit render` invocation from step 6 prints a `Report:` block to
+    stdout containing a `Selected Projects included:` line and an
+    `analysis.md gaps not covered:` line whose text includes the healthcare
+    interoperability (HL7 v2 / FHIR) criterion from `analysis.md`
+    `## Criteria → Evidence` (assertion 3a) — the same gap `## Fit` (assertion
+    4) already accounts for. Nothing in the transcript claims a separate
+    `compress` or `cover-txt` command was run.

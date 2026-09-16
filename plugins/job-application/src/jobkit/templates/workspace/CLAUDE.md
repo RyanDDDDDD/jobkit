@@ -19,7 +19,7 @@ Nothing here is part of the plugin — this is all personal data and generated o
     `jobapp.config.yml`.
   - `private/questions_to_ask.md` — questions to ask interviewers.
 - `applications/` — one folder per application (`jd.md`, `analysis.md`, `resume.*`,
-  `cover_letter.*`, optional `answers.md`, `interview/`). Location set by `output_dir`
+  `cover_letter.*`, `interview/`). Location set by `output_dir`
   in `jobapp.config.yml`.
 - `jobapp.config.yml` — resolves `source_of_truth_dir`, `output_dir`,
   `interview_playbook`, plus workspace `lang` (`en`|`zh`) and `resume_template`

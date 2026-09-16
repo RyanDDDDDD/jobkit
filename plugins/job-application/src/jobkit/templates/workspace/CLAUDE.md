@@ -23,7 +23,7 @@ Nothing here is part of the plugin — this is all personal data and generated o
   in `jobapp.config.yml`.
 - `jobapp.config.yml` — resolves `source_of_truth_dir`, `output_dir`,
   `interview_playbook`, plus workspace `lang` (`en`|`zh`) and `resume_template`
-  (`dossier`|`classic`|`modern-sans`) chosen at setup.
+  (`dossier`|`classic`|`modern-sans`|`signal`|`slate`) chosen at setup.
 
 ## Workflow
 

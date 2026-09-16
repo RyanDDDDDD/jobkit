@@ -79,8 +79,10 @@ Cursor → Settings → Plugins → Add marketplace → RyanDDDDDD/jobkit
 （样例 JD 是为虚构的 “Meridian Integration Partners” 写的，你把这份申请命名为
 `Testco`）—— 你会得到虚构的 “Sample Dev” 的完整简历和求职信，并能从头到尾看到整条流水线。
 
-`example/` 里只放这套输出渲染好的样例，仅四个 PDF —— 简历和求职信的中英两版
-（`resume.pdf` / `resume.zh.pdf` / `cover_letter.pdf` / `cover_letter.zh.pdf`）。
+`example/` 里放这套输出渲染好的样例 —— 默认主题的简历和求职信中英两版
+（`resume.pdf` / `resume.zh.pdf` / `cover_letter.pdf` / `cover_letter.zh.pdf`），
+另外每个非默认主题各有一份英文简历 + 求职信（`resume.<theme>.pdf` /
+`cover_letter.<theme>.pdf`，覆盖 `classic`、`modern-sans`、`signal`、`slate`），方便对比五套外观。
 渲染它们所用的 `*.data.json` 位于 `tests/fixtures/`。
 
 ## 日常使用

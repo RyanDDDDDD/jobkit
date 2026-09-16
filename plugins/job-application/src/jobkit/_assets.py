@@ -7,7 +7,7 @@ import importlib.resources as ir
 from contextlib import ExitStack
 from pathlib import Path
 
-RESUME_TEMPLATES = ("dossier", "classic", "modern-sans")
+RESUME_TEMPLATES = ("dossier", "classic", "modern-sans", "signal", "slate")
 DEFAULT_RESUME_TEMPLATE = "dossier"
 LANGS = ("en", "zh")
 DEFAULT_LANG = "en"

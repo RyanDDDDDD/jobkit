@@ -177,7 +177,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="workspace output language (en|zh)")
     s.add_argument("--template", required=True, choices=list(RESUME_TEMPLATES),
                    dest="resume_template",
-                   help="bundled résumé theme (dossier|classic|modern-sans)")
+                   help="bundled résumé theme (dossier|classic|modern-sans|signal|slate)")
     s.add_argument("--json", action="store_true")
     s.set_defaults(fn=_cmd_init)
 

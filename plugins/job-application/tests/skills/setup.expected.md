@@ -14,7 +14,7 @@ Assertions are **structural** — file / directory existence and substring check
    `output_dir: "applications/{Company}"`,
    `interview_playbook: "private/interview_playbook.md"`,
    a `lang: "en"` or `lang: "zh"` line matching what setup asked for, and a
-   `resume_template:` of `dossier`, `classic`, or `modern-sans`.
+   `resume_template:` of `dossier`, `classic`, `modern-sans`, `signal`, or `slate`.
 2. `<ws>/CLAUDE.md` exists.
 3. `<ws>/private/resume_sections/` contains `profile.yml`, `factual-bounds.md`,
    `introduction.md`, `skills.md`, and `education.md`.

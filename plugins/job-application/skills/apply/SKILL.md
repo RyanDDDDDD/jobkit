@@ -78,15 +78,19 @@ is exactly equivalent.
 5. **Scaffold, then build the data objects.** Run `jobkit scaffold-data` (see
    "## Building the data files" below) to write `{dir}/tmp/resume.data.json` and
    `{dir}/tmp/cover_letter.data.json` with every `profile.yml`-derived field
-   already filled in verbatim — name, contact, lang, density, today's date, each
+   already filled in — name, contact, lang, density, today's date, each
    Experience item's `primary`/`dates`/`secondary`/`location`, and the whole
-   Education section. **Never edit those fields** — they are already correct.
-   Then `Edit` in the judgment content: `intro`, each Experience item's
-   `stack`/`bullets`, the Skills `groups` (read the `###` category headings in
-   `{sourceDir}/skills.md` directly), a Selected Projects section **only** when
-   step 4 surfaced JD-relevant `projects/*.md` (insert it between Experience and
-   Education; else omit it entirely), and the cover letter's
-   `recipient`/`subject`/`paragraphs` (and, for `--lang zh`,
+   Education section. These are correct as scaffolded and **you never edit them**,
+   **except** that for `--lang zh` you translate Experience `primary`, Education
+   `institution`/`credential`, and both sections' `location` into Chinese — see
+   "`--lang zh`" below for exactly which fields and why. `dates` is never your job
+   to touch in either language — `scaffold-data` already reformats it for
+   `--lang zh`. Then `Edit` in the judgment content: `intro`, each Experience
+   item's `stack`/`bullets`/`summary`, the Skills `groups` (read the `###`
+   category headings in `{sourceDir}/skills.md` directly), a Selected Projects
+   section **only** when step 4 surfaced JD-relevant `projects/*.md` (insert it
+   between Experience and Education; else omit it entirely), and the cover
+   letter's `recipient`/`subject`/`paragraphs` (and, for `--lang zh`,
    `salutation`/`closing`). Experience order is reverse-chronological by default
    (matching `profile.yml` `conventions.roles` file order); reorder the
    scaffolded `items[]` array via `Edit` if `## Framing` calls for relevance
@@ -147,8 +151,8 @@ is omitted, `scaffold-data` uses workspace `jobapp.config.yml` `lang`:
 | `density` | `"compact"` or `"standard"` per `--density` (`profile.yml` `conventions.density` if the flag is omitted, else `"compact"`). |
 | `contact` (both files) | Array from `profile.yml`: `phone` as a plain string; `email` as `{ "text": "<email>", "href": "mailto:<email>" }`; and, only if `links.github` is set, `{ "text": "github.com/<handle>", "href": "https://github.com/<handle>" }`. |
 | `introTitle` | Only set (to `"简介"`) for `--lang zh`; omitted for `--lang en` (renderer default `"Introduction"`). |
-| Experience items | One per `profile.yml` `conventions.roles` entry, in file order: `primary` = role `title`, `dates` = `"<start> – <end>"` (en-dash, U+2013), `secondary` = role `company`, `location` = role `location` — all verbatim. `stack: ""` and `bullets: []` are left for you. |
-| Education section | Fully filled — one item per `conventions.education` entry: `institution`, `dates`, `credential`, `location`, all verbatim. No GPA / grades / distinctions (experienced-hire default). Nothing left to edit here. |
+| Experience items | One per `profile.yml` `conventions.roles` entry, in file order: `primary` = role `title`, `dates` = `"<start> – <end>"` (en-dash, U+2013; reformatted to Chinese for `--lang zh` by `scaffold-data`), `secondary` = role `company` (plus `" (ticker)"` when the role has one) — always verbatim, `location` = role `location`. `stack: ""`, `bullets: []`, and `summary: ""` are left for you. For `--lang zh`, translate `primary` and `location` after scaffolding (see "`--lang zh`" below); for `--lang en` leave them verbatim. |
+| Education section | Fully filled — one item per `conventions.education` entry: `institution`, `dates` (reformatted to Chinese for `--lang zh`), `credential`, `location`, plus `note` (from the entry's `rank`, if any) and `gpa` (from the entry's `gpa`, only when `conventions.include_gpa` is `true`) — all pre-filled by `scaffold-data`. For `--lang zh`, translate `institution`, `credential`, and `location` after scaffolding (see "`--lang zh`" below); for `--lang en` leave them verbatim. Nothing else to add here. |
 | Skills section shell | `{ "title": "Skills", "type": "skills", "groups": [] }` — `groups` is left for you. |
 | Cover letter `date` | Today, long form, e.g. `"September 1, 2026"`. |
 | Cover letter `signature` | `profile.yml` `name`. |
@@ -165,8 +169,9 @@ so there is no escaping step and no ad-hoc script to write.
 |---|---|
 | `intro` | Array of `{ "lead", "text" }` — 3–5 items distilled from retrieved `introduction.md` content. `lead` is the short topic phrase (the renderer bolds it and appends the trailing period — `.` for `lang: "en"`, `。` for `lang: "zh"`); `text` is the rest of the clause. |
 | Experience items' `stack` | The retrieved "Integrated Tech Stack" line for **that** company (`companies/<slug>.md`); a JD-relevant subset is allowed, never blended with another company's stack. `stackLabel` is optional (default `"Stack"`). |
+| Experience items' `summary` | 1–2 sentences distilling that company's Company Overview (`companies/<slug>.md` — the Business Domain line, optionally plus the role's scope within it). Leave `""` (omit) if Business Domain is `"not stated in source."` `summaryLabel` is optional (default `"Summary"`). |
 | Experience items' `bullets` | The retrieved bullets for that role, best-first, verb-first, past tense (present only for an ongoing duty in a current role). Emit as many as the role warrants (3–6; see "Length discipline" below). Follow the **bullet format rule** below. |
-| `sections` — Selected Projects | Insert `{ "title": "Selected Projects", "type": "entries", "items": [...] }` between Experience and Education **only** when step 4 surfaced JD-relevant `projects/*.md` (else leave it out). One item per JD-relevant project: `primary` = project name; `metaRight` = tech stack or `""` (use `metaRight`, **not** `dates`); `secondary` = the one-line project description; `bullets` = retrieved project bullets. |
+| `sections` — Selected Projects | Insert `{ "title": "Selected Projects", "type": "entries", "items": [...] }` between Experience and Education **only** when step 4 surfaced JD-relevant `projects/*.md` (else leave it out). One item per JD-relevant project: `primary` = project name; `metaRight` = tech stack or `""` (use `metaRight`, **not** `dates`); `summary` = 1–2 sentences distilling that project's Project Overview (`projects/<slug>.md`); `bullets` = retrieved project bullets. Leave `secondary` unset — there is no org line for a personal project. |
 | Skills `groups` | Each group is `{ "label", "value" }` with `value` a comma-separated list. Read the `###` category headings in `{sourceDir}/skills.md` **directly** for the grouping. Take a JD-relevant subset within each group and keep the source file's category structure. |
 | Extra sections | Any additional section the source of truth supports (Publications, Certifications, Patents) → `{ "title", "type": "list", "items": [...] }`. |
 
@@ -211,19 +216,37 @@ When `--lang zh`:
   and fills in the Chinese section titles (工作经验 / 教育背景 / 技能) and
   `introTitle` (简介) for you.
 - Résumé section `title`s you add yourself follow the same convention — e.g.
-  `"精选项目"` for Selected Projects — as does any `stackLabel` override.
+  `"精选项目"` for Selected Projects — as does any `stackLabel` / `summaryLabel`
+  override.
+- Translate, after scaffolding: each Experience item's `primary` (job title) and
+  `location`; each Education item's `institution`, `credential`, and `location` — to
+  the standard/official Chinese rendering (e.g. a well-known university's official
+  Chinese name). `secondary` (company name, plus its `ticker` if any) is a proper
+  noun and is never translated. `dates` is never your job either —
+  `scaffold-data` already reformatted it (e.g. `"Jan. 2024"` → `"2024年1月"`,
+  `"Present"` → `"至今"`).
 - Cover-letter `subject` / `salutation` / `closing` are Chinese (the script prefixes
   the `主题：` / `日期：` labels itself); the scaffolder leaves `salutation` and
   `closing` empty for `--lang zh` since translating them is your job.
-- Every body string (`intro` `lead`/`text`, `bullets`, `stack`, cover-letter
-  `paragraphs`) is translated from the English source-of-truth content. **This is
-  the only place in the whole workflow where translation happens.**
+- Every body string (`intro` `lead`/`text`, `bullets`, `stack`, `summary`, Skills
+  `groups`' `label`/`value`, cover-letter `paragraphs`) is translated from the
+  English source-of-truth content — along with the structural fields named above
+  (job title, institution, credential, location). Keep tool/language/framework/
+  product proper nouns (e.g. `PostgreSQL`, `React`, `Modern C++`, `Linux`, `Git`) in
+  their standard form; translate the surrounding descriptive language. This, plus
+  the structural-field translations above, is the only place in the whole workflow
+  where translation happens.
 - `factual-bounds.md` and the no-invention rules apply to the translated text exactly
   as they do to English — do not invent a detail to make a smoother Chinese sentence.
+  Translating a correctly-recorded job title, institution name, or location into
+  Chinese is expected, not a zero-basis addition.
 
 ## Guardrails
 
-- Company names / titles / dates / locations from `profile.yml` verbatim.
+- Company names, tickers, and dates from `profile.yml` verbatim in both languages.
+  Job titles, institution/credential names, and locations are verbatim for
+  `--lang en`, translated to Chinese for `--lang zh` (never invented — a faithful
+  translation of a recorded fact, not a new one).
 - The one prohibition is zero-basis additions (workflow-rules §3).
 - `factual-bounds.md` is hard — on conflict stop and ask.
 - Follows workspace `lang` (or `--lang` override); `zh` faithfully translated.

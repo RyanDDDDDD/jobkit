@@ -72,10 +72,10 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
    the `name` in `tests/fixtures/resume_sections/profile.yml` exactly (`Sample Dev`).
    `.lang` is `en` and `.density` is `compact`.
 
-7. **The experience section uses the `profile.yml` role strings verbatim.** The
-   section with `type == "entries"` whose `title` is the experience heading has one
-   `items[]` entry per `profile.yml` `conventions.roles` entry (fixture: 2). For each
-   item, matched to its role:
+7. **The experience section uses the `profile.yml` role strings verbatim (default
+   `--lang en` run).** The section with `type == "entries"` whose `title` is the
+   experience heading has one `items[]` entry per `profile.yml` `conventions.roles`
+   entry (fixture: 2). For each item, matched to its role:
    - `primary` == role `title` (`Software Engineer`, `Junior Developer`);
    - `secondary` == role `company` (`Acme Corp`, `Globex Pty Ltd`);
    - `dates` == `"<start> – <end>"` built from the role's `start` / `end` verbatim,
@@ -140,3 +140,12 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     `## Criteria → Evidence` (assertion 3a) — the same gap `## Fit` (assertion
     4) already accounts for. Nothing in the transcript claims a separate
     `compress` or `cover-txt` command was run.
+
+20. **Each Experience item has a `summary`.** In `tmp/resume.data.json`, both
+    Experience items' `summary` is a non-empty string. Acme Corp's mentions its
+    Business Domain (`companies/acme.md`: "B2B supply-chain and logistics SaaS" —
+    look for language consistent with supply-chain/logistics/shipment tracking);
+    Globex Pty Ltd's is consistent with its Business Domain ("Insurance
+    claims-processing platform" — look for language consistent with
+    insurance/claims). Neither `summary` invents a business domain absent from its
+    company's `### Company Overview` block.

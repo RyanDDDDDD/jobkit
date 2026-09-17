@@ -44,7 +44,9 @@ is exactly equivalent.
    `private/resume_sections/{profile.yml, factual-bounds.md, introduction.md,
    skills.md, education.md}`, `private/resume_sections/{companies,projects}/`,
    `private/interview_playbook.md` (seeded from `jobkit doc interview-frameworks`),
-   and `private/questions_to_ask.md`.
+   `private/questions_to_ask.md`, and `example/<theme>/{resume,cover_letter}[.zh].pdf`
+   — sample output for all five bundled themes, so the user can see what jobkit
+   produces before filling in their own data.
 
    Parse `{"created": [...], "skipped": [...], "warnings": [...]}`; show a short
    created-vs-skipped list. If `warnings` is non-empty, show every warning

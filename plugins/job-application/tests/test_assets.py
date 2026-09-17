@@ -51,3 +51,15 @@ def test_resolve_template_prefers_workspace_override(tmp_path):
     bundled = template_path("resume", "dossier")
     assert resolve_template_path("resume", theme="classic") == template_path("resume", "classic")
     assert resolve_template_path("resume", theme="dossier", explicit=str(bundled)) == bundled
+
+
+def test_examples_are_bundled():
+    from jobkit._assets import examples_dir
+    d = examples_dir()
+    themes_with_zh = {"dossier"}
+    for theme in ("dossier", "classic", "modern-sans", "signal", "slate"):
+        assert (d / theme / "resume.pdf").is_file(), theme
+        assert (d / theme / "cover_letter.pdf").is_file(), theme
+        if theme in themes_with_zh:
+            assert (d / theme / "resume.zh.pdf").is_file(), theme
+            assert (d / theme / "cover_letter.zh.pdf").is_file(), theme

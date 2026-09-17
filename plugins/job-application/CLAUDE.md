@@ -22,7 +22,7 @@ mistaken for a second copy of the plugin.
 | `src/jobkit/` | the installable `jobkit` package — `config`, `render`, `report` (the render Report block), `compress`, `cover_txt`, `extract_cv`, `init_workspace`, `scaffold` (pre-fills the `.data.json` files from `profile.yml`), `docs`, `cli`; templates + reference ship as package data | ours |
 | `pyproject.toml` | `pip` / `hatchling` packaging (`playwright`, `pikepdf`, `pymupdf`, `python-docx`, `pyyaml`; no `uv`) | ours |
 | `tests/` | `pytest` script tests under `tests/scripts/`, `skills/*.expected.md`, `fixtures/` (synthetic candidate) | ours |
-| `example/` | rendered sample PDFs — the default theme's résumé + cover letter (EN + ZH), plus one EN résumé + cover letter per non-default theme (`resume.<theme>.pdf` / `cover_letter.<theme>.pdf`) | ours |
+| `src/jobkit/examples/` | rendered sample PDFs, one subdirectory per theme (`<theme>/resume[.zh].pdf`, `<theme>/cover_letter[.zh].pdf`) — `dossier` has EN + ZH, the other four themes EN only; packaged with the wheel and copied into every new workspace's `example/` folder by `jobkit init` | ours |
 
 Reference docs live at `src/jobkit/reference/` and are printed by `jobkit doc <name>`.
 Templates live at `src/jobkit/templates/` — shared `fonts/` (CN/EN pack), five

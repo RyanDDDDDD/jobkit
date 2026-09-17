@@ -22,5 +22,5 @@ __pycache__/
 .venv/
 
 # --- Keep tracked ---
-!/plugins/job-application/example/
+!/plugins/job-application/src/jobkit/examples/**
 !/plugins/job-application/src/jobkit/templates/workspace/**

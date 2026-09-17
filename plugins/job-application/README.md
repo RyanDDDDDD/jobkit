@@ -87,12 +87,13 @@ company `Testco` (the sample JD is written for a fictional "Meridian Integration
 Partners"; you name the application `Testco`) — you get a full resume + cover letter
 for a fictional "Sample Dev" and can see the whole pipeline end to end.
 
-`example/` holds a rendered sample of that output — the default theme's résumé and
-cover letter, English and Chinese (`resume.pdf` / `resume.zh.pdf` /
-`cover_letter.pdf` / `cover_letter.zh.pdf`), plus one English résumé + cover letter
-per other bundled theme (`resume.<theme>.pdf` / `cover_letter.<theme>.pdf` for
-`classic`, `modern-sans`, `signal`, and `slate`) so you can compare the five looks.
-The `*.data.json` they were rendered from live in `tests/fixtures/`.
+`src/jobkit/examples/` holds a rendered sample of that output, one subdirectory per
+theme (`dossier/resume.pdf` / `dossier/resume.zh.pdf` /
+`dossier/cover_letter.pdf` / `dossier/cover_letter.zh.pdf` for the default theme,
+English and Chinese; `classic/`, `modern-sans/`, `signal/`, and `slate/` each with an
+English `resume.pdf` + `cover_letter.pdf`) so you can compare the five looks. The
+`*.data.json` they were rendered from live in `tests/fixtures/`. `jobkit init` copies
+this whole tree into every new workspace's `example/` folder.
 
 ## Daily use
 

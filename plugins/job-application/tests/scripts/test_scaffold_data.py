@@ -131,3 +131,125 @@ def test_cli_writes_both_files(tmp_path):
     assert "resume.data.json" in result.stdout
     assert "cover_letter.data.json" in result.stdout
     assert (tmp_path / "tmp" / "resume.data.json").is_file()
+
+
+def _write_source_dir(tmp_path, profile_yaml: str) -> Path:
+    src = tmp_path / "source"
+    src.mkdir()
+    (src / "profile.yml").write_text(profile_yaml, encoding="utf-8")
+    return src
+
+
+def test_ticker_appended_to_secondary_when_present(tmp_path):
+    src = _write_source_dir(tmp_path, """
+name: "Sample Dev"
+phone: "000"
+email: "dev@example.com"
+location: "Sydney, Australia"
+working_rights: "full working rights"
+conventions:
+  roles:
+    - { company: "Fletcher Building Ltd", title: "Software Engineer", start: "Apr. 2025", end: "Present", location: "Sydney, Australia", ticker: "NZX/ASX: FBU" }
+  education: []
+  density: compact
+  include_projects: false
+""")
+    scaffold_data(str(tmp_path / "app"), str(src))
+    resume = json.loads((tmp_path / "app" / "tmp" / "resume.data.json").read_text(encoding="utf-8"))
+    exp = next(s for s in resume["sections"] if s["type"] == "entries")
+    assert exp["items"][0]["secondary"] == "Fletcher Building Ltd (NZX/ASX: FBU)"
+
+
+def test_secondary_has_no_parens_when_ticker_absent(tmp_path):
+    src = _write_source_dir(tmp_path, """
+name: "Sample Dev"
+phone: "000"
+email: "dev@example.com"
+location: "Sydney, Australia"
+working_rights: "full working rights"
+conventions:
+  roles:
+    - { company: "Acme Corp", title: "Software Engineer", start: "Jan. 2024", end: "Present", location: "Sydney, Australia" }
+  education: []
+  density: compact
+  include_projects: false
+""")
+    scaffold_data(str(tmp_path / "app"), str(src))
+    resume = json.loads((tmp_path / "app" / "tmp" / "resume.data.json").read_text(encoding="utf-8"))
+    exp = next(s for s in resume["sections"] if s["type"] == "entries")
+    assert exp["items"][0]["secondary"] == "Acme Corp"
+
+
+def test_education_note_and_gpa_gating(tmp_path):
+    src = _write_source_dir(tmp_path, """
+name: "Sample Dev"
+phone: "000"
+email: "dev@example.com"
+location: "Sydney, Australia"
+working_rights: "full working rights"
+conventions:
+  roles: []
+  education:
+    - { institution: "UNSW", credential: "Master of IT", start: "2021", end: "2023", location: "Sydney, Australia", rank: "QS 2027 世界第19", gpa: "GPA 3.18/4.0" }
+  density: compact
+  include_projects: false
+  include_gpa: true
+""")
+    scaffold_data(str(tmp_path / "app"), str(src))
+    resume = json.loads((tmp_path / "app" / "tmp" / "resume.data.json").read_text(encoding="utf-8"))
+    edu = next(s for s in resume["sections"] if s["type"] == "education")
+    assert edu["items"][0]["note"] == "QS 2027 世界第19"
+    assert edu["items"][0]["gpa"] == "GPA 3.18/4.0"
+
+
+def test_gpa_omitted_when_include_gpa_false(tmp_path):
+    src = _write_source_dir(tmp_path, """
+name: "Sample Dev"
+phone: "000"
+email: "dev@example.com"
+location: "Sydney, Australia"
+working_rights: "full working rights"
+conventions:
+  roles: []
+  education:
+    - { institution: "UNSW", credential: "Master of IT", start: "2021", end: "2023", location: "Sydney, Australia", gpa: "GPA 3.18/4.0" }
+  density: compact
+  include_projects: false
+  include_gpa: false
+""")
+    scaffold_data(str(tmp_path / "app"), str(src))
+    resume = json.loads((tmp_path / "app" / "tmp" / "resume.data.json").read_text(encoding="utf-8"))
+    edu = next(s for s in resume["sections"] if s["type"] == "education")
+    assert "gpa" not in edu["items"][0]
+    assert "note" not in edu["items"][0]
+
+
+def test_zh_lang_reformats_dates(tmp_path):
+    src = _write_source_dir(tmp_path, """
+name: "Sample Dev"
+phone: "000"
+email: "dev@example.com"
+location: "Sydney, Australia"
+working_rights: "full working rights"
+conventions:
+  roles:
+    - { company: "Acme Corp", title: "Software Engineer", start: "Jan. 2024", end: "Present", location: "Sydney, Australia" }
+  education:
+    - { institution: "Example University", credential: "Bachelor of Computer Science", start: "2018", end: "2021", location: "Sydney, Australia" }
+  density: compact
+  include_projects: false
+""")
+    scaffold_data(str(tmp_path / "app"), str(src), lang="zh")
+    resume = json.loads((tmp_path / "app" / "tmp" / "resume.data.json").read_text(encoding="utf-8"))
+    exp = next(s for s in resume["sections"] if s["type"] == "entries")
+    edu = next(s for s in resume["sections"] if s["type"] == "education")
+    assert exp["items"][0]["dates"] == "2024年1月 – 至今"
+    assert edu["items"][0]["dates"] == "2018年 – 2021年"
+
+
+def test_en_lang_dates_unaffected_by_zh_reformatting(tmp_path):
+    # Guards against regressing the existing verbatim-en behavior.
+    scaffold_data(str(tmp_path), str(SOURCE_DIR))
+    resume = json.loads((tmp_path / "tmp" / "resume.data.json").read_text(encoding="utf-8"))
+    exp = next(s for s in resume["sections"] if s["type"] == "entries")
+    assert exp["items"][0]["dates"] == "Jan. 2024 – Present"

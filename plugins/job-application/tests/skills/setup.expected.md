@@ -40,19 +40,19 @@ Assertions are **structural** — file / directory existence and substring check
 
 ### idempotent re-run
 
-11. Running `/job-application:setup` a second time in `<ws>` creates no new file and
+12. Running `/job-application:setup` a second time in `<ws>` creates no new file and
     modifies none — every path is reported as already present, and the content of
     `jobapp.config.yml` and every `private/` file is unchanged.
 
 ### non-destructive
 
-12. If `<ws>/jobapp.config.yml` exists with custom content before the run, it is
+13. If `<ws>/jobapp.config.yml` exists with custom content before the run, it is
     reported as skipped and its content is byte-for-byte unchanged; the rest of the
     scaffold is still created.
 
 ### flat-layout guard
 
-13. If `<ws>` contained a top-level `resume_sections/` directory and no
+14. If `<ws>` contained a top-level `resume_sections/` directory and no
     `jobapp.config.yml` before the run, the `jobkit init` JSON output's
     `warnings` array is non-empty and names both `resume_sections` and `private/`.
 

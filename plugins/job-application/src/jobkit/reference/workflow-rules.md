@@ -55,9 +55,12 @@ default for every generated application document (résumé PDF, cover letter,
 plain-text and form-answer variants) and for interview prep. `apply --lang` /
 `interview --lang` override that default for a single run. `zh` means a Chinese
 résumé and cover letter produced by faithfully translating the English
-source-of-truth content — never inventing detail to smooth a sentence. A skill's
-own report / prep text follows the resolved `--lang` (except the initial English
-interview-playbook seed).
+source-of-truth content — never inventing detail to smooth a sentence. This
+includes structural fields, not just prose: job titles, institution/credential
+names, and locations are translated to Chinese, and dates are reformatted to
+Chinese numerals (e.g. `"Jan. 2024"` → `"2024年1月"`); company names and any
+stock ticker stay verbatim (proper nouns). A skill's own report / prep text
+follows the resolved `--lang` (except the initial English interview-playbook seed).
 
 ## 7. Save the job description
 
@@ -69,7 +72,11 @@ in the same output directory as `jd.md`. Later interview-prep steps read it ther
 By default treat the candidate as an experienced hire: omit GPA, grades, class rank,
 and academic distinctions; lead with professional work experience; reduce education
 to institution, credential, and dates. A user targeting new-grad / academic roles
-can override this in `profile.yml`.
+can override this via `profile.yml` `conventions.include_gpa: true` (asked at
+`setup`) plus a `gpa` value on the relevant `conventions.education` entry. A school
+ranking (QS / U.S. News / THE) may still be shown via `conventions.education[].rank`
+regardless of `include_gpa` — it is not part of the experienced-hire GPA
+suppression.
 
 ## 9. Cover letter core content
 

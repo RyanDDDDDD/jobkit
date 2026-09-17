@@ -13,6 +13,7 @@ CLI: jobkit scaffold-data --dir <appdir> --source-dir <sourceDir> [--lang en|zh]
 """
 import argparse
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -35,8 +36,36 @@ def _contact(profile: dict) -> list:
     return contact
 
 
-def _dates(entry: dict) -> str:
-    return f"{entry.get('start', '')} – {entry.get('end', '')}"
+_ZH_MONTHS = {
+    "Jan": "1", "Feb": "2", "Mar": "3", "Apr": "4", "May": "5", "Jun": "6",
+    "Jul": "7", "Aug": "8", "Sep": "9", "Oct": "10", "Nov": "11", "Dec": "12",
+}
+
+
+def _zh_date_token(token: str) -> str:
+    """Reformat one date token for --lang zh. Unrecognized formats pass through
+    verbatim rather than risk a wrong guess."""
+    token = token.strip()
+    if token == "Present":
+        return "至今"
+    m = re.match(r"^([A-Za-z]{3})\.?\s+(\d{4})$", token)
+    if m:
+        mon, year = m.groups()
+        mon_zh = _ZH_MONTHS.get(mon.capitalize())
+        if mon_zh:
+            return f"{year}年{mon_zh}月"
+    if re.match(r"^\d{4}$", token):
+        return f"{token}年"
+    return token
+
+
+def _dates(entry: dict, lang: str = "en") -> str:
+    start = entry.get("start", "")
+    end = entry.get("end", "")
+    if lang == "zh":
+        start = _zh_date_token(start)
+        end = _zh_date_token(end)
+    return f"{start} – {end}"
 
 
 def _resolve_density(profile: dict, density: str | None) -> str:
@@ -71,28 +100,35 @@ def scaffold_data(app_dir: str, source_dir: str, lang: str = "en", density: str 
     resolved_density = _resolve_density(profile, density)
 
     roles = ((profile.get("conventions") or {}).get("roles")) or []
-    experience_items = [
-        {
+    experience_items = []
+    for r in roles:
+        company = r.get("company", "")
+        ticker = r.get("ticker", "")
+        secondary = f"{company} ({ticker})" if ticker else company
+        experience_items.append({
             "primary": r.get("title", ""),
-            "dates": _dates(r),
-            "secondary": r.get("company", ""),
+            "dates": _dates(r, lang),
+            "secondary": secondary,
             "location": r.get("location", ""),
             "stack": "",
             "bullets": [],
-        }
-        for r in roles
-    ]
+        })
 
     education = ((profile.get("conventions") or {}).get("education")) or []
-    education_items = [
-        {
+    include_gpa = bool(((profile.get("conventions") or {}).get("include_gpa")))
+    education_items = []
+    for e in education:
+        item = {
             "institution": e.get("institution", ""),
-            "dates": _dates(e),
+            "dates": _dates(e, lang),
             "credential": e.get("credential", ""),
             "location": e.get("location", ""),
         }
-        for e in education
-    ]
+        if e.get("rank"):
+            item["note"] = e["rank"]
+        if include_gpa and e.get("gpa"):
+            item["gpa"] = e["gpa"]
+        education_items.append(item)
 
     resume = {
         "name": name,

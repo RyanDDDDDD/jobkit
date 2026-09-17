@@ -15,8 +15,8 @@ Commands are `jobkit <sub>` (the plugin installs the `jobkit` CLI —
 `pip install jobkit`). If `jobkit` is not on `PATH`, `python -m jobkit <sub>`
 is exactly equivalent.
 
-1. **Declare language + theme, then scaffold.** Ask the user (if not already
-   stated) for two workspace-level choices — do not guess:
+1. **Declare language + theme + GPA, then scaffold.** Ask the user (if not already
+   stated) for three workspace-level choices — do not guess:
 
    - **Output language** `en` or `zh` — every apply / interview artifact defaults
      to this language (resume, cover letter, interview prep).
@@ -24,6 +24,9 @@ is exactly equivalent.
      (conservative ATS serif), `modern-sans` (all-sans, A4-friendly), `signal`
      (Space Grotesk + DM Sans, cyan-to-purple accent), or `slate` (single-accent,
      compact card-style layout).
+   - **Show GPA?** yes or no — workspace default for whether an education entry's
+     `gpa` appears on the résumé (default: no, matching the experienced-hire
+     default). Written to `conventions.include_gpa` (see step 5) after scaffolding.
 
    If the working directory already has a top-level `resume_sections/`
    or `interview_playbook.md` and no `jobapp.config.yml`, it is a v0.3.x flat-layout
@@ -51,6 +54,11 @@ is exactly equivalent.
    Parse `{"created": [...], "skipped": [...], "warnings": [...]}`; show a short
    created-vs-skipped list. If `warnings` is non-empty, show every warning
    prominently and stop until the user resolves it.
+
+   If the user answered "yes" to **Show GPA?**, `Edit`
+   `private/resume_sections/profile.yml`'s `conventions.include_gpa` line from
+   `false` to `true` (it scaffolds as `false`). Skip this edit if they answered "no"
+   — the scaffolded default is already correct.
 
 2. **If no CV folder argument was given:** stop. Tell the user, in order: fill
    `private/resume_sections/profile.yml` (identity, canonical company names /
@@ -138,11 +146,12 @@ is exactly equivalent.
       working_rights: "<e.g. full working rights in Australia>"
       conventions:
         roles:
-          - { company: "<name>", title: "<title>", start: "<Mon. YYYY>", end: "<Mon. YYYY | Present>", location: "<City, Country>" }
+          - { company: "<name>", title: "<title>", start: "<Mon. YYYY>", end: "<Mon. YYYY | Present>", location: "<City, Country>", ticker: "<optional, e.g. NZX/ASX: FBU>" }
         education:
-          - { institution: "<name>", credential: "<degree>", start: "<YYYY>", end: "<YYYY>", location: "<City, Country>" }
+          - { institution: "<name>", credential: "<degree>", start: "<YYYY>", end: "<YYYY>", location: "<City, Country>", rank: "<optional, e.g. QS 2027 世界第19 / 澳大利亚第1>", gpa: "<optional, only shown when include_gpa is true>" }
         density: compact
         include_projects: false
+        include_gpa: <true if the user said yes in step 1, else false>
       ```
 
       - `links` is an inline map; today only `github` is used. Omit the key entirely
@@ -150,8 +159,28 @@ is exactly equivalent.
       - `conventions.roles` comes from the employment history, most recent first, and
         must match the companies you wrote in step 4. `conventions.education` mirrors
         `education.md`.
-      - `density` (`compact` | `standard`) and `include_projects` (boolean) are
-        workflow defaults — use `compact` and `false` unless the user says otherwise.
+      - `conventions.roles[].ticker` and `conventions.education[].rank` are
+        optional. For each role's company and each education entry's institution,
+        search whether it is publicly listed (and its ticker, e.g.
+        `"NZX/ASX: FBU"`) and its most recent QS / U.S. News / THE ranking (e.g.
+        `"QS 2027 世界第19 / 澳大利亚第1"`). Write a clear, specific, confident
+        finding verbatim; leave the field `""` if nothing specific and
+        clearly-matching turns up — never guess, and never blend in a
+        similarly-named company or institution. List every finding (including
+        "not found") in the confirmation summary (step 7) for the user to verify.
+        On a re-run, only research a role/education entry whose `ticker`/`rank` is
+        still missing (absent, `""`, or a `# TODO` line) — never re-research or
+        silently overwrite a value the user already set or corrected.
+      - `density` (`compact` | `standard`), `include_projects` (boolean), and
+        `include_gpa` (boolean) are workflow defaults — use `compact`, `false`, and
+        whatever the user answered for **Show GPA?** in step 1 (default `false`)
+        unless told otherwise.
+      - `conventions.education[].gpa` is optional. Only fill it when
+        `include_gpa` is `true` for this workspace: extract the GPA verbatim if a
+        CV states one for that credential; otherwise leave `""` with a
+        `# TODO confirm` comment, same as `phone`/`email` — never invent a GPA
+        figure. When `include_gpa` is `false`, leave `gpa: ""` with no `# TODO`
+        (there is nothing to confirm — it will not be shown).
       - `output_dir` is NOT part of `profile.yml` — it is machine/repo config in
         `jobapp.config.yml`. Do not write it here.
       - Dates: use the CV's own format normalised to `Mon. YYYY` (e.g. `Jan. 2024`),
@@ -190,6 +219,8 @@ is exactly equivalent.
         do NOT choose silently;
       - any company file whose Business Domain is `not stated in source`, so the user
         can supply the sector;
+      - every ticker / ranking found (or explicitly not found) for a role or
+        education entry, for the user to verify or correct;
       - the subagent's "Coverage notes" (existing material the new CVs did not mention),
         so the user knows nothing was dropped.
 
@@ -200,6 +231,9 @@ is exactly equivalent.
 - Merges are additive; a re-run with one new CV must not delete existing bullets.
 - Only reorganise what the CVs contain. Never add skills, employers, projects,
   tools, metrics, or dates that are not in the extracted text.
+- Never invent a `ticker` or `rank` — only write one a web search clearly and
+  specifically confirms for that exact employer/institution; leave the field
+  blank otherwise.
 - Ground every `skills.md` entry. For each list item, strip any trailing
   parenthetical `(...)`; the remaining text must be a case-insensitive substring of
   the concatenation of the ingest input CV text and the `companies/*.md` /

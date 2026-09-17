@@ -9,8 +9,9 @@ location: ""        # TODO City, Region, Country
 working_rights: ""  # TODO e.g. full working rights in Australia
 conventions:
   roles:
-    - { company: "", title: "", start: "", end: "", location: "" }   # TODO one entry per role, most recent first; dates "Mon. YYYY" / "Present"
+    - { company: "", title: "", start: "", end: "", location: "", ticker: "" }   # TODO one entry per role, most recent first; dates "Mon. YYYY" / "Present"; ticker optional, e.g. "NZX/ASX: FBU" -- leave "" unless publicly listed
   education:
-    - { institution: "", credential: "", start: "", end: "", location: "" }   # TODO one entry per credential
+    - { institution: "", credential: "", start: "", end: "", location: "", rank: "", gpa: "" }   # TODO one entry per credential; rank optional, e.g. "QS 2027 世界第19 / 澳大利亚第1"; gpa optional, only shown when include_gpa is true below
   density: compact          # resume spacing: compact | standard
   include_projects: false   # add a Selected Projects section when the JD makes projects relevant
+  include_gpa: false        # show each education entry's gpa field on the résumé

@@ -5,7 +5,7 @@
 # Output language for apply / interview (en | zh).
 lang: "en"
 
-# Bundled résumé + cover-letter theme (dossier | classic | modern-sans).
+# Bundled résumé + cover-letter theme (dossier | classic | modern-sans | signal | slate).
 resume_template: "dossier"
 
 # browser_path: "%ProgramFiles(x86)%/Microsoft/Edge/Application/msedge.exe"

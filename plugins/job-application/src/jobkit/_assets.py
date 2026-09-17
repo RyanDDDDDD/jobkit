@@ -37,6 +37,12 @@ def templates_dir() -> Path:
     return _as_path("templates")
 
 
+def examples_dir() -> Path:
+    """Filesystem path to the bundled examples/ directory (rendered sample résumé +
+    cover-letter PDFs, one subdirectory per theme)."""
+    return _as_path("examples")
+
+
 def template_path(kind: str, theme: str | None = None) -> Path:
     """Filesystem path to a bundled résumé / cover-letter HTML template.
 

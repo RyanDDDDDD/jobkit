@@ -26,4 +26,4 @@ path = "src/jobkit/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/jobkit"]
-artifacts = ["src/jobkit/templates/**/*", "src/jobkit/reference/**/*"]
+artifacts = ["src/jobkit/templates/**/*", "src/jobkit/reference/**/*", "src/jobkit/examples/**/*"]

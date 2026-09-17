@@ -19,6 +19,7 @@ from jobkit._assets import (
     DEFAULT_RESUME_TEMPLATE,
     LANGS,
     RESUME_TEMPLATES,
+    examples_dir,
     resource_text,
     templates_dir,
 )
@@ -116,6 +117,13 @@ def init_workspace(
     # 4. Ensure the empty scaffold directories exist.
     for d in SCAFFOLD_DIRS:
         (root / d).mkdir(parents=True, exist_ok=True)
+
+    # 5. Copy the bundled example PDFs (one pair per theme) into the workspace, so a
+    #    new user can see sample output immediately. Never overwrites.
+    example_src_root = examples_dir()
+    for src in sorted(p for p in example_src_root.rglob("*") if p.is_file()):
+        rel = src.relative_to(example_src_root)
+        place(root / "example" / rel, src)
 
     if not config_existed:
         for legacy in ("resume_sections", "interview_playbook.md"):

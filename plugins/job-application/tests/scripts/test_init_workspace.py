@@ -19,6 +19,18 @@ EXPECTED_FILES = {
     "private/resume_sections/introduction.md",
     "private/resume_sections/skills.md",
     "private/resume_sections/education.md",
+    "example/dossier/resume.pdf",
+    "example/dossier/resume.zh.pdf",
+    "example/dossier/cover_letter.pdf",
+    "example/dossier/cover_letter.zh.pdf",
+    "example/classic/resume.pdf",
+    "example/classic/cover_letter.pdf",
+    "example/modern-sans/resume.pdf",
+    "example/modern-sans/cover_letter.pdf",
+    "example/signal/resume.pdf",
+    "example/signal/cover_letter.pdf",
+    "example/slate/resume.pdf",
+    "example/slate/cover_letter.pdf",
 }
 EXPECTED_DIRS = (
     "applications",
@@ -160,3 +172,16 @@ def test_cli_text_output_mentions_next_steps(tmp_path):
     assert "created" in result.stdout
     assert "profile.yml" in result.stdout
     assert "/job-application:apply" in result.stdout
+
+
+def test_example_pdfs_are_byte_identical_to_package_source(tmp_path):
+    from jobkit._assets import examples_dir
+
+    init_workspace(str(tmp_path), lang="en", resume_template="dossier")
+    src_root = examples_dir()
+    for src in src_root.rglob("*"):
+        if src.is_file():
+            rel = src.relative_to(src_root)
+            dest = tmp_path / "example" / rel
+            assert dest.is_file(), rel
+            assert dest.read_bytes() == src.read_bytes()

@@ -31,7 +31,10 @@ Assertions are **structural** — file / directory existence and substring check
 9. `<ws>/private/resume_sections/profile.yml` still contains the `# TODO` markers —
    setup does not fill them in. It uses `density:` / `include_projects:` (not
    `default_density`, `default_resume_length`, or `default_include_projects`).
-10. `<ws>/private/resume_sections/skills.md` contains the four headings
+10. `<ws>/private/resume_sections/profile.yml`'s `conventions.include_gpa` is
+    `true` or `false` matching what the user answered for **Show GPA?** in step 1
+    (scaffolded default: `false`).
+11. `<ws>/private/resume_sections/skills.md` contains the four headings
    `### Core Languages`, `### Frameworks & Libraries`, `### Tools, DevOps & Cloud`,
    and `### Concepts, Protocols & Data`.
 
@@ -99,3 +102,10 @@ phrased relative to it, not to a fixed folder.
 7. Merges are additive on re-run: a second `/job-application:setup` against the same
    CV folder must not delete existing bullets. Contradictions are surfaced to the
    user, not silently resolved.
+
+8. **Ticker / ranking are researched, never guessed.** For each employer processed
+   by ingest, `<OUTPUT_DIR>/profile.yml`'s matching `conventions.roles[].ticker`
+   is either a specific string (e.g. naming a stock exchange) or `""` — never a
+   guess or a value borrowed from a similarly-named company. Same for each
+   education entry's `conventions.education[].rank`. Either way, the confirmation
+   summary lists what was found (or "not found") for the user to verify.

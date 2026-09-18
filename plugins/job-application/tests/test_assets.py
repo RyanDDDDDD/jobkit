@@ -5,7 +5,7 @@ from jobkit._assets import resource_text, template_path, templates_dir
 
 
 def test_version_is_080():
-    assert __version__ == "0.8.1"
+    assert __version__ == "0.8.2"
 
 
 def test_reference_docs_are_bundled():

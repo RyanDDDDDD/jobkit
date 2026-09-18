@@ -69,9 +69,11 @@ resolved by `jobkit config` walking up for `jobapp.config.yml`.
    `/job-application:setup <folder of your old CVs>` to also build
    `private/resume_sections/` from them.
 3. Fill in `private/resume_sections/profile.yml` (identity, canonical company names /
-   titles / dates) and `private/resume_sections/factual-bounds.md` (the "never
-   claim" rules that constrain every generated document). If you skipped the CV
-   folder argument, either re-run setup with a folder or hand-fill the section files.
+   titles / dates). If you have any "never claim" rules (technologies you've never
+   used, per-employer stack scoping, whether the university may be named, …), add
+   them straight to the workspace `CLAUDE.md` (or an `AGENTS.md`) — every skill run
+   loads it automatically. If you skipped the CV folder argument, either re-run
+   setup with a folder or hand-fill the section files.
 
 `jobapp.config.yml` keys — `source_of_truth_dir`, `output_dir`, `interview_playbook`,
 `browser_path` — override the built-in defaults (`resume_sections/`,
@@ -168,18 +170,23 @@ It contains:
 | Path | Purpose |
 |------|---------|
 | `profile.yml` | Structured identity — the one non-markdown file. Name, contact, links, location, working rights, and canonical roles / education (exact company names, titles, and dates used verbatim on every generated document). Also holds résumé density and whether to include a projects section (`conventions.density` / `conventions.include_projects`). |
-| `factual-bounds.md` | Free-form "never claim" rules, loaded verbatim as hard constraints by `apply` (e.g. technologies you have never used, which stacks belong to which employer, no invented metrics, no university in cover letters). Grows over time as you correct generated drafts. |
 | `companies/*.md` | Consolidated, de-duplicated per-company experience — the source of truth for all achievement bullets. |
 | `projects/*.md` | Consolidated per-project achievements. |
 | `education.md` | Education history. |
 | `introduction.md` | Reusable personal summary / positioning statement. |
 | `skills.md` | Consolidated skills inventory. |
 
-`setup` scaffolds the flat files (`profile.yml`, `factual-bounds.md`,
-`introduction.md`, `skills.md`, `education.md`) and leaves `companies/` and
-`projects/` empty. Each new `companies/<slug>.md` / `projects/<slug>.md` starts from
-the skeleton shape under the bundled `templates/section-skeletons/` — `setup` uses it during
-CV ingest, and you can mirror it yourself when hand-filling.
+`setup` scaffolds the flat files (`profile.yml`, `introduction.md`, `skills.md`,
+`education.md`) and leaves `companies/` and `projects/` empty. Each new
+`companies/<slug>.md` / `projects/<slug>.md` starts from the skeleton shape under
+the bundled `templates/section-skeletons/` — `setup` uses it during CV ingest, and
+you can mirror it yourself when hand-filling.
+
+Your own "never claim" rules (technologies you've never used, per-employer stack
+scoping, no invented metrics, no university in cover letters, …) don't need a
+dedicated file here — add them straight to the workspace `CLAUDE.md` or an
+`AGENTS.md`; every skill run loads it automatically, and jobkit treats it as a
+hard constraint (`jobkit doc workflow-rules` §4).
 
 ## Running the tests
 

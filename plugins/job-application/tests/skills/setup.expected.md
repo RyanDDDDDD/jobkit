@@ -16,8 +16,8 @@ Assertions are **structural** — file / directory existence and substring check
    a `lang: "en"` or `lang: "zh"` line matching what setup asked for, and a
    `resume_template:` of `dossier`, `classic`, `modern-sans`, `signal`, or `slate`.
 2. `<ws>/CLAUDE.md` exists.
-3. `<ws>/private/resume_sections/` contains `profile.yml`, `factual-bounds.md`,
-   `introduction.md`, `skills.md`, and `education.md`.
+3. `<ws>/private/resume_sections/` contains `profile.yml`, `introduction.md`,
+   `skills.md`, and `education.md`.
 4. `<ws>/private/resume_sections/companies/` and
    `<ws>/private/resume_sections/projects/` exist as directories.
 5. `<ws>/private/interview_playbook.md` exists and is byte-for-byte identical to the
@@ -81,16 +81,13 @@ phrased relative to it, not to a fixed folder.
    - `conventions.density` / `conventions.include_projects` present (not
      `default_*` keys)
 
-4. `<OUTPUT_DIR>/factual-bounds.md` exists (seeded, heading present; body may be
-   just the "add rules as you correct drafts" comment).
-
-5. No duplicated bullet text across the two company files: no identical bullet
+4. No duplicated bullet text across the two company files: no identical bullet
    sentence (normalised: trimmed, lower-cased, leading `- ` removed) appears in both
    `<OUTPUT_DIR>/companies/acme.md` and `<OUTPUT_DIR>/companies/globex.md`. The two
    source CVs describe the same roles in overlapping wording; the skill must
    collapse, not duplicate.
 
-6. No-hallucination check: for every non-blank list item in
+5. No-hallucination check: for every non-blank list item in
    `<OUTPUT_DIR>/skills.md` (a line starting with `- `, ignoring the `###` category
    headers), strip any trailing parenthetical `(...)` and trim; the remaining text
    must be a case-insensitive substring of the concatenation of the ingest input
@@ -99,11 +96,11 @@ phrased relative to it, not to a fixed folder.
    beyond what the CVs and produced company/project files contain. `skills.md` keeps
    its `###` category headers.
 
-7. Merges are additive on re-run: a second `/job-application:setup` against the same
+6. Merges are additive on re-run: a second `/job-application:setup` against the same
    CV folder must not delete existing bullets. Contradictions are surfaced to the
    user, not silently resolved.
 
-8. **Ticker / ranking are researched, never guessed.** For each employer processed
+7. **Ticker / ranking are researched, never guessed.** For each employer processed
    by ingest, `<OUTPUT_DIR>/profile.yml`'s matching `conventions.roles[].ticker`
    is either a specific string (e.g. naming a stock exchange) or `""` — never a
    guess or a value borrowed from a similarly-named company. Same for each

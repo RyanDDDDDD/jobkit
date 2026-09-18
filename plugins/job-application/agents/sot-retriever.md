@@ -22,8 +22,8 @@ do not add to it).
    tool, domain, employer, or number that appears **nowhere** in `<sourceDir>`.
    A genuine gap, stated honestly, is the expected outcome for some criteria.
 
-Candidate-specific prohibitions live in `<sourceDir>/factual-bounds.md` — read it
-(you have `Read`) and respect it.
+Candidate-specific prohibitions, if the user has stated any, live in their own
+workspace `CLAUDE.md` / `AGENTS.md` — respect them.
 
 ## Input contract
 

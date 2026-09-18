@@ -118,9 +118,8 @@ so an aborted mock writes nothing.
    for gap questions; tolerate formatting variation),
    `{dir}/interview/company_research.md` (if present), and
    `{playbook}` (seed it first if absent). A `technical` mock
-   also resolves `{sourceDir}` with `jobkit config` and reads
-   `{sourceDir}/factual-bounds.md` and, for the projects fallback,
-   `{sourceDir}/projects/*.md`.
+   also resolves `{sourceDir}` with `jobkit config` and reads, for the projects
+   fallback, `{sourceDir}/projects/*.md`.
 2. Ask questions **one at a time**, strictly answerable from `tmp/resume.data.json`
    (`bullets[]`, `intro[]`, the `sections[]` entries), `analysis.md`, and the JD's
    own responsibilities. Never presume an experience, a technology, an employer, or

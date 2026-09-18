@@ -296,7 +296,7 @@
     ul.appendChild(frag(data.intro, function (b) {
       var li = el("li");
       if (b.lead) {
-        var strong = el("strong", null, b.lead.replace(/[.:。．：]\s*$/, "") + (isZh ? "。" : "."));
+        var strong = el("strong", null, b.lead.replace(/[.:。．：]\s*$/, "") + (isZh ? "：" : "."));
         li.appendChild(strong);
         li.appendChild(document.createTextNode((isZh ? "" : " ") + (b.text || "")));
       }

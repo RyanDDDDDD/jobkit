@@ -153,8 +153,7 @@ def _format_summary(result: dict, target: str) -> str:
     lines.append("")
     if result["created"]:
         lines.append(
-            "Next: fill in private/resume_sections/profile.yml and "
-            "private/resume_sections/factual-bounds.md, then run "
+            "Next: fill in private/resume_sections/profile.yml, then run "
             "/job-application:setup <folder of your old CVs> (or hand-fill the "
             "section files), then /job-application:apply."
         )

@@ -52,8 +52,9 @@ is exactly equivalent.
    it (the "regenerate after editing the source of truth" path). Else ask for the
    JD.
 
-3. **Load context.** Read `{sourceDir}/profile.yml` and
-   `{sourceDir}/factual-bounds.md` (verbatim — a hard constraint set).
+3. **Load context.** Read `{sourceDir}/profile.yml`. Any "never claim" constraints
+   the user has written into their own workspace `CLAUDE.md` / `AGENTS.md` already
+   apply automatically (workflow-rules §4) — there is nothing extra to load.
 
 4. **Analyse + retrieve.** Dispatch `sot-retriever` in `retrieve` mode
    `{ mode: "retrieve", jd: <text of {dir}/jd.md>, sourceDir: <resolved> }`. It
@@ -65,7 +66,8 @@ is exactly equivalent.
    `Criterion | Evidence (file:line) | Status`, Status ∈ `met` / `partial` /
    `gap`), `## Fit` (opens with `strong` / `stretch` / `hard-mismatch`, then ` — `
    and a one-sentence reason), `## Framing` (lead role(s), ordering decision,
-   emphasis / de-emphasis, relevant `factual-bounds.md` rules). This file is
+   emphasis / de-emphasis, relevant workspace constraints from the user's own
+   `CLAUDE.md` / `AGENTS.md`, if any). This file is
    written and consumed inside this run and read later by `interview` as prose —
    do not add strict-parse ceremony, just keep the headings.
 
@@ -205,9 +207,9 @@ ceiling WARN and list candidate trims — never silently trim content to fit.
 | `paragraphs` | Array of body paragraphs, any count (typically intro, body1, body2, outro). Between them they must: (1) state the total professional software-engineering experience duration; (2) name the specific companies; (3) name the specific business domains / sectors; (4) name the company-tied tech stacks, each tied to the company it was used at (workflow-rules §9). Draw only on retrieved material; no overclaiming of `gap` criteria. |
 | `salutation` (override) | Scaffolded to `"Dear Hiring Manager,"` for `--lang en` — override only if the JD names a contact (`"Dear <contact name>,"`). |
 
-`factual-bounds.md` still applies to the letter — e.g. "Do not mention the university
-in cover letters" means no `conventions.education` institution string appears anywhere
-in `cover_letter.data.json`.
+Any workspace constraint from the user's own `CLAUDE.md` / `AGENTS.md` still applies
+to the letter — e.g. a "do not mention the university in cover letters" rule means no
+`conventions.education` institution string appears anywhere in `cover_letter.data.json`.
 
 ### `--lang zh`
 
@@ -236,10 +238,10 @@ When `--lang zh`:
   their standard form; translate the surrounding descriptive language. This, plus
   the structural-field translations above, is the only place in the whole workflow
   where translation happens.
-- `factual-bounds.md` and the no-invention rules apply to the translated text exactly
-  as they do to English — do not invent a detail to make a smoother Chinese sentence.
-  Translating a correctly-recorded job title, institution name, or location into
-  Chinese is expected, not a zero-basis addition.
+- Workspace constraints and the no-invention rules apply to the translated text
+  exactly as they do to English — do not invent a detail to make a smoother Chinese
+  sentence. Translating a correctly-recorded job title, institution name, or
+  location into Chinese is expected, not a zero-basis addition.
 
 ## Guardrails
 
@@ -248,7 +250,8 @@ When `--lang zh`:
   `--lang en`, translated to Chinese for `--lang zh` (never invented — a faithful
   translation of a recorded fact, not a new one).
 - The one prohibition is zero-basis additions (workflow-rules §3).
-- `factual-bounds.md` is hard — on conflict stop and ask.
+- The user's own `CLAUDE.md` / `AGENTS.md` constraints are hard — on conflict stop
+  and ask (workflow-rules §4).
 - Follows workspace `lang` (or `--lang` override); `zh` faithfully translated.
 - Machine artifacts in `{dir}/tmp/`, deliverables flat.
 - `jd.md` stays (workflow-rules §7).

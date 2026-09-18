@@ -60,10 +60,11 @@ Cursor → Settings → Plugins → Add marketplace → RyanDDDDDD/jobkit
    以及 `applications/` 输出目录。它绝不覆盖已存在的文件，可以放心重复运行。运行
    `/job-application:setup <你的过往简历文件夹>` 还可同时从这些简历构建
    `private/resume_sections/`。
-3. 填写 `private/resume_sections/profile.yml`（身份、规范的公司名称／职位／日期）和
-   `private/resume_sections/factual-bounds.md`（约束每一份生成文档的“绝不声称”规则）。
-   若跳过了简历文件夹参数，可再带文件夹重跑 setup，或手动填写各个 section 文件
-   （`companies/<slug>.md` / `projects/<slug>.md` 可从
+3. 填写 `private/resume_sections/profile.yml`（身份、规范的公司名称／职位／日期）。
+   如果你有任何“绝不声称”规则（从未用过的技术、哪些技术栈属于哪个雇主、求职信中
+   是否可以提及大学等），直接写进工作区的 `CLAUDE.md`（或 `AGENTS.md`）即可——
+   每次运行技能都会自动加载它。若跳过了简历文件夹参数，可再带文件夹重跑 setup，
+   或手动填写各个 section 文件（`companies/<slug>.md` / `projects/<slug>.md` 可从
    `templates/section-skeletons/` 下的骨架复制起步）。
 
 `jobapp.config.yml` 的键 —— `source_of_truth_dir`、`output_dir`、`interview_playbook`、
@@ -148,17 +149,21 @@ API 密钥后，调研子代理改用 Tavily 的搜索与正文提取，通过�
 | 路径 | 用途 |
 |------|---------|
 | `profile.yml` | 结构化身份信息 —— 唯一的非 markdown 文件。姓名、联系方式、链接、所在地、工作权利，以及规范的岗位 / 教育经历（精确的公司名称、职位和日期，在每一份生成文档中逐字使用）。同时保存简历密度以及是否包含项目章节（`conventions.density` / `conventions.include_projects`）。 |
-| `factual-bounds.md` | 自由格式的“绝不声称”规则，被 `apply` 作为硬约束逐字加载（例如你从未用过的技术、哪些技术栈属于哪个雇主、不编造指标、求职信中不提大学）。随着你修正生成的草稿而不断增长。 |
 | `companies/*.md` | 整合、去重后的按公司划分的工作经历 —— 所有成就要点的事实来源。 |
 | `projects/*.md` | 整合后的按项目划分的成就。 |
 | `education.md` | 教育经历。 |
 | `introduction.md` | 可复用的个人简介 / 定位陈述。 |
 | `skills.md` | 整合后的技能清单。 |
 
-`setup` 会搭建扁平文件（`profile.yml`、`factual-bounds.md`、`introduction.md`、
-`skills.md`、`education.md`），并让 `companies/` 和 `projects/` 保持为空。每个新的
+`setup` 会搭建扁平文件（`profile.yml`、`introduction.md`、`skills.md`、
+`education.md`），并让 `companies/` 和 `projects/` 保持为空。每个新的
 `companies/<slug>.md` / `projects/<slug>.md` 都从插件 `templates/section-skeletons/`
 下的骨架起步 —— `setup` 在 CV 摄取时复制它，你手工填写时也可以自行复制。
+
+你自己的“绝不声称”规则（从未用过的技术、按雇主划分的技术栈范围、不编造指标、
+求职信中不提大学等）不需要专门的文件——直接写进工作区的 `CLAUDE.md` 或
+`AGENTS.md` 即可；每次运行技能都会自动加载它，jobkit 将其视为硬约束
+（`jobkit doc workflow-rules` §4）。
 
 ## 运行测试
 

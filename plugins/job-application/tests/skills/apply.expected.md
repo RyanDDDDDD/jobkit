@@ -45,9 +45,8 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
      `companies/globex.md:12`, `introduction.md:6`). No `met`/`partial` row has an
      empty or invented evidence cell.
    - (e) No row is marked `met` for a technology absent from the source of truth. In
-     particular, nothing referencing Rust appears as a `met` criterion
-     (`tests/fixtures/resume_sections/factual-bounds.md` forbids claiming Rust, and the JD
-     does not ask for it).
+     particular, nothing referencing Rust appears as a `met` criterion (Rust appears
+     nowhere in `tests/fixtures/resume_sections/`, and the JD does not ask for it).
 
 4. **`## Fit` is `stretch`.** Take the first non-blank line of the `## Fit` section
    body, split it on whitespace; the first token, lowercased and stripped of
@@ -93,9 +92,9 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
    company names (`Acme Corp` and `Globex Pty Ltd`).
 
 10. **No forbidden technology.** Neither `tmp/resume.data.json` (raw text) nor the
-    extracted text of `resume.pdf` contains the word `Rust` (case-insensitive).
-    `tests/fixtures/resume_sections/factual-bounds.md` forbids claiming Rust and the
-    JD does not ask for it.
+    extracted text of `resume.pdf` contains the word `Rust` (case-insensitive) —
+    Rust appears nowhere in `tests/fixtures/resume_sections/` and the JD does not
+    ask for it (zero-basis rule, `jobkit doc workflow-rules` §3).
 
 11. **`cover_letter.pdf` exists** and `jobkit render` reports it as 1 page.
 
@@ -107,32 +106,27 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     `Application for the Position of Integration Developer` — no `Ref:` / `Req ID:`
     fragment and no `{{...}}` placeholder.
 
-14. **No university in the cover letter.** Neither `tmp/cover_letter.data.json` (raw
-    text) nor `cover_letter.txt` contains `Example University` (or any other
-    `profile.yml` `conventions.education` institution string) —
-    `factual-bounds.md`: no university mention in cover letters.
-
-15. **No stray rendered HTML.** `applications/Testco/` contains no `*.rendered.html`
+14. **No stray rendered HTML.** `applications/Testco/` contains no `*.rendered.html`
     at any depth — in particular none in `applications/Testco/tmp/`.
 
-16. **Zero-basis / numeric discipline (replaces citation-table gating).** No
+15. **Zero-basis / numeric discipline (replaces citation-table gating).** No
     technology, employer, or numeric figure appears in `tmp/resume.data.json` or the
     extracted `resume.pdf` text that is absent from
     `tests/fixtures/resume_sections/` (concatenated). In particular no numeric
     performance figure beyond the experience-duration statement traceable to
     `introduction.md`.
 
-17. **`analysis.md` was honoured, not overridden.** `analysis.md` `## Fit` for this
+16. **`analysis.md` was honoured, not overridden.** `analysis.md` `## Fit` for this
     JD is `stretch` (not `hard-mismatch`), so generation proceeds. The healthcare
     interoperability (HL7/FHIR) gap and the named-iPaaS-platform gap from
     `analysis.md` `## Criteria → Evidence` are **not** papered over: neither
     `tmp/resume.data.json` nor `tmp/cover_letter.data.json` claims HL7, FHIR,
     MuleSoft, Dell Boomi, or Workato experience.
 
-18. **No `review.md` is written.** `apply` no longer runs a self-check step, so
+17. **No `review.md` is written.** `apply` no longer runs a self-check step, so
     `applications/Testco/review.md` does not exist.
 
-19. **`jobkit render`'s Report block was printed and reflects the real gap.**
+18. **`jobkit render`'s Report block was printed and reflects the real gap.**
     The `jobkit render` invocation from step 6 prints a `Report:` block to
     stdout containing a `Selected Projects included:` line and an
     `analysis.md gaps not covered:` line whose text includes the healthcare
@@ -141,7 +135,7 @@ deliverables are flat in `applications/Testco/`. With no `--density` flag and
     4) already accounts for. Nothing in the transcript claims a separate
     `compress` or `cover-txt` command was run.
 
-20. **Each Experience item has a `summary`.** In `tmp/resume.data.json`, both
+19. **Each Experience item has a `summary`.** In `tmp/resume.data.json`, both
     Experience items' `summary` is a non-empty string. Acme Corp's mentions its
     Business Domain (`companies/acme.md`: "B2B supply-chain and logistics SaaS" —
     look for language consistent with supply-chain/logistics/shipment tracking);

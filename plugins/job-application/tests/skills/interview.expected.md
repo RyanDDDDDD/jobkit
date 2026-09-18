@@ -39,8 +39,9 @@ not exact prose.
 ## grounding
 
 10. No `interview/` output file (research, prep, or any mock record) contains the
-    word `Rust` (case-insensitive) — `tests/fixtures/resume_sections/factual-bounds.md`
-    forbids claiming it and the fixture JD does not ask for it.
+    word `Rust` (case-insensitive) — Rust appears nowhere in
+    `tests/fixtures/resume_sections/` and the fixture JD does not ask for it
+    (zero-basis rule).
 11. Every mock question and every **Stronger answer** is answerable from
     `tmp/resume.data.json` / the fixture source of truth: no employer, technology,
     or numeric metric appears that is absent from them.

@@ -2,7 +2,7 @@
 
 Stable, candidate-agnostic rules for the job-application workflow. Skills link here
 instead of copying the rules inline. Anything specific to one person's history
-belongs in that user's `factual-bounds.md`, not here.
+belongs in that user's own `CLAUDE.md` / `AGENTS.md`, not here.
 
 ---
 
@@ -33,12 +33,14 @@ letter that appears **nowhere** in the source of truth. That is the tool inventi
 not the user asserting. A genuine gap, stated honestly, is the expected outcome for
 some criteria.
 
-## 4. `factual-bounds.md` is a hard constraint
+## 4. The user's own CLAUDE.md / AGENTS.md is a hard constraint
 
-`<sourceDir>/factual-bounds.md` is the user's own "never claim" list (technologies
-never used, per-employer stack scoping, metrics not to invent, whether the
-university may be named in a cover letter, …). Load it verbatim. On any conflict
-between what the JD pushes for and a bound: **stop and ask the user.** Do not
+jobkit does not manage a separate "never claim" rules file. A user's own "never
+claim" list (technologies never used, per-employer stack scoping, metrics not to
+invent, whether the university may be named in a cover letter, …) lives in their
+workspace `CLAUDE.md` or `AGENTS.md`, which every skill run already loads
+automatically — there is nothing extra to read. On any conflict between what the
+JD pushes for and a constraint stated there: **stop and ask the user.** Do not
 silently comply and do not silently omit.
 
 ## 5. Claims are pressure-tested in the interview, not gated at generation
@@ -85,7 +87,7 @@ software-engineering experience duration; (2) the specific companies worked at b
 name; (3) the specific business domains / sectors; (4) the specific technologies,
 each tied to the company where it was used, consistent with the source-of-truth
 records. Keep it to one page. Per-user constraints (e.g. whether the university may
-be named) live in `factual-bounds.md`.
+be named) live in the user's own `CLAUDE.md` / `AGENTS.md` (§4).
 
 ## 10. Redundancy control
 

@@ -44,8 +44,8 @@ is exactly equivalent.
    Both `--lang` and `--template` are **required**. The command writes them into
    `jobapp.config.yml` and creates any of these that are absent (never touches one
    that exists): `jobapp.config.yml`, `CLAUDE.md`, `applications/`,
-   `private/resume_sections/{profile.yml, factual-bounds.md, introduction.md,
-   skills.md, education.md}`, `private/resume_sections/{companies,projects}/`,
+   `private/resume_sections/{profile.yml, introduction.md, skills.md,
+   education.md}`, `private/resume_sections/{companies,projects}/`,
    `private/interview_playbook.md` (seeded from `jobkit doc interview-frameworks`),
    `private/questions_to_ask.md`, and `example/<theme>/{resume,cover_letter}[.zh].pdf`
    — sample output for all five bundled themes, so the user can see what jobkit
@@ -62,8 +62,9 @@ is exactly equivalent.
 
 2. **If no CV folder argument was given:** stop. Tell the user, in order: fill
    `private/resume_sections/profile.yml` (identity, canonical company names /
-   titles / dates) and `private/resume_sections/factual-bounds.md` (the "never
-   claim" rules); then either re-run `/job-application:setup <folder of your old
+   titles / dates) and, if they have any "never claim" rules, add them straight to
+   the workspace `CLAUDE.md` (or an `AGENTS.md`) — every skill run loads it
+   automatically; then either re-run `/job-application:setup <folder of your old
    CVs>` or hand-fill `introduction.md` / `skills.md` / `education.md` and one
    `companies/<slug>.md` per employer — start from the bundled section skeletons:
    a `### Company Overview` block (Company Name, Role Titles, Business Domain,
@@ -198,20 +199,7 @@ is exactly equivalent.
         `phone` and `email` are still never invented; if the CVs contain none, leave
         the `# TODO` line as it is.
 
-   6. **Seed `factual-bounds.md`.** If it is absent in `{sourceDir}`, create it:
-
-      ```markdown
-      # Factual Bounds — <name>
-
-      <!-- Add one rule per line as you correct drafts. These are hard constraints the
-           resume/cover-letter steps must never violate: technologies never used,
-           per-employer stack scoping, metrics that must not be invented, whether the
-           university may be named in cover letters, etc. -->
-      ```
-
-      If it already exists, leave it completely untouched.
-
-   7. **Print a confirmation summary.** List:
+   6. **Print a confirmation summary.** List:
       - every file created vs merged (with counts of new bullets added);
       - an explicit table of the dates / titles / company names / contact details you
         wrote to `profile.yml`, for the user to confirm;

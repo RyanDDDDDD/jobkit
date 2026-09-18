@@ -15,7 +15,6 @@ EXPECTED_FILES = {
     "private/questions_to_ask.md",
     "private/interview_playbook.md",
     "private/resume_sections/profile.yml",
-    "private/resume_sections/factual-bounds.md",
     "private/resume_sections/introduction.md",
     "private/resume_sections/skills.md",
     "private/resume_sections/education.md",

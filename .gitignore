@@ -10,7 +10,9 @@ jobapp.config.yml
 interview_playbook.md
 
 # --- Working notes ---
-/docs/
+# Unanchored so it also matches nested plan/spec dirs like
+# plugins/job-application/docs/ left over from the Cursor dispatch workflow.
+docs/
 /.superpowers/
 
 # --- Build artefacts ---
